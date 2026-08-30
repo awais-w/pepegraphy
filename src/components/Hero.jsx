@@ -142,21 +142,7 @@ const Hero = () => {
         </div>
       </motion.div>
 
-      {/* Slide Dots for Mobile / Quick Nav */}
-      <div className="absolute bottom-4 sm:bottom-10 right-6 sm:right-12 z-20 flex items-center gap-2">
-        {galleryImages.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={`transition-all duration-500 rounded-full ${
-              idx === currentIndex
-                ? 'w-6 h-1 bg-brand-gold'
-                : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
-            }`}
-          />
-        ))}
-      </div>
+
     </section>
   );
 };
