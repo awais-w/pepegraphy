@@ -86,7 +86,7 @@ const Portfolio = () => {
                 setFilter(cat);
                 setSelectedIndex(null);
               }}
-              className={`px-4 sm:px-6 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.2em] uppercase rounded-full transition-all duration-300 border ${
+              className={`px-4 sm:px-6 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.2em] uppercase rounded-full transition-all duration-300 border cursor-pointer ${
                 filter === cat 
                   ? 'bg-brand-gold border-brand-gold text-black font-medium' 
                   : 'bg-transparent border-white/10 text-white/50 hover:border-white/30 hover:text-white'
@@ -134,13 +134,13 @@ const Portfolio = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-between p-4 sm:p-8 select-none"
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-between px-0 py-3 sm:p-8 select-none"
             onClick={handleClose}
           >
             {/* Top Bar: Category Shortcuts & Close Button */}
-            <div className="w-full flex items-center justify-between z-30 pb-2 border-b border-white/10" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full flex items-center justify-between z-30 px-3 sm:px-0 pb-2 border-b border-white/10" onClick={(e) => e.stopPropagation()}>
               {/* Category Quick Nav */}
-              <div className="flex items-center gap-2 overflow-x-auto py-1 max-w-[80vw] sm:max-w-none scrollbar-none">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1 max-w-[80vw] sm:max-w-none scrollbar-none">
                 <span className="text-white/30 text-[9px] uppercase tracking-widest hidden md:inline mr-2">Category:</span>
                 {categories.map((cat) => (
                   <button
@@ -149,7 +149,7 @@ const Portfolio = () => {
                       setFilter(cat);
                       setSelectedIndex(0);
                     }}
-                    className={`px-3 py-1 text-[8px] sm:text-[9px] tracking-[0.15em] uppercase rounded-full transition-all duration-300 ${
+                    className={`px-2.5 sm:px-3 py-1 text-[8px] sm:text-[9px] tracking-[0.15em] uppercase rounded-full transition-all duration-300 cursor-pointer ${
                       filter === cat
                         ? 'bg-brand-gold text-black font-semibold'
                         : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
@@ -162,7 +162,7 @@ const Portfolio = () => {
 
               {/* Close Button */}
               <button 
-                className="text-white/50 hover:text-brand-gold transition-colors p-2 shrink-0 ml-4"
+                className="text-white/50 hover:text-brand-gold transition-colors p-2 shrink-0 ml-2 cursor-pointer"
                 onClick={handleClose}
                 aria-label="Close modal"
               >
@@ -172,26 +172,24 @@ const Portfolio = () => {
               </button>
             </div>
 
-            {/* Middle Section: Navigation Arrows + Image */}
-            <div className="relative w-full flex-1 flex items-center justify-between my-2">
-              {/* Left Image Navigation Arrow (Only if > 1 image in category) */}
-              {filteredImages.length > 1 ? (
+            {/* Middle Section: Image (Edge-to-Edge on Mobile) + Desktop Side Arrows */}
+            <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2">
+              {/* Desktop Left Image Arrow (Hidden on mobile to allow full bleed image width) */}
+              {filteredImages.length > 1 && (
                 <button
                   onClick={handlePrevImage}
-                  className="z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300"
+                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer"
                   aria-label="Previous image"
                 >
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-              ) : (
-                <div className="w-12" />
               )}
 
-              {/* Main Image View */}
+              {/* Main Image View - Full Bleed / Edge-to-Edge on Mobile */}
               <div 
-                className="relative max-w-5xl max-h-[72vh] flex flex-col items-center justify-center"
+                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 <AnimatePresence mode="wait">
@@ -203,62 +201,90 @@ const Portfolio = () => {
                     transition={{ duration: 0.25, ease: "easeOut" }}
                     src={selectedImage.src}
                     alt={selectedImage.alt}
-                    className="max-w-full max-h-[68vh] object-contain shadow-2xl"
+                    className="w-full sm:w-auto max-w-full max-h-[74vh] sm:max-h-[70vh] object-contain shadow-2xl"
                   />
                 </AnimatePresence>
               </div>
 
-              {/* Right Image Navigation Arrow (Only if > 1 image in category) */}
-              {filteredImages.length > 1 ? (
+              {/* Desktop Right Image Arrow (Hidden on mobile to allow full bleed image width) */}
+              {filteredImages.length > 1 && (
                 <button
                   onClick={handleNextImage}
-                  className="z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300"
+                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer"
                   aria-label="Next image"
                 >
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-              ) : (
-                <div className="w-12" />
               )}
             </div>
 
-            {/* Bottom Bar: Image Info & Category Jump Controls */}
-            <div className="w-full flex flex-col sm:flex-row items-center justify-between pt-2 border-t border-white/10 text-center sm:text-left gap-2 z-30" onClick={(e) => e.stopPropagation()}>
+            {/* Bottom Bar: Mobile Controls + Image Details & Category Jump */}
+            <div className="w-full flex flex-col items-center pt-2 px-3 sm:px-0 border-t border-white/10 text-center gap-2 z-30" onClick={(e) => e.stopPropagation()}>
               
-              {/* Category Jump Buttons */}
-              <button
-                onClick={handlePrevCategory}
-                className="text-[9px] tracking-[0.2em] uppercase text-white/40 hover:text-brand-gold transition-colors flex items-center gap-1"
-              >
-                <span>↑ Prev Cat:</span>
-                <span className="text-white/70 capitalize">{prevCategory}</span>
-              </button>
+              {/* Mobile Image Navigation Bar (With Arrows on mobile) */}
+              <div className="w-full flex items-center justify-between sm:justify-center gap-4">
+                {/* Mobile Prev Arrow */}
+                {filteredImages.length > 1 ? (
+                  <button
+                    onClick={handlePrevImage}
+                    className="sm:hidden p-2 text-white/60 hover:text-brand-gold hover:bg-white/10 rounded-full transition-all cursor-pointer"
+                    aria-label="Previous image"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                ) : <div className="sm:hidden w-8" />}
 
-              {/* Current Image Details & Counter */}
-              <div className="space-y-0.5">
-                <p className="text-white/80 text-xs sm:text-sm font-light tracking-wide">
-                  {selectedImage.alt}
-                </p>
-                <div className="flex items-center justify-center gap-3 text-white/40 text-[9px] tracking-[0.2em] uppercase font-mono">
-                  <span>{String(selectedIndex + 1).padStart(2, '0')}</span>
-                  <span className="w-4 h-[1px] bg-white/20 inline-block" />
-                  <span>{String(filteredImages.length).padStart(2, '0')}</span>
-                  <span className="text-white/20">|</span>
-                  <span className="text-brand-gold capitalize">{selectedImage.category}</span>
+                {/* Counter & Caption */}
+                <div className="space-y-0.5 max-w-[70vw] sm:max-w-none">
+                  <p className="text-white/80 text-xs sm:text-sm font-light tracking-wide truncate">
+                    {selectedImage.alt}
+                  </p>
+                  <div className="flex items-center justify-center gap-3 text-white/40 text-[9px] tracking-[0.2em] uppercase font-mono">
+                    <span>{String(selectedIndex + 1).padStart(2, '0')}</span>
+                    <span className="w-4 h-[1px] bg-white/20 inline-block" />
+                    <span>{String(filteredImages.length).padStart(2, '0')}</span>
+                    <span className="text-white/20">|</span>
+                    <span className="text-brand-gold capitalize">{selectedImage.category}</span>
+                  </div>
                 </div>
+
+                {/* Mobile Next Arrow */}
+                {filteredImages.length > 1 ? (
+                  <button
+                    onClick={handleNextImage}
+                    className="sm:hidden p-2 text-white/60 hover:text-brand-gold hover:bg-white/10 rounded-full transition-all cursor-pointer"
+                    aria-label="Next image"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ) : <div className="sm:hidden w-8" />}
               </div>
 
-              {/* Next Category Jump Button */}
-              <button
-                onClick={handleNextCategory}
-                className="text-[9px] tracking-[0.2em] uppercase text-white/40 hover:text-brand-gold transition-colors flex items-center gap-1"
-              >
-                <span>Next Cat:</span>
-                <span className="text-white/70 capitalize">{nextCategory}</span>
-                <span>↓</span>
-              </button>
+              {/* Category Jump Buttons (Prev / Next Category) */}
+              <div className="w-full flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-white/40 pt-1">
+                <button
+                  onClick={handlePrevCategory}
+                  className="hover:text-brand-gold transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>↑ Prev Cat:</span>
+                  <span className="text-white/70 capitalize">{prevCategory}</span>
+                </button>
+
+                <button
+                  onClick={handleNextCategory}
+                  className="hover:text-brand-gold transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Next Cat:</span>
+                  <span className="text-white/70 capitalize">{nextCategory}</span>
+                  <span>↓</span>
+                </button>
+              </div>
 
             </div>
           </motion.div>
