@@ -5,6 +5,8 @@ import { galleryImages as images, categories } from '../data/portfolioData';
 const Portfolio = () => {
   const [filter, setFilter] = useState('all');
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
   const currentCatIdx = categories.indexOf(filter);
@@ -39,6 +41,29 @@ const Portfolio = () => {
     if (e) e.stopPropagation();
     setSelectedIndex(null);
   }, []);
+
+  // Touch Swipe Handlers for mobile & tablet devices
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 40;
+    const isRightSwipe = distance < -40;
+
+    if (isLeftSwipe) {
+      handleNextImage();
+    } else if (isRightSwipe) {
+      handlePrevImage();
+    }
+  };
 
   useEffect(() => {
     if (selectedIndex === null) return;
@@ -172,9 +197,9 @@ const Portfolio = () => {
               </button>
             </div>
 
-            {/* Middle Section: Image (Edge-to-Edge on Mobile) + Desktop Side Arrows */}
+            {/* Middle Section: Image (Edge-to-Edge on Mobile with Swipe Support) + Desktop Side Arrows */}
             <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2">
-              {/* Desktop Left Image Arrow (Hidden on mobile to allow full bleed image width) */}
+              {/* Desktop Left Image Arrow */}
               {filteredImages.length > 1 && (
                 <button
                   onClick={handlePrevImage}
@@ -187,10 +212,13 @@ const Portfolio = () => {
                 </button>
               )}
 
-              {/* Main Image View - Full Bleed / Edge-to-Edge on Mobile */}
+              {/* Main Image View - Swipeable on Touch / Mobile */}
               <div 
-                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0"
+                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y"
                 onClick={(e) => e.stopPropagation()}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
               >
                 <AnimatePresence mode="wait">
                   <motion.img
@@ -199,14 +227,25 @@ const Portfolio = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
+                    drag={filteredImages.length > 1 ? "x" : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      const swipeThreshold = 50;
+                      if (offset.x < -swipeThreshold || velocity.x < -300) {
+                        handleNextImage();
+                      } else if (offset.x > swipeThreshold || velocity.x > 300) {
+                        handlePrevImage();
+                      }
+                    }}
                     src={selectedImage.src}
                     alt={selectedImage.alt}
-                    className="w-full sm:w-auto max-w-full max-h-[74vh] sm:max-h-[70vh] object-contain shadow-2xl"
+                    className="w-full sm:w-auto max-w-full max-h-[74vh] sm:max-h-[70vh] object-contain shadow-2xl cursor-grab active:cursor-grabbing"
                   />
                 </AnimatePresence>
               </div>
 
-              {/* Desktop Right Image Arrow (Hidden on mobile to allow full bleed image width) */}
+              {/* Desktop Right Image Arrow */}
               {filteredImages.length > 1 && (
                 <button
                   onClick={handleNextImage}
@@ -223,7 +262,7 @@ const Portfolio = () => {
             {/* Bottom Bar: Mobile Controls + Image Details & Category Jump */}
             <div className="w-full flex flex-col items-center pt-2 px-3 sm:px-0 border-t border-white/10 text-center gap-2 z-30" onClick={(e) => e.stopPropagation()}>
               
-              {/* Mobile Image Navigation Bar (With Arrows on mobile) */}
+              {/* Mobile Image Navigation Bar */}
               <div className="w-full flex items-center justify-between sm:justify-center gap-4">
                 {/* Mobile Prev Arrow */}
                 {filteredImages.length > 1 ? (
@@ -266,7 +305,7 @@ const Portfolio = () => {
                 ) : <div className="sm:hidden w-8" />}
               </div>
 
-              {/* Category Jump Buttons (Prev / Next Category) */}
+              {/* Category Jump Buttons */}
               <div className="w-full flex items-center justify-between text-[9px] tracking-[0.2em] uppercase text-white/40 pt-1">
                 <button
                   onClick={handlePrevCategory}
