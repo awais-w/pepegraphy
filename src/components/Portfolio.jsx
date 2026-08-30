@@ -2,9 +2,28 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { galleryImages as images, categories } from '../data/portfolioData';
 
+const slideVariants = {
+  enter: (direction) => ({
+    x: direction > 0 ? 350 : direction < 0 ? -350 : 0,
+    opacity: 0,
+    scale: 0.96,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+  },
+  exit: (direction) => ({
+    x: direction < 0 ? 350 : direction > 0 ? -350 : 0,
+    opacity: 0,
+    scale: 0.96,
+  }),
+};
+
 const Portfolio = () => {
   const [filter, setFilter] = useState('all');
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [direction, setDirection] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
 
@@ -16,23 +35,27 @@ const Portfolio = () => {
   const handlePrevImage = useCallback((e) => {
     if (e) e.stopPropagation();
     if (filteredImages.length <= 1) return;
+    setDirection(-1);
     setSelectedIndex((prev) => (prev === null ? 0 : (prev - 1 + filteredImages.length) % filteredImages.length));
   }, [filteredImages.length]);
 
   const handleNextImage = useCallback((e) => {
     if (e) e.stopPropagation();
     if (filteredImages.length <= 1) return;
+    setDirection(1);
     setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % filteredImages.length));
   }, [filteredImages.length]);
 
   const handlePrevCategory = useCallback((e) => {
     if (e) e.stopPropagation();
+    setDirection(-1);
     setFilter(prevCategory);
     setSelectedIndex(0);
   }, [prevCategory]);
 
   const handleNextCategory = useCallback((e) => {
     if (e) e.stopPropagation();
+    setDirection(1);
     setFilter(nextCategory);
     setSelectedIndex(0);
   }, [nextCategory]);
@@ -40,6 +63,7 @@ const Portfolio = () => {
   const handleClose = useCallback((e) => {
     if (e) e.stopPropagation();
     setSelectedIndex(null);
+    setDirection(0);
   }, []);
 
   // Touch Swipe Handlers for mobile & tablet devices
@@ -110,6 +134,7 @@ const Portfolio = () => {
               onClick={() => {
                 setFilter(cat);
                 setSelectedIndex(null);
+                setDirection(0);
               }}
               className={`px-4 sm:px-6 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.2em] uppercase rounded-full transition-all duration-300 border cursor-pointer ${
                 filter === cat 
@@ -134,7 +159,10 @@ const Portfolio = () => {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.4 }}
                 className="relative group cursor-pointer overflow-hidden bg-brand-surface break-inside-avoid"
-                onClick={() => setSelectedIndex(idx)}
+                onClick={() => {
+                  setDirection(0);
+                  setSelectedIndex(idx);
+                }}
               >
                 <img 
                   src={img.src} 
@@ -171,6 +199,7 @@ const Portfolio = () => {
                   <button
                     key={cat}
                     onClick={() => {
+                      setDirection(0);
                       setFilter(cat);
                       setSelectedIndex(0);
                     }}
@@ -197,13 +226,13 @@ const Portfolio = () => {
               </button>
             </div>
 
-            {/* Middle Section: Image (Edge-to-Edge on Mobile with Swipe Support) + Desktop Side Arrows */}
-            <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2">
+            {/* Middle Section: Image with Horizontal Slide Transition */}
+            <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2 overflow-hidden">
               {/* Desktop Left Image Arrow */}
               {filteredImages.length > 1 && (
                 <button
                   onClick={handlePrevImage}
-                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer"
+                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
                   aria-label="Previous image"
                 >
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -212,29 +241,31 @@ const Portfolio = () => {
                 </button>
               )}
 
-              {/* Main Image View - Swipeable on Touch / Mobile */}
+              {/* Main Image View - Sliding Transition Container */}
               <div 
-                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y"
+                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout" custom={direction}>
                   <motion.img
                     key={selectedImage.id}
-                    initial={{ opacity: 0, scale: 0.97 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.97 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
                     drag={filteredImages.length > 1 ? "x" : false}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.2}
                     onDragEnd={(e, { offset, velocity }) => {
-                      const swipeThreshold = 50;
-                      if (offset.x < -swipeThreshold || velocity.x < -300) {
+                      const swipeThreshold = 40;
+                      if (offset.x < -swipeThreshold || velocity.x < -250) {
                         handleNextImage();
-                      } else if (offset.x > swipeThreshold || velocity.x > 300) {
+                      } else if (offset.x > swipeThreshold || velocity.x > 250) {
                         handlePrevImage();
                       }
                     }}
@@ -249,7 +280,7 @@ const Portfolio = () => {
               {filteredImages.length > 1 && (
                 <button
                   onClick={handleNextImage}
-                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer"
+                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
                   aria-label="Next image"
                 >
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
