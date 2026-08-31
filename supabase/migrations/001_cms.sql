@@ -73,10 +73,18 @@ create policy "Public can read visible hero slides" on public.hero_slides for se
 create policy "Public can read visible gallery categories" on public.gallery_categories for select using (is_visible);
 create policy "Public can read visible gallery photos" on public.gallery_photos for select using (is_visible);
 
-create policy "Authenticated users can manage site content" on public.site_content for all to authenticated using (true) with check (true);
-create policy "Authenticated users can manage hero slides" on public.hero_slides for all to authenticated using (true) with check (true);
-create policy "Authenticated users can manage gallery categories" on public.gallery_categories for all to authenticated using (true) with check (true);
-create policy "Authenticated users can manage gallery photos" on public.gallery_photos for all to authenticated using (true) with check (true);
+create policy "Authenticated users can insert site content" on public.site_content for insert to authenticated with check (true);
+create policy "Authenticated users can update site content" on public.site_content for update to authenticated using (true) with check (true);
+create policy "Authenticated users can delete site content" on public.site_content for delete to authenticated using (true);
+create policy "Authenticated users can insert hero slides" on public.hero_slides for insert to authenticated with check (true);
+create policy "Authenticated users can update hero slides" on public.hero_slides for update to authenticated using (true) with check (true);
+create policy "Authenticated users can delete hero slides" on public.hero_slides for delete to authenticated using (true);
+create policy "Authenticated users can insert gallery categories" on public.gallery_categories for insert to authenticated with check (true);
+create policy "Authenticated users can update gallery categories" on public.gallery_categories for update to authenticated using (true) with check (true);
+create policy "Authenticated users can delete gallery categories" on public.gallery_categories for delete to authenticated using (true);
+create policy "Authenticated users can insert gallery photos" on public.gallery_photos for insert to authenticated with check (true);
+create policy "Authenticated users can update gallery photos" on public.gallery_photos for update to authenticated using (true) with check (true);
+create policy "Authenticated users can delete gallery photos" on public.gallery_photos for delete to authenticated using (true);
 
 insert into storage.buckets (id, name, public)
 values ('site-media', 'site-media', true)
