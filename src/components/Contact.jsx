@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone } from 'lucide-react';
 
-const Contact = () => {
+const Contact = ({ contact, categories }) => {
   const [formState, setFormState] = useState({ name: '', email: '', type: '', message: '' });
   const [status, setStatus] = useState('');
 
@@ -17,7 +17,7 @@ const Contact = () => {
     const body = encodeURIComponent(
       `Hi Petra,\n\nMy name is ${formState.name}.\n\n${formState.message}\n\nBest,\n${formState.name}\n${formState.email}`
     );
-    window.location.href = `mailto:petrastyasztny@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
     setStatus('Opening your email client…');
   };
 
@@ -32,26 +32,26 @@ const Contact = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">Contact</span>
+            <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{contact.eyebrow}</span>
             <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8 leading-tight">
-              Let's create<br />something beautiful.
+              {contact.title}
             </h2>
             <p className="text-white/40 text-base sm:text-lg font-light leading-relaxed mb-10 sm:mb-12 max-w-md">
-              Reach out to discuss your shoot. Whether you have a clear vision or are starting from scratch, I'm here to guide you through every step.
+              {contact.description}
             </p>
 
             <div className="space-y-4 sm:space-y-6">
-              <a href="mailto:petrastyasztny@gmail.com" className="flex items-center gap-4 sm:gap-6 group">
+              <a href={`mailto:${contact.email}`} className="flex items-center gap-4 sm:gap-6 group">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-all">
                   <Mail size={16} className="text-brand-gold" />
                 </div>
-                <span className="text-white/60 group-hover:text-white transition-colors font-light text-sm sm:text-base">petrastyasztny@gmail.com</span>
+                <span className="text-white/60 group-hover:text-white transition-colors font-light text-sm sm:text-base">{contact.email}</span>
               </a>
-              <a href="tel:+447975605120" className="flex items-center gap-4 sm:gap-6 group">
+              <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`} className="flex items-center gap-4 sm:gap-6 group">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-all">
                   <Phone size={16} className="text-brand-gold" />
                 </div>
-                <span className="text-white/60 group-hover:text-white transition-colors font-light text-sm sm:text-base">+44 7975 605 120</span>
+                <span className="text-white/60 group-hover:text-white transition-colors font-light text-sm sm:text-base">{contact.phone}</span>
               </a>
             </div>
           </motion.div>
@@ -90,14 +90,9 @@ const Contact = () => {
                   onChange={(e) => setFormState({...formState, type: e.target.value})}
                 >
                   <option value="">Select a category...</option>
-                  <option value="male">Male Portraiture</option>
-                  <option value="female">Female Portraiture</option>
-                  <option value="children">Children</option>
-                  <option value="events">Parties & Events</option>
-                  <option value="reportage">Reportage</option>
-                  <option value="nature">Nature</option>
-                  <option value="pet">Pets</option>
-                  <option value="boudoir">Boudoir</option>
+                  {categories.filter((category) => category.slug !== 'all').map((category) => (
+                    <option key={category.slug} value={category.slug}>{category.name}</option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">

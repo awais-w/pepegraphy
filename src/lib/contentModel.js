@@ -1,4 +1,4 @@
-import { categories as defaultCategories, galleryImages } from '../data/portfolioData';
+import { categories as defaultCategories, galleryImages, portfolioSection } from '../data/portfolioData';
 
 const defaultNavLinks = [
   { label: 'About', href: '#about' },
@@ -43,6 +43,7 @@ export const defaultContent = {
         { value: '100%', label: 'Authentic' },
       ],
     },
+    portfolio: portfolioSection,
     specialities: { eyebrow: 'What I offer', title: 'Specialities', items: defaultSpecialities },
     booking: {
       eyebrow: 'Booking',

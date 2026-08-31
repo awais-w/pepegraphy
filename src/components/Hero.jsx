@@ -1,27 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { galleryImages } from '../data/portfolioData';
 
-const Hero = () => {
+const Hero = ({ hero }) => {
+  const { slides } = hero;
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, 6000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+    setCurrentIndex((prev) => (prev + 1) % slides.length);
   };
 
-  const currentImage = galleryImages[currentIndex];
+  const currentImage = slides[currentIndex];
 
   return (
     <section id="hero" className="relative h-screen min-h-[650px] flex items-center justify-center overflow-hidden">
@@ -58,7 +58,7 @@ const Hero = () => {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="text-brand-gold text-[9px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase mb-6"
         >
-          Natural · Authentic · Timeless
+          {hero.eyebrow}
         </motion.p>
 
         <motion.h1
@@ -67,7 +67,7 @@ const Hero = () => {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="text-white text-[24px] sm:text-7xl md:text-9xl font-serif tracking-[0.05em] sm:tracking-[0.1em] font-light mb-8"
         >
-          PEPEGRAPHY
+          {hero.title}
         </motion.h1>
 
         <motion.p
@@ -76,7 +76,7 @@ const Hero = () => {
           transition={{ delay: 0.8, duration: 1 }}
           className="text-white/70 font-serif italic text-base sm:text-xl md:text-2xl mb-12"
         >
-          Photography by Petra Styasztny
+          {hero.subtitle}
         </motion.p>
 
         <motion.div
@@ -85,10 +85,10 @@ const Hero = () => {
           transition={{ delay: 1, duration: 0.8 }}
         >
           <a
-            href="#portfolio"
+            href={hero.ctaHref}
             className="inline-block border border-white/30 px-8 sm:px-10 py-3 sm:py-4 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white hover:bg-white hover:text-black transition-all duration-500 backdrop-blur-xs"
           >
-            View Portfolio
+            {hero.ctaLabel}
           </a>
         </motion.div>
       </div>
@@ -120,7 +120,7 @@ const Hero = () => {
           {String(currentIndex + 1).padStart(2, '0')}
         </span>
         <div className="w-8 h-[1px] bg-white/20" />
-        <span>{String(galleryImages.length).padStart(2, '0')}</span>
+        <span>{String(slides.length).padStart(2, '0')}</span>
         <span className="text-white/20 ml-2">|</span>
         <span className="text-white/60 ml-2 capitalize">{currentImage.category}</span>
       </div>

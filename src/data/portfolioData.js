@@ -18,3 +18,9 @@ export const galleryImages = [
 ];
 
 export const categories = ['all', 'female', 'male', 'children', 'pet', 'events', 'reportage', 'nature', 'boudoir'];
+
+export const portfolioSection = {
+  eyebrow: 'Work',
+  title: 'Portfolio',
+  description: 'Browse by category, or explore the full collection. Every frame tells a story of a moment captured in its most honest form.',
+};
