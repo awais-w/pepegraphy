@@ -102,7 +102,12 @@ const sortByOrder = (items) => items
   .map(({ item }) => item);
 
 const visible = (row) => row && row.is_visible !== false && row.isVisible !== false;
-const order = (row, index) => Number.isFinite(Number(row?.sort_order)) ? Number(row.sort_order) : (Number.isFinite(Number(row?.sortOrder)) ? Number(row.sortOrder) : index);
+const numericOrder = (value) => {
+  if (value === null || value === undefined || String(value).trim() === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+const order = (row, index) => numericOrder(row?.sort_order) ?? numericOrder(row?.sortOrder) ?? index;
 
 export function normalizeContent(remoteRows = {}) {
   const rows = remoteRows || {};

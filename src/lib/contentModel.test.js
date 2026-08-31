@@ -19,6 +19,24 @@ describe('content model', () => {
     expect(content.photos.map((photo) => photo.id)).toEqual(['photo-1', 'photo-2']);
   });
 
+  it('uses input position when sort_order is null or empty', () => {
+    const content = normalizeContent({
+      heroSlides: [
+        { id: 'hero-explicit-late', image_url: '/late.jpg', sort_order: 3 },
+        { id: 'hero-explicit-early', image_url: '/early.jpg', sort_order: 1 },
+        { id: 'hero-null', image_url: '/null.jpg', sort_order: null },
+        { id: 'hero-empty', image_url: '/empty.jpg', sort_order: '' },
+      ],
+    });
+
+    expect(content.heroSlides.map((slide) => slide.id)).toEqual([
+      'hero-explicit-early',
+      'hero-null',
+      'hero-explicit-late',
+      'hero-empty',
+    ]);
+  });
+
   it('slugifies a category name', () => {
     expect(slugify('New Portraits')).toBe('new-portraits');
   });
