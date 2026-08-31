@@ -18,7 +18,7 @@ const About = () => {
               <img 
                 src="/petra-portrait.png" 
                 alt="Petra Styasztny"
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-top"
               />
             </div>
             <div className="absolute -top-4 -left-4 w-full h-full border border-brand-gold/20 -z-0 hidden sm:block" />
