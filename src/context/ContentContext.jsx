@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultContent } from '../lib/contentModel';
 import { contentRepository } from '../lib/contentRepository';
 
@@ -8,12 +8,13 @@ export function ContentProvider({ children }) {
   const [content, setContent] = useState(defaultContent);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const initialLoadStarted = useRef(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       setContent(await contentRepository.loadContent());
-      setError(null);
+      setError(contentRepository.getLoadError());
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError : new Error('Unable to refresh content.'));
     } finally {
@@ -21,11 +22,15 @@ export function ContentProvider({ children }) {
     }
   }, []);
 
-  useEffect(() => { void Promise.resolve().then(refresh); }, [refresh]);
+  useEffect(() => {
+    if (initialLoadStarted.current) return;
+    initialLoadStarted.current = true;
+    void Promise.resolve().then(refresh);
+  }, [refresh]);
 
   const value = useMemo(() => {
     const mutations = Object.fromEntries(Object.entries(contentRepository)
-      .filter(([name, method]) => name !== 'loadContent' && typeof method === 'function')
+      .filter(([name, method]) => name !== 'loadContent' && name !== 'getLoadError' && typeof method === 'function')
       .map(([name, method]) => [name, async (...args) => {
         try {
           const result = await method(...args);

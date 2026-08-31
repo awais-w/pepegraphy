@@ -23,13 +23,18 @@ function metadataPayload(input, fields) {
 }
 
 export function createContentRepository({ client = supabaseClient, configured = isSupabaseConfigured } = {}) {
+  let lastLoadError = null;
+
   const requireClient = () => {
     if (!configured || !client) throw new Error('Supabase is not configured.');
     return client;
   };
 
   const deleteUploadedFile = async (path) => {
-    if (path) await requireClient().storage.from(STORAGE_BUCKET).remove([path]);
+    if (path) {
+      const result = await requireClient().storage.from(STORAGE_BUCKET).remove([path]);
+      assertNoError(result, 'Unable to remove uploaded image.');
+    }
   };
 
   const insertWithCleanup = async (table, payload, storagePath) => {
@@ -40,8 +45,13 @@ export function createContentRepository({ client = supabaseClient, configured = 
       if (storagePath) {
         try {
           await deleteUploadedFile(storagePath);
-        } catch {
-          // The original metadata error is more useful to the caller.
+        } catch (cleanupError) {
+          const metadataError = toError(error, `Unable to create ${table} record.`);
+          throw new AggregateError(
+            [metadataError, toError(cleanupError, 'Unable to remove uploaded image.')],
+            'Unable to clean up uploaded image after metadata insertion failed.',
+            { cause: cleanupError },
+          );
         }
       }
       throw error;
@@ -50,7 +60,10 @@ export function createContentRepository({ client = supabaseClient, configured = 
 
   return {
     async loadContent() {
-      if (!configured || !client) return mergeContent(defaultContent);
+      if (!configured || !client) {
+        lastLoadError = new Error('Supabase is not configured.');
+        return mergeContent(defaultContent);
+      }
 
       try {
         const [siteContent, heroSlides, categories, photos] = await Promise.all([
@@ -64,15 +77,21 @@ export function createContentRepository({ client = supabaseClient, configured = 
           assertNoError(result, 'Unable to load CMS content.');
         });
 
+        lastLoadError = null;
         return mergeContent(defaultContent, {
           siteContent: siteContent.data,
           heroSlides: heroSlides.data,
           categories: categories.data,
           photos: photos.data,
         });
-      } catch {
+      } catch (error) {
+        lastLoadError = toError(error, 'Unable to load CMS content.');
         return mergeContent(defaultContent);
       }
+    },
+
+    getLoadError() {
+      return lastLoadError;
     },
 
     async saveSection(key, content) {
