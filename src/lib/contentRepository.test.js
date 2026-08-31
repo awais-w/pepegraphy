@@ -65,8 +65,19 @@ describe('content repository', () => {
       },
     });
 
-    await expect(repository.createHeroSlide({
-      imageUrl: '/hero.jpg', storagePath: 'hero/test.jpg',
-    })).rejects.toThrow('Unable to clean up uploaded image');
+    let failure;
+    try {
+      await repository.createHeroSlide({ imageUrl: '/hero.jpg', storagePath: 'hero/test.jpg' });
+    } catch (error) {
+      failure = error;
+    }
+
+    expect(remove).toHaveBeenCalledWith(['hero/test.jpg']);
+    expect(failure).toBeInstanceOf(AggregateError);
+    expect(failure.message).toBe('Unable to clean up uploaded image after metadata insertion failed.');
+    expect(failure.errors.map((error) => error.message)).toEqual([
+      'Metadata insert unavailable',
+      'Storage cleanup unavailable',
+    ]);
   });
 });

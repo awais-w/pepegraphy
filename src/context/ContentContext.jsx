@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+// eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { defaultContent } from '../lib/contentModel';
 import { contentRepository } from '../lib/contentRepository';
 
