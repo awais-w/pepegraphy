@@ -5,6 +5,23 @@ const mergeSection = (fallback, section) => ({
   ...Object.fromEntries(Object.entries(section || {}).filter(([, value]) => value !== undefined)),
 });
 
+const splitTitle = (title, lineBreakAfterWords) => {
+  const words = String(title || '').trim().split(/\s+/).filter(Boolean);
+  const breakAfter = Number(lineBreakAfterWords);
+
+  if (!Number.isInteger(breakAfter) || breakAfter <= 0 || breakAfter >= words.length) return [title];
+
+  return [
+    words.slice(0, breakAfter).join(' '),
+    words.slice(breakAfter).join(' '),
+  ];
+};
+
+const withTitleLines = (section) => ({
+  ...section,
+  titleLines: splitTitle(section.title, section.titleLineBreakAfterWords),
+});
+
 export function buildPublicContent(content = defaultContent) {
   const source = {
     ...defaultContent,
@@ -38,7 +55,7 @@ export function buildPublicContent(content = defaultContent) {
         category: slide.caption || photoById.get(String(slide.id))?.category || '',
       })),
     },
-    about: mergeSection(defaultContent.siteContent.about, siteContent.about),
+    about: withTitleLines(mergeSection(defaultContent.siteContent.about, siteContent.about)),
     portfolio: {
       ...mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio),
       categories: [{ slug: 'all', name: 'All' }, ...publicCategories],
@@ -46,7 +63,7 @@ export function buildPublicContent(content = defaultContent) {
     },
     specialities: mergeSection(defaultContent.siteContent.specialities, siteContent.specialities),
     booking: mergeSection(defaultContent.siteContent.booking, siteContent.booking),
-    contact: mergeSection(defaultContent.siteContent.contact, siteContent.contact),
+    contact: withTitleLines(mergeSection(defaultContent.siteContent.contact, siteContent.contact)),
     footer: mergeSection(defaultContent.siteContent.footer, siteContent.footer),
   };
 }

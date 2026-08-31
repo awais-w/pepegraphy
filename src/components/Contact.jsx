@@ -34,7 +34,12 @@ const Contact = ({ contact, categories }) => {
           >
             <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{contact.eyebrow}</span>
             <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8 leading-tight">
-              {contact.title}
+              {contact.titleLines.map((line, index) => (
+                <span key={`${line}-${index}`}>
+                  {line}
+                  {index < contact.titleLines.length - 1 && <br />}
+                </span>
+              ))}
             </h2>
             <p className="text-white/40 text-base sm:text-lg font-light leading-relaxed mb-10 sm:mb-12 max-w-md">
               {contact.description}

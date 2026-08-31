@@ -8,6 +8,15 @@ describe('public content adapter', () => {
       siteContent: {
         hero: { title: 'Remote photography' },
       },
+      heroSlides: [
+        {
+          id: 'hero-remote',
+          image_url: '/remote-hero.jpg',
+          alt_text: 'Remote hero photo',
+          caption: 'Remote scenes',
+          is_visible: true,
+        },
+      ],
       categories: [
         { id: 'category-events', name: 'Live events', slug: 'live-events', is_visible: true },
       ],
@@ -25,6 +34,14 @@ describe('public content adapter', () => {
     const publicContent = buildPublicContent(content);
 
     expect(publicContent.hero.title).toBe('Remote photography');
+    expect(publicContent.hero.slides).toEqual([
+      expect.objectContaining({
+        id: 'hero-remote',
+        src: '/remote-hero.jpg',
+        alt: 'Remote hero photo',
+        category: 'Remote scenes',
+      }),
+    ]);
     expect(publicContent.portfolio.images).toEqual([
       expect.objectContaining({
         id: 'photo-remote',
@@ -48,5 +65,23 @@ describe('public content adapter', () => {
       alt: 'Stage performance event',
       category: 'events',
     }));
+  });
+
+  it('formats editable about and contact titles from their line break metadata', () => {
+    const publicContent = buildPublicContent(mergeContent(defaultContent, {
+      siteContent: {
+        about: {
+          title: 'Captured memories that last',
+          titleLineBreakAfterWords: 2,
+        },
+        contact: {
+          title: "Let's make something unforgettable",
+          titleLineBreakAfterWords: 2,
+        },
+      },
+    }));
+
+    expect(publicContent.about.titleLines).toEqual(['Captured memories', 'that last']);
+    expect(publicContent.contact.titleLines).toEqual(["Let's make", 'something unforgettable']);
   });
 });

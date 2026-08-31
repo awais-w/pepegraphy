@@ -31,6 +31,7 @@ export const defaultContent = {
     about: {
       eyebrow: 'About Me',
       title: 'Real moments. Real people.',
+      titleLineBreakAfterWords: 2,
       body: [
         "Hello, I'm Petra Styasztny — the photographer behind Pepegraphy. I believe the most beautiful photographs aren't staged; they're stolen from real life. My approach is relaxed, unhurried, and always guided by authenticity.",
         'Whether I\'m capturing a quiet family afternoon, the electric atmosphere of a party, or the quiet confidence of a portrait session, my goal is the same: to show you — and the world — exactly as you are, at your very best.',
@@ -61,6 +62,7 @@ export const defaultContent = {
     contact: {
       eyebrow: 'Contact',
       title: "Let's create something beautiful.",
+      titleLineBreakAfterWords: 2,
       description: "Reach out to discuss your shoot. Whether you have a clear vision or are starting from scratch, I'm here to guide you through every step.",
       email: 'petrastyasztny@gmail.com',
       phone: '+44 7975 605 120',

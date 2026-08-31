@@ -33,7 +33,12 @@ const About = ({ about }) => {
             <div>
               <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{about.eyebrow}</span>
               <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif leading-tight">
-                {about.title}
+                {about.titleLines.map((line, index) => (
+                  <span key={`${line}-${index}`}>
+                    {line}
+                    {index < about.titleLines.length - 1 && <><br className="hidden sm:block" /> </>}
+                  </span>
+                ))}
               </h2>
             </div>
 
