@@ -1,16 +1,21 @@
-# React + Vite
+# Pepegraphy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Photography portfolio built with React and Vite. It can run with bundled content by default or use Supabase as its shared CMS.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+## Supabase CMS setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Create a project in [Supabase](https://supabase.com/dashboard), then open its SQL Editor.
+2. Run [`supabase/migrations/001_cms.sql`](supabase/migrations/001_cms.sql) to create the CMS tables, indexes, policies, and `site-media` Storage bucket.
+3. Run [`supabase/seed.sql`](supabase/seed.sql) to add the current site content, categories, gallery photos, and hero slides.
+4. In **Authentication → Users**, create the first user. Authenticated users are allowed to manage CMS rows and objects in `site-media`.
+5. Copy `.env.example` to `.env.local`, then copy the project URL and anon key from **Project Settings → API** into the corresponding `VITE_` variables.
+6. Start the app with `npm run dev`.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The anon key is intended for browser use; do not add the service-role key to a Vite environment file.
