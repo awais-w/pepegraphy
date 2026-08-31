@@ -1,0 +1,192 @@
+:root {
+  --admin-surface: #161412;
+  --admin-surface-raised: #1e1b18;
+  --admin-text: #f0ece6;
+  --admin-muted: #c7c0b8;
+  --admin-accent: #c9a96e;
+  --admin-border: #4b443d;
+  --admin-danger: #f1a6a0;
+  --admin-focus: #e8cfa0;
+}
+
+.admin-auth-page,
+.admin-auth-status,
+.admin-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-auth-page {
+  display: grid;
+  place-items: center;
+  padding: clamp(1.5rem, 5vw, 4rem);
+}
+
+.admin-auth-status {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 2rem;
+}
+
+.admin-auth-card,
+.admin-panel {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-raised);
+}
+
+.admin-auth-card {
+  width: min(100%, 30rem);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.admin-eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--admin-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.admin-auth-card h1,
+.admin-header h1,
+.admin-panel h2 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+.admin-auth-card > p:not(.admin-eyebrow),
+.admin-panel p {
+  color: var(--admin-muted);
+  line-height: 1.6;
+}
+
+.admin-sign-in-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.admin-sign-in-form label {
+  font-weight: 600;
+}
+
+.admin-sign-in-form input,
+.admin-sign-in-form button,
+.admin-button-secondary {
+  min-height: 2.75rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 0;
+  font: inherit;
+}
+
+.admin-sign-in-form input {
+  padding: 0 0.75rem;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.admin-sign-in-form button,
+.admin-button-secondary {
+  cursor: pointer;
+  padding: 0 1rem;
+}
+
+.admin-sign-in-form button {
+  margin-top: 0.75rem;
+  border-color: var(--admin-accent);
+  background: var(--admin-accent);
+  color: #0e0d0c;
+  font-weight: 700;
+}
+
+.admin-button-secondary {
+  background: transparent;
+  color: var(--admin-text);
+}
+
+.admin-sign-in-form button:disabled,
+.admin-button-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-sign-in-form input:focus-visible,
+.admin-sign-in-form button:focus-visible,
+.admin-button-secondary:focus-visible,
+.admin-navigation a:focus-visible,
+.admin-panel:focus-visible {
+  outline: 3px solid var(--admin-focus);
+  outline-offset: 3px;
+}
+
+.admin-message {
+  border-inline-start: 3px solid var(--admin-danger);
+  color: var(--admin-danger);
+  padding-inline-start: 0.75rem;
+}
+
+.admin-shell {
+  margin: 0 auto;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+
+.admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin: 0 auto 2rem;
+  max-width: 75rem;
+}
+
+.admin-account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--admin-muted);
+  font-size: 0.875rem;
+}
+
+.admin-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 auto 1.5rem;
+  max-width: 75rem;
+}
+
+.admin-navigation a {
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  padding: 0.625rem 0.875rem;
+  text-decoration: none;
+}
+
+.admin-navigation a:hover {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+}
+
+.admin-panel {
+  margin: 1rem auto;
+  max-width: 75rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+@media (max-width: 42rem) {
+  .admin-header,
+  .admin-account {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-account span,
+  .admin-button-secondary {
+    width: 100%;
+  }
+}

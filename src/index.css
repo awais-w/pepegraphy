@@ -12,6 +12,10 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   html {
     @apply scroll-smooth overflow-x-hidden;
   }

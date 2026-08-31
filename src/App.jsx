@@ -8,8 +8,9 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { useContent } from './context/ContentContext';
 import { buildPublicContent } from './lib/publicContent';
+import AdminApp from './admin/AdminApp';
 
-function App() {
+function PublicApp() {
   const { content } = useContent();
   const publicContent = buildPublicContent(content);
 
@@ -27,6 +28,12 @@ function App() {
       <Footer footer={publicContent.footer} />
     </div>
   );
+}
+
+function App() {
+  if (window.location.pathname === '/admin') return <AdminApp />;
+
+  return <PublicApp />;
 }
 
 export default App;
