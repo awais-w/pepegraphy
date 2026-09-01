@@ -111,7 +111,7 @@ describe('media managers', () => {
       await Promise.resolve();
     });
 
-    expect(mutations.createCategory).toHaveBeenCalledWith('Family Portraits');
+    expect(mutations.createCategory).toHaveBeenCalledWith('Family Portraits', 0);
   });
 
   it('creates a photo associated with the selected category', async () => {
@@ -168,5 +168,42 @@ describe('media managers', () => {
     });
 
     expect(mutations.deleteHeroSlide).toHaveBeenCalledWith('hero-1');
+  });
+
+  it('keeps delete confirmation keyboard-modal and restores focus after Escape cancels', async () => {
+    currentContext.value.content.heroSlides = [
+      { id: 'hero-1', src: '/hero.jpg', alt: 'Hero', caption: '', sortOrder: 0, isVisible: true },
+    ];
+    await render(HeroManager);
+    const trigger = buttonByText('Delete hero slide');
+
+    await act(async () => {
+      trigger.click();
+    });
+
+    const dialog = container.querySelector('[role="dialog"]');
+    const cancel = buttonByText('Cancel');
+    const confirm = buttonByText('Delete');
+    expect(document.activeElement).toBe(cancel);
+
+    confirm.focus();
+
+    await act(async () => {
+      confirm.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    });
+    expect(document.activeElement).toBe(cancel);
+
+    await act(async () => {
+      cancel.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+    });
+    expect(document.activeElement).toBe(confirm);
+
+    await act(async () => {
+      dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(mutations.deleteHeroSlide).not.toHaveBeenCalled();
   });
 });

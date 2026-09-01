@@ -69,14 +69,48 @@ export function MediaUploader({ id, label, folder, submitLabel, onUploaded, disa
   );
 }
 
-export function ConfirmDialog({ title, description, confirmLabel = 'Delete', isDeleting = false, onCancel, onConfirm }) {
+export function ConfirmDialog({ title, description, confirmLabel = 'Delete', isDeleting = false, onCancel, onConfirm, restoreFocus }) {
+  const dialogRef = useRef(null);
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    previousFocusRef.current = restoreFocus ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    dialogRef.current?.querySelector('[data-confirm-cancel]')?.focus();
+
+    return () => {
+      if (previousFocusRef.current?.isConnected) previousFocusRef.current.focus();
+    };
+  }, [restoreFocus]);
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape' && !isDeleting) {
+      event.preventDefault();
+      onCancel();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const focusable = [...dialogRef.current.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+    if (focusable.length === 0) return;
+
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   return (
     <div className="admin-confirmation-backdrop" role="presentation">
-      <section className="admin-confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title" aria-describedby="admin-confirmation-description">
+      <section ref={dialogRef} className="admin-confirmation-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title" aria-describedby="admin-confirmation-description" onKeyDown={handleKeyDown}>
         <h3 id="admin-confirmation-title">{title}</h3>
         <p id="admin-confirmation-description">{description}</p>
         <div className="admin-action-row">
-          <button type="button" className="admin-button-secondary" onClick={onCancel} disabled={isDeleting}>Cancel</button>
+          <button type="button" className="admin-button-secondary" data-confirm-cancel onClick={onCancel} disabled={isDeleting}>Cancel</button>
           <button type="button" className="admin-button-danger" onClick={onConfirm} disabled={isDeleting}>
             {isDeleting ? 'Deleting…' : confirmLabel}
           </button>

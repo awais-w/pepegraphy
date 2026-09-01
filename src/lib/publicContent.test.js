@@ -67,6 +67,31 @@ describe('public content adapter', () => {
     }));
   });
 
+  it('excludes hidden hero slides, categories, and photos from public content', () => {
+    const publicContent = buildPublicContent(mergeContent(defaultContent, {
+      heroSlides: [
+        { id: 'hero-visible', image_url: '/visible-hero.jpg', is_visible: true },
+        { id: 'hero-hidden', image_url: '/hidden-hero.jpg', is_visible: false },
+      ],
+      categories: [
+        { id: 'category-visible', name: 'Visible', slug: 'visible', is_visible: true },
+        { id: 'category-hidden', name: 'Hidden', slug: 'hidden', is_visible: false },
+      ],
+      photos: [
+        { id: 'photo-visible', category_id: 'category-visible', image_url: '/visible.jpg', is_visible: true },
+        { id: 'photo-hidden', category_id: 'category-visible', image_url: '/hidden.jpg', is_visible: false },
+        { id: 'photo-in-hidden-category', category_id: 'category-hidden', image_url: '/hidden-category.jpg', is_visible: true },
+      ],
+    }));
+
+    expect(publicContent.hero.slides.map((slide) => slide.id)).toEqual(['hero-visible']);
+    expect(publicContent.portfolio.categories).toEqual([
+      { slug: 'all', name: 'All' },
+      { slug: 'visible', name: 'Visible' },
+    ]);
+    expect(publicContent.portfolio.images.map((photo) => photo.id)).toEqual(['photo-visible']);
+  });
+
   it('formats editable about and contact titles from their line break metadata', () => {
     const publicContent = buildPublicContent(mergeContent(defaultContent, {
       siteContent: {

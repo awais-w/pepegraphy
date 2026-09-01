@@ -65,7 +65,7 @@ function HeroSlideEditor({ slide, index, total, onSave, onMove, onDelete, onRepl
           <button type="button" className="admin-button-secondary" onClick={save} disabled={isSaving}>Save hero slide</button>
           <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'up')} disabled={isSaving || index === 0}>Move up</button>
           <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'down')} disabled={isSaving || index === total - 1}>Move down</button>
-          <button type="button" className="admin-button-danger" onClick={() => onDelete(slide)} disabled={isSaving}>Delete hero slide</button>
+          <button type="button" className="admin-button-danger" onClick={(event) => onDelete(slide, event.currentTarget)} disabled={isSaving}>Delete hero slide</button>
         </div>
         <MediaUploader
           id={`hero-${slide.id}-replacement`}
@@ -120,7 +120,7 @@ export function HeroManager() {
     if (!pendingDelete) return;
     setIsDeleting(true);
     try {
-      await deleteHeroSlide(pendingDelete.id);
+      await deleteHeroSlide(pendingDelete.item.id);
       setFeedback({ type: 'success', message: 'Hero slide deleted.' });
       setPendingDelete(null);
     } catch (deleteError) {
@@ -164,7 +164,7 @@ export function HeroManager() {
               total={slides.length}
               onSave={updateHeroSlide}
               onMove={moveSlide}
-              onDelete={setPendingDelete}
+              onDelete={(item, trigger) => setPendingDelete({ item, trigger })}
               onReplace={(id, image) => updateHeroSlide(id, { imageUrl: image.url })}
             />
           ))}
@@ -175,6 +175,7 @@ export function HeroManager() {
           title="Delete hero slide?"
           description="This removes the slide from the carousel. This action cannot be undone."
           isDeleting={isDeleting}
+          restoreFocus={pendingDelete.trigger}
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
         />

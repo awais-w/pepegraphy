@@ -13,7 +13,11 @@ describe('content repository', () => {
   it('retains a load error while returning fallback content after a query failure', async () => {
     const repository = createContentRepository({
       configured: true,
-      client: { from: vi.fn(() => ({ select: async () => ({ error: new Error('Network unavailable') }) })) },
+      client: {
+        from: vi.fn((table) => table === 'gallery_categories'
+          ? { select: () => ({ order: async () => ({ error: new Error('Network unavailable') }) }) }
+          : { select: async () => ({ error: new Error('Network unavailable') }) }),
+      },
     });
 
     await expect(repository.loadContent()).resolves.toEqual(defaultContent);
@@ -51,6 +55,24 @@ describe('content repository', () => {
     await repository.updatePhoto('photo-1', { altText: 'Updated image', isVisible: false });
 
     expect(update).toHaveBeenCalledWith({ alt_text: 'Updated image', is_visible: false });
+  });
+
+  it('writes a supplied category position and requests categories in display order', async () => {
+    const insert = vi.fn(() => ({ select: () => ({ single: async () => ({ data: { id: 'category-3' } }) }) }));
+    const order = vi.fn(async () => ({ data: [] }));
+    const select = vi.fn(() => ({ order }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn((table) => table === 'gallery_categories' ? { insert, select } : { select: async () => ({ data: [] }) }),
+      },
+    });
+
+    await repository.createCategory('Events', 2);
+    await repository.loadContent();
+
+    expect(insert).toHaveBeenCalledWith({ name: 'Events', slug: 'events', sort_order: 2, is_visible: true });
+    expect(order).toHaveBeenCalledWith('sort_order', { ascending: true });
   });
 
   it('surfaces a storage cleanup failure after metadata insertion fails', async () => {

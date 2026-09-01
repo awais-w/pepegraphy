@@ -69,7 +69,7 @@ export function createContentRepository({ client = supabaseClient, configured = 
         const [siteContent, heroSlides, categories, photos] = await Promise.all([
           client.from('site_content').select('*'),
           client.from('hero_slides').select('*'),
-          client.from('gallery_categories').select('*'),
+          client.from('gallery_categories').select('*').order('sort_order', { ascending: true }),
           client.from('gallery_photos').select('*'),
         ]);
 
@@ -143,9 +143,9 @@ export function createContentRepository({ client = supabaseClient, configured = 
       assertNoError(result, 'Unable to delete hero slide.');
     },
 
-    async createCategory(name) {
+    async createCategory(name, sortOrder = 0) {
       const result = await requireClient().from('gallery_categories')
-        .insert({ name, slug: slugify(name), sort_order: 0, is_visible: true }).select().single();
+        .insert({ name, slug: slugify(name), sort_order: sortOrder, is_visible: true }).select().single();
       return assertNoError(result, 'Unable to create category.');
     },
 

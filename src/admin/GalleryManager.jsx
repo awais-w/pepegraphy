@@ -54,7 +54,7 @@ function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
         <button type="button" className="admin-button-secondary" onClick={save} disabled={isSaving}>Save category</button>
         <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'up')} disabled={isSaving || index === 0}>Move up</button>
         <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'down')} disabled={isSaving || index === total - 1}>Move down</button>
-        <button type="button" className="admin-button-danger" onClick={() => onDelete(category)} disabled={isSaving}>Delete category</button>
+        <button type="button" className="admin-button-danger" onClick={(event) => onDelete(category, event.currentTarget)} disabled={isSaving}>Delete category</button>
       </div>
     </li>
   );
@@ -113,7 +113,7 @@ function PhotoEditor({ photo, index, total, onSave, onMove, onDelete, onReplace 
           <button type="button" className="admin-button-secondary" onClick={save} disabled={isSaving}>Save photo</button>
           <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'up')} disabled={isSaving || index === 0}>Move up</button>
           <button type="button" className="admin-button-secondary" onClick={() => onMove(index, 'down')} disabled={isSaving || index === total - 1}>Move down</button>
-          <button type="button" className="admin-button-danger" onClick={() => onDelete(photo)} disabled={isSaving}>Delete photo</button>
+          <button type="button" className="admin-button-danger" onClick={(event) => onDelete(photo, event.currentTarget)} disabled={isSaving}>Delete photo</button>
         </div>
         <MediaUploader
           id={`photo-${photo.id}-replacement`}
@@ -166,7 +166,7 @@ export function GalleryManager() {
 
     setFeedback(null);
     try {
-      const category = await createCategory(name);
+      const category = await createCategory(name, categories.length);
       setNewCategoryName('');
       if (category?.id) setSelectedCategoryId(category.id);
       setFeedback({ type: 'success', message: 'Category created.' });
@@ -251,7 +251,7 @@ export function GalleryManager() {
                 total={categories.length}
                 onSave={updateCategory}
                 onMove={moveCategory}
-                onDelete={(item) => setPendingDelete({ kind: 'category', item })}
+                onDelete={(item, trigger) => setPendingDelete({ kind: 'category', item, trigger })}
               />
             ))}
           </ol>
@@ -290,7 +290,7 @@ export function GalleryManager() {
                 total={selectedPhotos.length}
                 onSave={updatePhoto}
                 onMove={movePhoto}
-                onDelete={(item) => setPendingDelete({ kind: 'photo', item })}
+                onDelete={(item, trigger) => setPendingDelete({ kind: 'photo', item, trigger })}
                 onReplace={(id, image) => updatePhoto(id, { imageUrl: image.url })}
               />
             ))}
@@ -302,6 +302,7 @@ export function GalleryManager() {
           title={`Delete ${pendingDelete.kind}?`}
           description={`This removes the ${pendingDelete.kind} from the gallery. This action cannot be undone.`}
           isDeleting={isDeleting}
+          restoreFocus={pendingDelete.trigger}
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmDelete}
         />

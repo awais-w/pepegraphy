@@ -120,28 +120,28 @@ export function normalizeContent(remoteRows = {}) {
     return sections;
   }, !Array.isArray(rows.siteContent) && rows.siteContent && typeof rows.siteContent === 'object' ? rows.siteContent : {});
 
-  const heroSlides = (Array.isArray(rows.heroSlides) ? rows.heroSlides : []).filter(visible).map((row, index) => ({
+  const heroSlides = (Array.isArray(rows.heroSlides) ? rows.heroSlides : []).map((row, index) => ({
     id: row.id,
     src: row.image_url ?? row.src ?? '',
     alt: row.alt_text ?? row.alt ?? '',
     caption: row.caption ?? '',
     sortOrder: order(row, index),
-    isVisible: true,
+    isVisible: visible(row),
   }));
-  const categories = (Array.isArray(rows.categories) ? rows.categories : []).filter(visible).map((row, index) => ({
+  const categories = (Array.isArray(rows.categories) ? rows.categories : []).map((row, index) => ({
     id: row.id,
     slug: row.slug ?? slugify(row.name ?? ''),
     name: row.name ?? '',
     sortOrder: order(row, index),
-    isVisible: true,
+    isVisible: visible(row),
   }));
-  const photos = (Array.isArray(rows.photos) ? rows.photos : []).filter(visible).map((row, index) => ({
+  const photos = (Array.isArray(rows.photos) ? rows.photos : []).map((row, index) => ({
     id: row.id,
     categoryId: row.category_id ?? row.categoryId ?? '',
     src: row.image_url ?? row.src ?? '',
     alt: row.alt_text ?? row.alt ?? '',
     sortOrder: order(row, index),
-    isVisible: true,
+    isVisible: visible(row),
   }));
 
   return { siteContent, heroSlides: sortByOrder(heroSlides), categories: sortByOrder(categories), photos: sortByOrder(photos) };
@@ -155,9 +155,9 @@ export function mergeContent(fallback = defaultContent, remote = {}) {
     siteContent: Object.keys(normalized.siteContent).length
       ? { ...fallback.siteContent, ...normalized.siteContent }
       : fallback.siteContent,
-    heroSlides: normalized.heroSlides.length ? normalized.heroSlides : fallback.heroSlides,
-    categories: normalized.categories.length ? normalized.categories : fallback.categories,
-    photos: normalized.photos.length ? normalized.photos : fallback.photos,
+    heroSlides: Array.isArray(remote?.heroSlides) ? normalized.heroSlides : fallback.heroSlides,
+    categories: Array.isArray(remote?.categories) ? normalized.categories : fallback.categories,
+    photos: Array.isArray(remote?.photos) ? normalized.photos : fallback.photos,
   };
 }
 
