@@ -178,6 +178,171 @@
   padding: clamp(1.25rem, 3vw, 2rem);
 }
 
+.admin-media-manager,
+.admin-gallery-section,
+.admin-media-form,
+.admin-inline-form,
+.admin-media-uploader,
+.admin-media-card-body,
+.admin-category-item {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-media-manager,
+.admin-gallery-section {
+  margin-top: 1.5rem;
+}
+
+.admin-media-form {
+  border: 1px solid var(--admin-border);
+  margin: 0;
+  padding: 1rem;
+}
+
+.admin-media-form legend {
+  color: var(--admin-accent);
+  font-weight: 700;
+  padding-inline: 0.25rem;
+}
+
+.admin-media-manager input:not([type='checkbox']),
+.admin-media-manager select {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  width: 100%;
+  border: 1px solid var(--admin-border);
+  border-radius: 0;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+  padding: 0 0.75rem;
+}
+
+.admin-media-manager input[type='file'] {
+  padding-block: 0.55rem;
+}
+
+.admin-media-manager input[type='checkbox'] {
+  accent-color: var(--admin-accent);
+  margin-inline-end: 0.5rem;
+}
+
+.admin-media-manager input:focus-visible,
+.admin-media-manager select:focus-visible,
+.admin-button-danger:focus-visible {
+  outline: 3px solid var(--admin-focus);
+  outline-offset: 3px;
+}
+
+.admin-media-manager label {
+  display: block;
+  font-weight: 600;
+}
+
+.admin-media-manager label:has(input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+}
+
+.admin-media-manager p {
+  margin: 0;
+}
+
+.admin-media-file-name,
+.admin-media-position,
+.admin-slug-preview {
+  color: var(--admin-muted);
+  font-size: 0.875rem;
+}
+
+.admin-media-preview,
+.admin-media-card-image {
+  aspect-ratio: 4 / 3;
+  background: var(--admin-surface);
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.admin-media-list,
+.admin-media-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-media-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.admin-media-card,
+.admin-category-item {
+  border: 1px solid var(--admin-border);
+}
+
+.admin-media-card-body,
+.admin-category-item {
+  padding: 1rem;
+}
+
+.admin-category-list {
+  display: grid;
+  gap: 0.75rem;
+  list-style: decimal;
+  margin: 0;
+  padding-inline-start: 2rem;
+}
+
+.admin-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-button-danger {
+  border: 1px solid var(--admin-danger);
+  border-radius: 0;
+  background: transparent;
+  color: var(--admin-danger);
+  cursor: pointer;
+  font: inherit;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+}
+
+.admin-button-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-empty-state {
+  border-inline-start: 3px solid var(--admin-accent);
+  padding-inline-start: 0.75rem;
+}
+
+.admin-confirmation-backdrop {
+  align-items: center;
+  background: color-mix(in srgb, var(--admin-surface) 80%, transparent);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 1;
+}
+
+.admin-confirmation-dialog {
+  border: 1px solid var(--admin-accent);
+  background: var(--admin-surface-raised);
+  max-width: 30rem;
+  padding: 1.5rem;
+}
+
+.admin-confirmation-dialog h3 {
+  margin-top: 0;
+}
+
 @media (max-width: 42rem) {
   .admin-header,
   .admin-account {

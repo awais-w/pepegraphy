@@ -18,6 +18,8 @@ vi.mock('../lib/supabaseClient', () => ({
 }));
 
 vi.mock('./ContentEditor', () => ({ ContentEditor: () => null }));
+vi.mock('./HeroManager', () => ({ HeroManager: () => null }));
+vi.mock('./GalleryManager', () => ({ GalleryManager: () => null }));
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
