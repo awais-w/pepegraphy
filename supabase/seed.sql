@@ -1,3 +1,8 @@
+-- Run this after supabase/migrations/001_cms.sql.
+-- This seeds public CMS records only; create admin users in Supabase Auth.
+-- Re-running it updates section/category defaults and adds missing media rows. It
+-- deliberately keeps existing media metadata and uploaded Storage objects intact.
+
 insert into public.site_content (key, content) values
   ('navigation', $json${"brand":"PEPEGRAPHY","links":[{"label":"About","href":"#about"},{"label":"Portfolio","href":"#portfolio"},{"label":"Booking","href":"#booking"},{"label":"Contact","href":"#contact"}]}$json$::jsonb),
   ('hero', $json${"eyebrow":"Natural · Authentic · Timeless","title":"PEPEGRAPHY","subtitle":"Photography by Petra Styasztny","ctaLabel":"View Portfolio","ctaHref":"#portfolio"}$json$::jsonb),

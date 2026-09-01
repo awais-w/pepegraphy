@@ -11,11 +11,12 @@ npm run dev
 
 ## Supabase CMS setup
 
-1. Create a project in [Supabase](https://supabase.com/dashboard), then open its SQL Editor.
-2. Run [`supabase/migrations/001_cms.sql`](supabase/migrations/001_cms.sql) to create the CMS tables, indexes, policies, and `site-media` Storage bucket.
-3. Run [`supabase/seed.sql`](supabase/seed.sql) to add the current site content, categories, gallery photos, and hero slides.
-4. In **Authentication → Users**, create the first user. Authenticated users are allowed to manage CMS rows and objects in `site-media`.
-5. Copy `.env.example` to `.env.local`, then copy the project URL and anon key from **Project Settings → API** into the corresponding `VITE_` variables.
-6. Start the app with `npm run dev`.
+1. Create a Supabase project and run [`supabase/migrations/001_cms.sql`](supabase/migrations/001_cms.sql) in its SQL Editor.
+2. Run [`supabase/seed.sql`](supabase/seed.sql) after the migration to create the baseline public content and media metadata.
+3. Create an email/password user in **Authentication → Users**. Any authenticated user can administer this first-version CMS.
+4. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from **Project Settings → API**.
+5. Start the app with `npm run dev` and sign in at `/admin`.
 
-The anon key is intended for browser use; do not add the service-role key to a Vite environment file.
+Only the project URL and anon key belong in `VITE_` variables. Never expose a service-role key in the Vite app, commit it to the repository, or add it to a client-side hosting environment.
+
+See [CMS setup and deployment](docs/cms-setup.md) for the production checklist, storage rules, reseeding behaviour, and verification steps.
