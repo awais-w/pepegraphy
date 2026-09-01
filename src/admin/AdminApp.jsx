@@ -3,7 +3,7 @@ import React from 'react';
 import { AdminAuth } from './AdminAuth';
 import './admin.css';
 
-function AdminShell({ session, signOut, signingOut }) {
+function AdminShell({ session, signOut, signingOut, error }) {
   return (
     <main className="admin-shell" aria-label="Pepegraphy content administration">
       <header className="admin-header">
@@ -24,6 +24,8 @@ function AdminShell({ session, signOut, signingOut }) {
         <a href="#hero-carousel">Hero carousel</a>
         <a href="#gallery">Gallery</a>
       </nav>
+
+      {error && <p className="admin-message" role="alert">{error}</p>}
 
       <section className="admin-panel" id="content" tabIndex="-1" aria-labelledby="content-title">
         <h2 id="content-title">Content</h2>

@@ -88,4 +88,21 @@ describe('Admin authentication gate', () => {
 
     expect(container.querySelector('input[type="email"]')).not.toBeNull();
   });
+
+  it('shows an alert when sign-out fails for an authenticated admin', async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: 'test-token', user: { id: 'admin-user' } } },
+      error: null,
+    });
+    auth.signOut.mockResolvedValue({ error: new Error('Sign-out service is unavailable.') });
+
+    await renderAdmin();
+
+    await act(async () => {
+      [...container.querySelectorAll('button')].find((button) => button.textContent === 'Sign out').click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Sign-out service is unavailable.');
+  });
 });

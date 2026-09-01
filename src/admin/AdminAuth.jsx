@@ -89,7 +89,7 @@ export function AdminAuth({ children }) {
     return <p className="admin-auth-status" role="status">Checking your admin session…</p>;
   }
 
-  if (session) return children({ session, signOut, signingOut: state === 'signing-out' });
+  if (session) return children({ session, signOut, signingOut: state === 'signing-out', error });
 
   return (
     <main className="admin-auth-page" aria-labelledby="admin-sign-in-title">
