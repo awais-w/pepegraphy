@@ -17,6 +17,8 @@ vi.mock('../lib/supabaseClient', () => ({
   supabaseClient: { auth },
 }));
 
+vi.mock('./ContentEditor', () => ({ ContentEditor: () => null }));
+
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 import AdminApp from './AdminApp';

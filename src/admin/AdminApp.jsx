@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
 import React from 'react';
 import { AdminAuth } from './AdminAuth';
+import { ContentEditor } from './ContentEditor';
 import './admin.css';
 
 function AdminShell({ session, signOut, signingOut, error }) {
@@ -30,6 +31,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
       <section className="admin-panel" id="content" tabIndex="-1" aria-labelledby="content-title">
         <h2 id="content-title">Content</h2>
         <p>Edit the site text and calls to action here.</p>
+        <ContentEditor />
       </section>
       <section className="admin-panel" id="hero-carousel" tabIndex="-1" aria-labelledby="hero-carousel-title">
         <h2 id="hero-carousel-title">Hero carousel</h2>
