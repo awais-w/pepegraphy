@@ -8,6 +8,7 @@ import { defaultContent } from '../lib/contentModel';
 const repository = vi.hoisted(() => ({
   getLoadError: vi.fn(),
   loadContent: vi.fn(),
+  saveSection: vi.fn(),
 }));
 
 vi.mock('../lib/contentRepository', () => ({ contentRepository: repository }));
@@ -51,5 +52,27 @@ describe('ContentProvider', () => {
 
     expect(values.at(-1).content).toEqual(defaultContent);
     expect(values.at(-1).error).toBe(fallbackError);
+  });
+
+  it('keeps the load error clear when a content mutation fails', async () => {
+    const values = [];
+    repository.loadContent.mockResolvedValue(defaultContent);
+    repository.getLoadError.mockReturnValue(null);
+    repository.saveSection.mockRejectedValue(new Error('Save unavailable'));
+    container = document.createElement('div');
+    document.body.append(container);
+
+    await act(async () => {
+      root = createRoot(container);
+      root.render(<ContentProvider><ContentProbe onValue={(value) => values.push(value)} /></ContentProvider>);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await expect(values.at(-1).saveSection('hero', defaultContent.siteContent.hero)).rejects.toThrow('Save unavailable');
+    });
+
+    expect(values.at(-1).error).toBeNull();
   });
 });

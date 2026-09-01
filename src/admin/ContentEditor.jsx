@@ -6,7 +6,10 @@ const SECTION_SCHEMA = [
   {
     key: 'navigation',
     title: 'Navigation',
-    fields: [{ key: 'brand', label: 'Brand' }],
+    fields: [
+      { key: 'brand', label: 'Brand' },
+      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href.' },
+    ],
   },
   {
     key: 'hero',
@@ -26,8 +29,10 @@ const SECTION_SCHEMA = [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
       { key: 'titleLineBreakAfterWords', label: 'Title line break after words', type: 'number' },
+      { key: 'body', label: 'Body', type: 'json', description: 'A JSON array of paragraph strings.' },
       { key: 'imageUrl', label: 'Image URL' },
       { key: 'imageAlt', label: 'Image alternative text' },
+      { key: 'stats', label: 'Stats', type: 'json', description: 'A JSON array of statistic objects with value and label.' },
     ],
   },
   {
@@ -45,6 +50,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
+      { key: 'items', label: 'Items', type: 'json', description: 'A JSON array of speciality objects with icon, title, and description.' },
     ],
   },
   {
@@ -53,6 +59,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
+      { key: 'features', label: 'Features', type: 'json', description: 'A JSON array of feature objects with title and description.' },
       { key: 'ctaLabel', label: 'Call to action label' },
       { key: 'ctaHref', label: 'Call to action link' },
       { key: 'backgroundImageUrl', label: 'Background image URL' },
@@ -76,6 +83,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'brand', label: 'Brand' },
       { key: 'tagline', label: 'Tagline' },
+      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href.' },
       { key: 'copyright', label: 'Copyright' },
     ],
   },
@@ -83,8 +91,7 @@ const SECTION_SCHEMA = [
 
 const fieldId = (sectionKey, fieldKey) => `${sectionKey}-${fieldKey.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`;
 
-function fieldValue(value, type) {
-  if (type === 'number') return value ?? '';
+function fieldValue(value) {
   return value ?? '';
 }
 
@@ -92,10 +99,24 @@ export function ContentEditor() {
   const { content, error, saveSection } = useContent();
   const siteContent = content?.siteContent ?? {};
   const [edits, setEdits] = useState({});
-  const [savingKey, setSavingKey] = useState(null);
+  const [jsonEdits, setJsonEdits] = useState({});
+  const [savingKeys, setSavingKeys] = useState({});
   const [feedback, setFeedback] = useState(null);
 
-  const sectionContent = (sectionKey) => ({ ...siteContent[sectionKey], ...edits[sectionKey] });
+  const sectionContent = (section) => {
+    const jsonValues = jsonEdits[section.key] ?? {};
+    const parsedJson = Object.fromEntries(section.fields
+      .filter((field) => field.type === 'json' && jsonValues[field.key] !== undefined)
+      .map((field) => {
+        try {
+          return [field.key, JSON.parse(jsonValues[field.key])];
+        } catch {
+          throw new Error(`Enter valid JSON for ${section.title} ${field.label}.`);
+        }
+      }));
+
+    return { ...siteContent[section.key], ...edits[section.key], ...parsedJson };
+  };
 
   const updateField = (sectionKey, field) => (event) => {
     const value = field.type === 'number' && event.target.value !== ''
@@ -108,11 +129,19 @@ export function ContentEditor() {
     }));
   };
 
+  const updateJsonField = (sectionKey, fieldKey) => (event) => {
+    const value = event.target.value;
+    setJsonEdits((current) => ({
+      ...current,
+      [sectionKey]: { ...current[sectionKey], [fieldKey]: value },
+    }));
+  };
+
   const save = async (section) => {
-    setSavingKey(section.key);
+    setSavingKeys((current) => ({ ...current, [section.key]: true }));
     setFeedback(null);
     try {
-      await saveSection(section.key, sectionContent(section.key));
+      await saveSection(section.key, sectionContent(section));
       setFeedback({ type: 'success', message: `${section.title} saved.` });
     } catch (saveError) {
       setFeedback({
@@ -120,7 +149,11 @@ export function ContentEditor() {
         message: saveError instanceof Error ? saveError.message : `Unable to save ${section.title.toLowerCase()}.`,
       });
     } finally {
-      setSavingKey(null);
+      setSavingKeys((current) => {
+        const remaining = { ...current };
+        delete remaining[section.key];
+        return remaining;
+      });
     }
   };
 
@@ -132,12 +165,12 @@ export function ContentEditor() {
         </p>
       )}
       {feedback && (
-        <p className={feedback.type === 'error' ? 'admin-message' : undefined} role="status">
+        <p className={feedback.type === 'error' ? 'admin-message' : undefined} role={feedback.type === 'error' ? 'alert' : 'status'}>
           {feedback.message}
         </p>
       )}
       {SECTION_SCHEMA.map((section) => {
-        const isSaving = savingKey === section.key;
+        const isSaving = Boolean(savingKeys[section.key]);
 
         return (
           <section className="admin-panel" key={section.key} aria-labelledby={`${section.key}-editor-title`}>
@@ -145,12 +178,18 @@ export function ContentEditor() {
             <fieldset disabled={isSaving}>
               {section.fields.map((field) => {
                 const id = fieldId(section.key, field.key);
-                const value = fieldValue(sectionContent(section.key)[field.key], field.type);
+                const value = fieldValue(edits[section.key]?.[field.key] ?? siteContent[section.key]?.[field.key]);
+                const jsonValue = jsonEdits[section.key]?.[field.key] ?? JSON.stringify(value, null, 2);
 
                 return (
                   <p key={field.key}>
                     <label htmlFor={id}>{section.title} {field.label}</label>
-                    {field.type === 'textarea' ? (
+                    {field.type === 'json' ? (
+                      <>
+                        <textarea id={id} value={jsonValue} onChange={updateJsonField(section.key, field.key)} aria-describedby={`${id}-help`} rows="6" />
+                        <small id={`${id}-help`}>{field.description}</small>
+                      </>
+                    ) : field.type === 'textarea' ? (
                       <textarea id={id} value={value} onChange={updateField(section.key, field)} />
                     ) : (
                       <input id={id} type={field.type ?? 'text'} value={value} onChange={updateField(section.key, field)} />

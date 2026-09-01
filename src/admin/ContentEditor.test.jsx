@@ -17,10 +17,25 @@ import { ContentEditor } from './ContentEditor';
 const siteContent = {
   navigation: { brand: 'PEPEGRAPHY', links: [{ label: 'About', href: '#about' }] },
   hero: { eyebrow: 'Natural', title: 'PEPEGRAPHY', subtitle: 'Photography', ctaLabel: 'View work', ctaHref: '#portfolio' },
-  about: { eyebrow: 'About', title: 'Real moments', titleLineBreakAfterWords: 2, body: ['First paragraph'], imageUrl: '/petra.jpg', imageAlt: 'Petra' },
+  about: {
+    eyebrow: 'About',
+    title: 'Real moments',
+    titleLineBreakAfterWords: 2,
+    body: ['First paragraph'],
+    imageUrl: '/petra.jpg',
+    imageAlt: 'Petra',
+    stats: [{ value: '8', label: 'Specialities' }],
+  },
   portfolio: { eyebrow: 'Work', title: 'Portfolio', description: 'Selected photographs.' },
-  specialities: { eyebrow: 'What I offer', title: 'Specialities', items: [{ title: 'Portraiture' }] },
-  booking: { eyebrow: 'Booking', title: 'Ready?', ctaLabel: 'Contact', ctaHref: '#contact', backgroundImageUrl: '/hero.jpg' },
+  specialities: { eyebrow: 'What I offer', title: 'Specialities', items: [{ icon: '✦', title: 'Portraiture', description: 'Natural portraits' }] },
+  booking: {
+    eyebrow: 'Booking',
+    title: 'Ready?',
+    features: [{ title: 'No time limits', description: 'Your session lasts as needed.' }],
+    ctaLabel: 'Contact',
+    ctaHref: '#contact',
+    backgroundImageUrl: '/hero.jpg',
+  },
   contact: { eyebrow: 'Contact', title: 'Let\'s create', titleLineBreakAfterWords: 2, description: 'Start a conversation.', email: 'hello@example.com', phone: '+44 1234' },
   footer: { brand: 'PEPEGRAPHY', tagline: 'Natural photography', links: [{ label: 'About', href: '#about' }], copyright: '© 2026 Pepegraphy' },
 };
@@ -52,6 +67,14 @@ describe('ContentEditor', () => {
     });
   }
 
+  function setInputValue(input, value) {
+    const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  const buttonByText = (text) => [...container.querySelectorAll('button')].find((button) => button.textContent === text);
+
   it('renders a labeled editable field for every site content section', async () => {
     await renderEditor();
 
@@ -64,6 +87,12 @@ describe('ContentEditor', () => {
       'Booking title',
       'Contact title',
       'Footer brand',
+      'Navigation links',
+      'About body',
+      'About stats',
+      'Specialities items',
+      'Booking features',
+      'Footer links',
     ].forEach((label) => expect(container.querySelector(`label[for="${label.toLowerCase().replaceAll(' ', '-')}"]`)).not.toBeNull());
   });
 
@@ -72,14 +101,13 @@ describe('ContentEditor', () => {
     const title = container.querySelector('#hero-title');
 
     await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(title, 'Petra Photography');
-      title.dispatchEvent(new Event('input', { bubbles: true }));
+      setInputValue(title, 'Petra Photography');
     });
 
     expect(title.value).toBe('Petra Photography');
 
     await act(async () => {
-      [...container.querySelectorAll('button')].find((button) => button.textContent === 'Save hero').click();
+      buttonByText('Save hero').click();
       await Promise.resolve();
     });
 
@@ -92,6 +120,32 @@ describe('ContentEditor', () => {
     });
   });
 
+  it('preserves complete nested section content when saving a JSON field edit', async () => {
+    await renderEditor();
+    const stats = container.querySelector('#about-stats');
+
+    expect(stats).not.toBeNull();
+
+    await act(async () => {
+      setInputValue(stats, '[\n  { "value": "10", "label": "Years" }\n]');
+    });
+
+    await act(async () => {
+      buttonByText('Save about').click();
+      await Promise.resolve();
+    });
+
+    expect(saveSection).toHaveBeenCalledWith('about', {
+      eyebrow: 'About',
+      title: 'Real moments',
+      titleLineBreakAfterWords: 2,
+      body: ['First paragraph'],
+      imageUrl: '/petra.jpg',
+      imageAlt: 'Petra',
+      stats: [{ value: '10', label: 'Years' }],
+    });
+  });
+
   it('warns when fallback content is active and disables a section while it saves', async () => {
     let resolveSave;
     saveSection.mockImplementation(() => new Promise((resolve) => { resolveSave = resolve; }));
@@ -101,10 +155,10 @@ describe('ContentEditor', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toContain('fallback');
 
     await act(async () => {
-      [...container.querySelectorAll('button')].find((button) => button.textContent === 'Save hero').click();
+      buttonByText('Save hero').click();
     });
 
-    expect([...container.querySelectorAll('button')].find((button) => button.textContent === 'Saving hero…')?.matches(':disabled')).toBe(true);
+    expect(buttonByText('Saving hero…')?.matches(':disabled')).toBe(true);
 
     await act(async () => {
       resolveSave();
@@ -112,5 +166,42 @@ describe('ContentEditor', () => {
     });
 
     expect(container.textContent).toContain('Hero saved.');
+  });
+
+  it('surfaces a rejected save as an alert without showing a fallback warning', async () => {
+    saveSection.mockRejectedValue(new Error('Content service rejected update.'));
+    await renderEditor();
+
+    await act(async () => {
+      buttonByText('Save hero').click();
+      await Promise.resolve();
+    });
+
+    expect(container.querySelector('[role="alert"]')?.textContent).toBe('Content service rejected update.');
+    expect(container.textContent).not.toContain('fallback content');
+  });
+
+  it('keeps every saving section disabled until that section request completes', async () => {
+    const resolveSave = {};
+    saveSection.mockImplementation((sectionKey) => new Promise((resolve) => { resolveSave[sectionKey] = resolve; }));
+    await renderEditor();
+
+    await act(async () => {
+      buttonByText('Save hero').click();
+    });
+    await act(async () => {
+      buttonByText('Save contact').click();
+    });
+
+    expect(buttonByText('Saving hero…')?.matches(':disabled')).toBe(true);
+    expect(buttonByText('Saving contact…')?.matches(':disabled')).toBe(true);
+
+    await act(async () => {
+      resolveSave.hero();
+      await Promise.resolve();
+    });
+
+    expect(buttonByText('Save hero')?.matches(':disabled')).toBe(false);
+    expect(buttonByText('Saving contact…')?.matches(':disabled')).toBe(true);
   });
 });

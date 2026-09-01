@@ -33,14 +33,9 @@ export function ContentProvider({ children }) {
     const mutations = Object.fromEntries(Object.entries(contentRepository)
       .filter(([name, method]) => name !== 'loadContent' && name !== 'getLoadError' && typeof method === 'function')
       .map(([name, method]) => [name, async (...args) => {
-        try {
-          const result = await method(...args);
-          await refresh();
-          return result;
-        } catch (mutationError) {
-          setError(mutationError instanceof Error ? mutationError : new Error('Unable to save content.'));
-          throw mutationError;
-        }
+        const result = await method(...args);
+        await refresh();
+        return result;
       }]));
 
     return { content, loading, error, refresh, ...mutations };
