@@ -97,7 +97,11 @@ describe('media managers', () => {
     });
   });
 
-  it('shows the derived slug when creating a category', async () => {
+  it('uses the next highest sort order when creating a category', async () => {
+    currentContext.value.content.categories = [
+      { id: 'family', name: 'Family', slug: 'family', sortOrder: 3, isVisible: true },
+      { id: 'portraits', name: 'Portraits', slug: 'portraits', sortOrder: 8, isVisible: true },
+    ];
     await render(GalleryManager);
 
     await act(async () => {
@@ -111,7 +115,7 @@ describe('media managers', () => {
       await Promise.resolve();
     });
 
-    expect(mutations.createCategory).toHaveBeenCalledWith('Family Portraits', 0);
+    expect(mutations.createCategory).toHaveBeenCalledWith('Family Portraits', 9);
   });
 
   it('creates a photo associated with the selected category', async () => {

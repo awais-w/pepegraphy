@@ -7,6 +7,10 @@ import { ConfirmDialog, MediaUploader } from './MediaUploader';
 
 const messageFor = (error, fallback) => error instanceof Error ? error.message : fallback;
 const ordered = (items) => [...(items ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
+const nextSortOrder = (items) => items.reduce((highest, item) => {
+  const sortOrder = Number(item.sortOrder);
+  return Number.isFinite(sortOrder) ? Math.max(highest, sortOrder) : highest;
+}, -1) + 1;
 
 function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
   const [name, setName] = useState(category.name);
@@ -148,6 +152,7 @@ export function GalleryManager() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const newCategorySlug = slugify(newCategoryName);
+  const nextCategorySortOrder = nextSortOrder(categories);
   const activeCategoryId = categories.some((category) => category.id === selectedCategoryId)
     ? selectedCategoryId
     : categories[0]?.id ?? '';
@@ -166,7 +171,7 @@ export function GalleryManager() {
 
     setFeedback(null);
     try {
-      const category = await createCategory(name, categories.length);
+      const category = await createCategory(name, nextCategorySortOrder);
       setNewCategoryName('');
       if (category?.id) setSelectedCategoryId(category.id);
       setFeedback({ type: 'success', message: 'Category created.' });

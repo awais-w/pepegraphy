@@ -13,11 +13,11 @@
 - Preserved hidden hero slides, categories, and photos in the authenticated CMS content model, while filtering hidden records (and photos whose category is hidden) when building public content.
 - Preserved explicitly empty remote media collections after deletion; bundled media remains the fallback only when no CMS collection was loaded.
 - Made delete confirmation keyboard-modal: Cancel receives initial focus, Tab/Shift+Tab remain within the dialog, Escape cancels, and focus returns to the triggering control when it remains available.
-- Assigned new categories the next deterministic position from the ordered category list, persisted that `sort_order`, and ordered the CMS category query by `sort_order`.
+- Assigned new categories `max(existing sort_order) + 1`, including sparse/non-contiguous category ordering, persisted that `sort_order`, and ordered the CMS category query by `sort_order`.
 
 ## TDD evidence
 
-1. Added focused tests for hero upload metadata, category slug derivation and ordering, selected-category photo association, keyboard-modal delete confirmation, hidden admin media preservation, public visibility filtering, empty remote collections, and ordered category queries.
+1. Added focused tests for hero upload metadata, category slug derivation and sparse-order creation, selected-category photo association, keyboard-modal delete confirmation, hidden admin media preservation, public visibility filtering, empty remote collections, and ordered category queries.
 2. Ran `npm test -- src/admin/MediaManager.test.jsx` before implementation; it failed because `HeroManager` and `GalleryManager` did not exist.
 3. Implemented the smallest manager/uploader flow and reran the focused tests successfully.
 
