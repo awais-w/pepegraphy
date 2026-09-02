@@ -146,6 +146,23 @@ describe('ContentEditor', () => {
     });
   });
 
+  it('rejects syntactically valid JSON that does not match the navigation links shape', async () => {
+    await renderEditor();
+    const links = container.querySelector('#navigation-links');
+
+    await act(async () => {
+      setInputValue(links, '{ "label": "About", "href": "#about" }');
+    });
+
+    await act(async () => {
+      buttonByText('Save navigation').click();
+      await Promise.resolve();
+    });
+
+    expect(saveSection).not.toHaveBeenCalled();
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain('JSON array of link objects');
+  });
+
   it('warns when fallback content is active and disables a section while it saves', async () => {
     let resolveSave;
     saveSection.mockImplementation(() => new Promise((resolve) => { resolveSave = resolve; }));

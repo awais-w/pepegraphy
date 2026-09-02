@@ -18,6 +18,42 @@ const defaultSpecialities = [
   { icon: '◇', title: 'Boudoir', description: 'Intimate, empowering sessions designed around confidence and self-celebration. Tasteful, elegant, and entirely on your terms.' },
 ];
 
+const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+const isString = (value) => typeof value === 'string';
+const isArrayOf = (value, itemValidator) => Array.isArray(value) && value.every(itemValidator);
+const isLink = (value) => isRecord(value) && isString(value.label) && isString(value.href);
+const isStat = (value) => isRecord(value) && isString(value.value) && isString(value.label);
+const isSpeciality = (value) => isRecord(value) && isString(value.icon) && isString(value.title) && isString(value.description);
+const isFeature = (value) => isRecord(value) && isString(value.title) && isString(value.description);
+
+export const structuredFieldDescriptions = {
+  navigation: { links: 'a JSON array of link objects with label and href' },
+  about: {
+    body: 'a JSON array of paragraph strings',
+    stats: 'a JSON array of statistic objects with value and label',
+  },
+  specialities: { items: 'a JSON array of speciality objects with icon, title, and description' },
+  booking: { features: 'a JSON array of feature objects with title and description' },
+  footer: { links: 'a JSON array of link objects with label and href' },
+};
+
+const structuredFieldValidators = {
+  navigation: { links: (value) => isArrayOf(value, isLink) },
+  about: {
+    body: (value) => isArrayOf(value, isString),
+    stats: (value) => isArrayOf(value, isStat),
+  },
+  specialities: { items: (value) => isArrayOf(value, isSpeciality) },
+  booking: { features: (value) => isArrayOf(value, isFeature) },
+  footer: { links: (value) => isArrayOf(value, isLink) },
+};
+
+export function validateStructuredField(sectionKey, fieldKey, value) {
+  const validator = structuredFieldValidators[sectionKey]?.[fieldKey];
+  if (!validator || validator(value)) return;
+  throw new Error(`Enter ${structuredFieldDescriptions[sectionKey][fieldKey]}.`);
+}
+
 export const defaultContent = {
   siteContent: {
     navigation: { brand: 'PEPEGRAPHY', links: defaultNavLinks },
@@ -99,6 +135,33 @@ export const defaultContent = {
   })),
 };
 
+const isCompatibleFieldValue = (fallbackValue, value) => {
+  if (typeof fallbackValue === 'string') return isString(value);
+  if (typeof fallbackValue === 'number') return typeof value === 'number' && Number.isFinite(value);
+  return true;
+};
+
+const mergeSectionContent = (sectionKey, fallback, remote) => {
+  if (!isRecord(remote)) return fallback;
+
+  return Object.entries(remote).reduce((section, [fieldKey, value]) => {
+    if (value === undefined) return section;
+    const validator = structuredFieldValidators[sectionKey]?.[fieldKey];
+    if ((validator && !validator(value)) || !isCompatibleFieldValue(fallback[fieldKey], value)) return section;
+    return { ...section, [fieldKey]: value };
+  }, { ...fallback });
+};
+
+const mergeSiteContent = (fallback, remote) => {
+  if (!isRecord(remote)) return fallback;
+  return Object.entries(remote).reduce((sections, [sectionKey, section]) => ({
+    ...sections,
+    [sectionKey]: fallback[sectionKey]
+      ? mergeSectionContent(sectionKey, fallback[sectionKey], section)
+      : section,
+  }), { ...fallback });
+};
+
 const sortByOrder = (items) => items
   .map((item, index) => ({ item, index }))
   .sort((a, b) => (a.item.sortOrder - b.item.sortOrder) || (a.index - b.index))
@@ -116,9 +179,9 @@ export function normalizeContent(remoteRows = {}) {
   const rows = remoteRows || {};
   const siteContentRows = Array.isArray(rows.siteContent) ? rows.siteContent : [];
   const siteContent = siteContentRows.reduce((sections, row) => {
-    if (row?.key && row.content && typeof row.content === 'object') sections[row.key] = row.content;
+    if (row?.key && isRecord(row.content)) sections[row.key] = row.content;
     return sections;
-  }, !Array.isArray(rows.siteContent) && rows.siteContent && typeof rows.siteContent === 'object' ? rows.siteContent : {});
+  }, !Array.isArray(rows.siteContent) && isRecord(rows.siteContent) ? rows.siteContent : {});
 
   const heroSlides = (Array.isArray(rows.heroSlides) ? rows.heroSlides : []).map((row, index) => ({
     id: row.id,
@@ -152,9 +215,7 @@ export function mergeContent(fallback = defaultContent, remote = {}) {
   return {
     ...fallback,
     ...normalized,
-    siteContent: Object.keys(normalized.siteContent).length
-      ? { ...fallback.siteContent, ...normalized.siteContent }
-      : fallback.siteContent,
+    siteContent: mergeSiteContent(fallback.siteContent, normalized.siteContent),
     heroSlides: Array.isArray(remote?.heroSlides) ? normalized.heroSlides : fallback.heroSlides,
     categories: Array.isArray(remote?.categories) ? normalized.categories : fallback.categories,
     photos: Array.isArray(remote?.photos) ? normalized.photos : fallback.photos,

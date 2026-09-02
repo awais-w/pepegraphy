@@ -109,4 +109,23 @@ describe('public content adapter', () => {
     expect(publicContent.about.titleLines).toEqual(['Captured memories', 'that last']);
     expect(publicContent.contact.titleLines).toEqual(["Let's make", 'something unforgettable']);
   });
+
+  it('keeps public section props renderable when remote structured values have wrong shapes', () => {
+    const publicContent = buildPublicContent(mergeContent(defaultContent, {
+      siteContent: {
+        navigation: { links: { label: 'About' } },
+        about: { body: {}, stats: 'not an array' },
+        specialities: { items: [{ title: 'Missing fields' }] },
+        booking: { features: null },
+        footer: { links: [{ label: 'Contact', href: '#contact' }] },
+      },
+    }));
+
+    expect(publicContent.navigation.links).toEqual(defaultContent.siteContent.navigation.links);
+    expect(publicContent.about.body).toEqual(defaultContent.siteContent.about.body);
+    expect(publicContent.about.stats).toEqual(defaultContent.siteContent.about.stats);
+    expect(publicContent.specialities.items).toEqual(defaultContent.siteContent.specialities.items);
+    expect(publicContent.booking.features).toEqual(defaultContent.siteContent.booking.features);
+    expect(publicContent.footer.links).toEqual([{ label: 'Contact', href: '#contact' }]);
+  });
 });

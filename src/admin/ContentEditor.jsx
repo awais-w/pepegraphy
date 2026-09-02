@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
 import React, { useState } from 'react';
 import { useContent } from '../context/ContentContext';
+import { validateStructuredField } from '../lib/contentModel';
 
 const SECTION_SCHEMA = [
   {
@@ -109,9 +110,11 @@ export function ContentEditor() {
       .filter((field) => field.type === 'json' && jsonValues[field.key] !== undefined)
       .map((field) => {
         try {
-          return [field.key, JSON.parse(jsonValues[field.key])];
+          const value = JSON.parse(jsonValues[field.key]);
+          validateStructuredField(section.key, field.key, value);
+          return [field.key, value];
         } catch {
-          throw new Error(`Enter valid JSON for ${section.title} ${field.label}.`);
+          throw new Error(`Enter valid JSON matching ${field.description} for ${section.title} ${field.label}.`);
         }
       }));
 

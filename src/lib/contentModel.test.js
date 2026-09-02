@@ -40,6 +40,34 @@ describe('content model', () => {
     expect(content.photos).toEqual([]);
   });
 
+  it('keeps valid section fields while restoring malformed structured fields from the fallback', () => {
+    const content = mergeContent(defaultContent, {
+      siteContent: {
+        navigation: { brand: 'CMS brand', links: { label: 'About' } },
+        about: { title: 'CMS title', body: 'Not an array', stats: [{ value: '10', label: 'Years' }] },
+        specialities: { items: [{ title: 'Incomplete' }] },
+        booking: { features: { title: 'Not an array' } },
+        footer: { tagline: 'CMS tagline', links: [{ label: 'Contact', href: '#contact' }] },
+      },
+    });
+
+    expect(content.siteContent.navigation).toEqual({
+      brand: 'CMS brand',
+      links: defaultContent.siteContent.navigation.links,
+    });
+    expect(content.siteContent.about).toMatchObject({
+      title: 'CMS title',
+      body: defaultContent.siteContent.about.body,
+      stats: [{ value: '10', label: 'Years' }],
+    });
+    expect(content.siteContent.specialities.items).toEqual(defaultContent.siteContent.specialities.items);
+    expect(content.siteContent.booking.features).toEqual(defaultContent.siteContent.booking.features);
+    expect(content.siteContent.footer).toMatchObject({
+      tagline: 'CMS tagline',
+      links: [{ label: 'Contact', href: '#contact' }],
+    });
+  });
+
   it('uses input position when sort_order is null or empty', () => {
     const content = normalizeContent({
       heroSlides: [

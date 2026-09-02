@@ -1,4 +1,4 @@
-import { defaultContent } from './contentModel';
+import { defaultContent, mergeContent } from './contentModel';
 
 const mergeSection = (fallback, section) => ({
   ...fallback,
@@ -25,11 +25,7 @@ const withTitleLines = (section) => ({
 const isVisible = (item) => item?.isVisible !== false && item?.is_visible !== false;
 
 export function buildPublicContent(content = defaultContent) {
-  const source = {
-    ...defaultContent,
-    ...content,
-    siteContent: { ...defaultContent.siteContent, ...content?.siteContent },
-  };
+  const source = mergeContent(defaultContent, content);
   const siteContent = source.siteContent;
   const categories = source.categories.filter(isVisible).map((category) => ({
     slug: category.slug,
