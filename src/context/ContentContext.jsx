@@ -33,8 +33,15 @@ export function ContentProvider({ children }) {
     const mutations = Object.fromEntries(Object.entries(contentRepository)
       .filter(([name, method]) => name !== 'loadContent' && name !== 'getLoadError' && typeof method === 'function')
       .map(([name, method]) => [name, async (...args) => {
-        const result = await method(...args);
+        let result;
+        let mutationError;
+        try {
+          result = await method(...args);
+        } catch (error) {
+          mutationError = error;
+        }
         await refresh();
+        if (mutationError) throw mutationError;
         return result;
       }]));
 

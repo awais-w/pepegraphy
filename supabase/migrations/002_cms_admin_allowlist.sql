@@ -22,6 +22,7 @@ as $$
 $$;
 
 drop policy if exists "Public can read visible site content" on public.site_content;
+drop policy if exists "Authenticated users can manage site content" on public.site_content;
 drop policy if exists "Authenticated users can insert site content" on public.site_content;
 drop policy if exists "Authenticated users can update site content" on public.site_content;
 drop policy if exists "Authenticated users can delete site content" on public.site_content;
@@ -31,6 +32,7 @@ drop policy if exists "CMS admins can update site content" on public.site_conten
 drop policy if exists "CMS admins can delete site content" on public.site_content;
 
 drop policy if exists "Public can read visible hero slides" on public.hero_slides;
+drop policy if exists "Authenticated users can manage hero slides" on public.hero_slides;
 drop policy if exists "Authenticated users can insert hero slides" on public.hero_slides;
 drop policy if exists "Authenticated users can update hero slides" on public.hero_slides;
 drop policy if exists "Authenticated users can delete hero slides" on public.hero_slides;
@@ -40,6 +42,7 @@ drop policy if exists "CMS admins can update hero slides" on public.hero_slides;
 drop policy if exists "CMS admins can delete hero slides" on public.hero_slides;
 
 drop policy if exists "Public can read visible gallery categories" on public.gallery_categories;
+drop policy if exists "Authenticated users can manage gallery categories" on public.gallery_categories;
 drop policy if exists "Authenticated users can insert gallery categories" on public.gallery_categories;
 drop policy if exists "Authenticated users can update gallery categories" on public.gallery_categories;
 drop policy if exists "Authenticated users can delete gallery categories" on public.gallery_categories;
@@ -49,6 +52,7 @@ drop policy if exists "CMS admins can update gallery categories" on public.galle
 drop policy if exists "CMS admins can delete gallery categories" on public.gallery_categories;
 
 drop policy if exists "Public can read visible gallery photos" on public.gallery_photos;
+drop policy if exists "Authenticated users can manage gallery photos" on public.gallery_photos;
 drop policy if exists "Authenticated users can insert gallery photos" on public.gallery_photos;
 drop policy if exists "Authenticated users can update gallery photos" on public.gallery_photos;
 drop policy if exists "Authenticated users can delete gallery photos" on public.gallery_photos;

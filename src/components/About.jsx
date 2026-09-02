@@ -5,8 +5,8 @@ const About = ({ about }) => {
     <section id="about" className="py-20 md:py-40 bg-brand-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
@@ -14,7 +14,7 @@ const About = ({ about }) => {
             className="relative"
           >
             <div className="relative z-10 aspect-[4/5] overflow-hidden grayscale hover:grayscale-0 transition-all duration-700">
-              <img 
+              <img
                 src={about.imageUrl}
                 alt={about.imageAlt}
                 className="w-full h-full object-cover object-bottom scale-115 transition-transform duration-700"
@@ -23,7 +23,7 @@ const About = ({ about }) => {
             <div className="absolute -top-4 -left-4 w-full h-full border border-brand-gold/20 -z-0 hidden sm:block" />
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

@@ -9,6 +9,7 @@ const repository = vi.hoisted(() => ({
   getLoadError: vi.fn(),
   loadContent: vi.fn(),
   saveSection: vi.fn(),
+  deletePhoto: vi.fn(),
 }));
 
 vi.mock('../lib/contentRepository', () => ({ contentRepository: repository }));
@@ -74,5 +75,33 @@ describe('ContentProvider', () => {
     });
 
     expect(values.at(-1).error).toBeNull();
+  });
+
+  it('refreshes local content after metadata deletion succeeds but storage cleanup fails', async () => {
+    const values = [];
+    const contentWithPhoto = {
+      ...defaultContent,
+      photos: [{ id: 'photo-1', categoryId: 'family', src: '/photo.jpg', alt: '', sortOrder: 0, isVisible: true }],
+    };
+    const contentWithoutPhoto = { ...contentWithPhoto, photos: [] };
+    repository.loadContent.mockResolvedValueOnce(contentWithPhoto).mockResolvedValueOnce(contentWithoutPhoto);
+    repository.getLoadError.mockReturnValue(null);
+    repository.deletePhoto.mockRejectedValue(new Error('Unable to remove photo image from storage. Storage unavailable'));
+    container = document.createElement('div');
+    document.body.append(container);
+
+    await act(async () => {
+      root = createRoot(container);
+      root.render(<ContentProvider><ContentProbe onValue={(value) => values.push(value)} /></ContentProvider>);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await expect(values.at(-1).deletePhoto('photo-1')).rejects.toThrow('Unable to remove photo image from storage. Storage unavailable');
+    });
+
+    expect(repository.loadContent).toHaveBeenCalledTimes(2);
+    expect(values.at(-1).content.photos).toEqual([]);
   });
 });

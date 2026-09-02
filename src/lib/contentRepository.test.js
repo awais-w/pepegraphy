@@ -16,7 +16,7 @@ describe('content repository', () => {
       client: {
         from: vi.fn((table) => table === 'gallery_categories'
           ? { select: () => ({ order: async () => ({ error: new Error('Network unavailable') }) }) }
-          : { select: async () => ({ error: new Error('Network unavailable') }) }),
+          : { select: () => ({ order: async () => ({ error: new Error('Network unavailable') }) }) }),
       },
     });
 
@@ -57,14 +57,14 @@ describe('content repository', () => {
     expect(update).toHaveBeenCalledWith({ alt_text: 'Updated image', is_visible: false });
   });
 
-  it('writes a supplied category position and requests categories in display order', async () => {
+  it('writes a supplied category position and requests all ordered media collections in display order', async () => {
     const insert = vi.fn(() => ({ select: () => ({ single: async () => ({ data: { id: 'category-3' } }) }) }));
     const order = vi.fn(async () => ({ data: [] }));
     const select = vi.fn(() => ({ order }));
     const repository = createContentRepository({
       configured: true,
       client: {
-        from: vi.fn((table) => table === 'gallery_categories' ? { insert, select } : { select: async () => ({ data: [] }) }),
+        from: vi.fn((table) => table === 'gallery_categories' ? { insert, select } : { select }),
       },
     });
 
@@ -72,7 +72,20 @@ describe('content repository', () => {
     await repository.loadContent();
 
     expect(insert).toHaveBeenCalledWith({ name: 'Events', slug: 'events', sort_order: 2, is_visible: true });
+    expect(order).toHaveBeenCalledTimes(3);
     expect(order).toHaveBeenCalledWith('sort_order', { ascending: true });
+  });
+
+  it('rejects whitespace-only category names before writing metadata', async () => {
+    const insert = vi.fn();
+    const repository = createContentRepository({
+      configured: true,
+      client: { from: vi.fn(() => ({ insert })) },
+    });
+
+    await expect(repository.createCategory('   ')).rejects.toThrow('Enter a category name.');
+
+    expect(insert).not.toHaveBeenCalled();
   });
 
   it('surfaces a storage cleanup failure after metadata insertion fails', async () => {

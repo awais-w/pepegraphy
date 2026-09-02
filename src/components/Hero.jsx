@@ -51,7 +51,7 @@ const Hero = ({ hero }) => {
 
         {/* Elegant stardust noise overlay */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        
+
         {/* Subtle dark gradient overlay for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-b from-brand-black/40 via-brand-black/20 to-brand-black" />
       </div>

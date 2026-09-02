@@ -27,8 +27,8 @@ const Navbar = ({ navigation }) => {
         <ul className="hidden md:flex gap-10">
           {navLinks.map((link) => (
             <li key={link.name}>
-              <a 
-                href={link.href} 
+              <a
+                href={link.href}
                 className="text-[10px] font-sans tracking-[0.2em] uppercase text-white/70 hover:text-white transition-colors relative group"
               >
                 {link.name}
@@ -39,7 +39,7 @@ const Navbar = ({ navigation }) => {
         </ul>
 
         {/* Mobile Toggle */}
-        <button 
+        <button
           className="md:hidden text-white p-2"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -60,7 +60,7 @@ const Navbar = ({ navigation }) => {
             <ul className="flex flex-col py-6">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a 
+                  <a
                     href={link.href}
                     className="block px-8 py-4 text-xs tracking-[0.2em] uppercase text-white/70 hover:text-white hover:bg-white/5 transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}

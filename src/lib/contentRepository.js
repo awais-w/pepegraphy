@@ -10,6 +10,12 @@ const safeFileName = (name = 'image') => String(name)
   .replace(/[^a-z0-9._-]+/g, '-')
   .replace(/^-+|-+$/g, '') || 'image';
 
+const requiredCategoryName = (name) => {
+  const trimmedName = String(name ?? '').trim();
+  if (!trimmedName) throw new Error('Enter a category name.');
+  return trimmedName;
+};
+
 function assertNoError(result, fallback) {
   if (result?.error) throw toError(result.error, fallback);
   return result?.data;
@@ -130,9 +136,9 @@ export function createContentRepository({ client = supabaseClient, configured = 
       try {
         const [siteContent, heroSlides, categories, photos] = await Promise.all([
           client.from('site_content').select('*'),
-          client.from('hero_slides').select('*'),
+          client.from('hero_slides').select('*').order('sort_order', { ascending: true }),
           client.from('gallery_categories').select('*').order('sort_order', { ascending: true }),
-          client.from('gallery_photos').select('*'),
+          client.from('gallery_photos').select('*').order('sort_order', { ascending: true }),
         ]);
 
         [siteContent, heroSlides, categories, photos].forEach((result) => {
@@ -203,8 +209,9 @@ export function createContentRepository({ client = supabaseClient, configured = 
     },
 
     async createCategory(name, sortOrder = 0) {
+      const categoryName = requiredCategoryName(name);
       const result = await requireClient().from('gallery_categories')
-        .insert({ name, slug: slugify(name), sort_order: sortOrder, is_visible: true }).select().single();
+        .insert({ name: categoryName, slug: slugify(categoryName), sort_order: sortOrder, is_visible: true }).select().single();
       return assertNoError(result, 'Unable to create category.');
     },
 

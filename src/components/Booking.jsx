@@ -4,7 +4,7 @@ const Booking = ({ booking }) => {
   return (
     <section id="booking" className="relative py-24 md:py-40 overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <img 
+        <img
           src={booking.backgroundImageUrl}
           className="w-full h-full object-cover brightness-[0.15] saturate-[0.5]"
           alt=""
@@ -19,7 +19,7 @@ const Booking = ({ booking }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             {booking.features.map((f, i) => (
-              <motion.div 
+              <motion.div
                 key={f.title}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -44,7 +44,7 @@ const Booking = ({ booking }) => {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <a 
+            <a
               href={booking.ctaHref}
               className="inline-block bg-white text-black px-12 py-5 text-[10px] tracking-[0.2em] uppercase hover:bg-brand-gold transition-all duration-500 font-medium"
             >

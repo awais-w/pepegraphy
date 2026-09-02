@@ -6,6 +6,10 @@ import { ConfirmDialog, MediaUploader } from './MediaUploader';
 
 const messageFor = (error, fallback) => error instanceof Error ? error.message : fallback;
 const ordered = (items) => [...(items ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
+const nextSortOrder = (items) => items.reduce((highest, item) => {
+  const sortOrder = Number(item.sortOrder);
+  return Number.isFinite(sortOrder) ? Math.max(highest, sortOrder) : highest;
+}, -1) + 1;
 
 function HeroSlideEditor({ slide, index, total, onSave, onMove, onDelete, onReplace }) {
   const [altText, setAltText] = useState(slide.alt ?? '');
@@ -96,7 +100,7 @@ export function HeroManager() {
       storagePath: image.path,
       altText,
       caption,
-      sortOrder: slides.length,
+      sortOrder: nextSortOrder(slides),
       isVisible,
     });
     setAltText('');

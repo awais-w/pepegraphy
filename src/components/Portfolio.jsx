@@ -119,7 +119,7 @@ const Portfolio = ({ portfolio }) => {
   return (
     <section id="portfolio" className="py-20 md:py-40 bg-brand-black">
       <div className="container mx-auto px-4 sm:px-6">
-        
+
         <div className="mb-12 md:mb-24">
           <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{portfolio.eyebrow}</span>
           <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">{portfolio.title}</h2>
@@ -140,7 +140,7 @@ const Portfolio = ({ portfolio }) => {
               }}
               className={`px-4 sm:px-6 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.2em] uppercase rounded-full transition-all duration-300 border cursor-pointer ${
                 filter === category.slug
-                  ? 'bg-brand-gold border-brand-gold text-black font-medium' 
+                  ? 'bg-brand-gold border-brand-gold text-black font-medium'
                   : 'bg-transparent border-white/10 text-white/50 hover:border-white/30 hover:text-white'
               }`}
             >
@@ -166,8 +166,8 @@ const Portfolio = ({ portfolio }) => {
                   setSelectedIndex(idx);
                 }}
               >
-                <img 
-                  src={img.src} 
+                <img
+                  src={img.src}
                   alt={img.alt}
                   className="w-full h-auto transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-100"
                 />
@@ -217,7 +217,7 @@ const Portfolio = ({ portfolio }) => {
               </div>
 
               {/* Close Button */}
-              <button 
+              <button
                 className="text-white/50 hover:text-brand-gold transition-colors p-2 shrink-0 ml-2 cursor-pointer"
                 onClick={handleClose}
                 aria-label="Close modal"
@@ -244,7 +244,7 @@ const Portfolio = ({ portfolio }) => {
               )}
 
               {/* Main Image View - Sliding Transition Container */}
-              <div 
+              <div
                 className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
                 onTouchStart={onTouchStart}
@@ -294,7 +294,7 @@ const Portfolio = ({ portfolio }) => {
 
             {/* Bottom Bar: Mobile Controls + Image Details & Category Jump */}
             <div className="w-full flex flex-col items-center pt-2 px-3 sm:px-0 border-t border-white/10 text-center gap-2 z-30" onClick={(e) => e.stopPropagation()}>
-              
+
               {/* Mobile Image Navigation Bar */}
               <div className="w-full flex items-center justify-between sm:justify-center gap-4">
                 {/* Mobile Prev Arrow */}

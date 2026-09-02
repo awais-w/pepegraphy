@@ -1,4 +1,5 @@
--- Run this after supabase/migrations/001_cms.sql.
+-- For new installations, run this after supabase/migrations/001_cms.sql.
+-- For installations created with an earlier 001_cms.sql, run 002 and 003 first.
 -- This seeds public CMS records only; create admin users in Supabase Auth.
 -- Re-running it updates section/category defaults and adds missing media rows. It
 -- deliberately keeps existing media metadata and uploaded Storage objects intact.

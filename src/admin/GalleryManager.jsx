@@ -21,8 +21,14 @@ function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
   const save = async () => {
     setIsSaving(true);
     setError(null);
+    const categoryName = name.trim();
+    if (!categoryName) {
+      setError('Enter a category name.');
+      setIsSaving(false);
+      return;
+    }
     try {
-      await onSave(category.id, { name: name.trim(), slug: slugify(name) });
+      await onSave(category.id, { name: categoryName, slug: slugify(categoryName) });
     } catch (saveError) {
       setError(messageFor(saveError, 'Unable to save the category.'));
     } finally {
@@ -198,7 +204,7 @@ export function GalleryManager() {
       imageUrl: image.url,
       storagePath: image.path,
       altText: newPhotoAltText,
-      sortOrder: selectedPhotos.length,
+      sortOrder: nextSortOrder(selectedPhotos),
       isVisible: newPhotoIsVisible,
     });
     setNewPhotoAltText('');
@@ -305,7 +311,9 @@ export function GalleryManager() {
       {pendingDelete && (
         <ConfirmDialog
           title={`Delete ${pendingDelete.kind}?`}
-          description={`This removes the ${pendingDelete.kind} from the gallery. This action cannot be undone.`}
+          description={pendingDelete.kind === 'category'
+            ? 'This removes the category from the gallery. Child photos and uploaded files will be permanently deleted. This action cannot be undone.'
+            : 'This removes the photo from the gallery. This action cannot be undone.'}
           isDeleting={isDeleting}
           restoreFocus={pendingDelete.trigger}
           onCancel={() => setPendingDelete(null)}

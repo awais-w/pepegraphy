@@ -72,6 +72,14 @@ describe('CMS RLS migration', () => {
     expect(migration).toContain('create or replace function public.is_cms_admin() returns boolean language sql stable security definer set search_path = \'\' as $$ select exists ( select 1 from public.admin_users where user_id = (select auth.uid()) ); $$');
     expect(migration).toContain('drop policy if exists "authenticated users can insert site content" on public.site_content');
     expect(migration).toContain('drop policy if exists "authenticated users can upload site media" on storage.objects');
+    [
+      ['public.site_content', 'Authenticated users can manage site content'],
+      ['public.hero_slides', 'Authenticated users can manage hero slides'],
+      ['public.gallery_categories', 'Authenticated users can manage gallery categories'],
+      ['public.gallery_photos', 'Authenticated users can manage gallery photos'],
+    ].forEach(([table, policyName]) => {
+      expect(migration).toContain(`drop policy if exists "${policyName.toLowerCase()}" on ${table}`);
+    });
     cmsTables.forEach((table) => expectCmsTablePolicies(migration, table));
 
     const storagePolicies = policyStatementsFor(migration, 'storage.objects');

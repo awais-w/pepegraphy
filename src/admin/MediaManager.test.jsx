@@ -72,7 +72,11 @@ describe('media managers', () => {
 
   const buttonByText = (text) => [...container.querySelectorAll('button')].find((button) => button.textContent === text);
 
-  it('uploads a hero slide using its uploaded URL and alternative text', async () => {
+  it('uploads a hero slide using its uploaded URL, alternative text, and the next highest sort order', async () => {
+    currentContext.value.content.heroSlides = [
+      { id: 'hero-1', src: '/hero-1.jpg', alt: '', caption: '', sortOrder: 3, isVisible: true },
+      { id: 'hero-2', src: '/hero-2.jpg', alt: '', caption: '', sortOrder: 8, isVisible: true },
+    ];
     await render(HeroManager);
     const file = imageFile();
 
@@ -92,7 +96,7 @@ describe('media managers', () => {
       storagePath: 'hero/portrait.jpg',
       altText: 'A parent holding a child',
       caption: '',
-      sortOrder: 0,
+      sortOrder: 9,
       isVisible: true,
     });
   });
@@ -118,14 +122,17 @@ describe('media managers', () => {
     expect(mutations.createCategory).toHaveBeenCalledWith('Family Portraits', 9);
   });
 
-  it('creates a photo associated with the selected category', async () => {
+  it('creates a photo associated with the selected category at the next highest sort order', async () => {
     currentContext.value.content = {
       heroSlides: [],
       categories: [
         { id: 'family', name: 'Family', slug: 'family', sortOrder: 0, isVisible: true },
         { id: 'portraits', name: 'Portraits', slug: 'portraits', sortOrder: 1, isVisible: true },
       ],
-      photos: [],
+      photos: [
+        { id: 'photo-1', categoryId: 'portraits', src: '/photo-1.jpg', alt: '', sortOrder: 3, isVisible: true },
+        { id: 'photo-2', categoryId: 'portraits', src: '/photo-2.jpg', alt: '', sortOrder: 8, isVisible: true },
+      ],
     };
     await render(GalleryManager);
     const file = imageFile();
@@ -148,7 +155,7 @@ describe('media managers', () => {
       imageUrl: 'https://cdn.example/portrait.jpg',
       storagePath: 'hero/portrait.jpg',
       altText: 'Studio portrait',
-      sortOrder: 0,
+      sortOrder: 9,
       isVisible: true,
     });
   });
@@ -172,6 +179,35 @@ describe('media managers', () => {
     });
 
     expect(mutations.deleteHeroSlide).toHaveBeenCalledWith('hero-1');
+  });
+
+  it('warns that deleting a category permanently deletes child photos and uploaded files', async () => {
+    currentContext.value.content.categories = [
+      { id: 'family', name: 'Family', slug: 'family', sortOrder: 0, isVisible: true },
+    ];
+    await render(GalleryManager);
+
+    await act(async () => {
+      buttonByText('Delete category').click();
+    });
+
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('Child photos and uploaded files will be permanently deleted.');
+  });
+
+  it('rejects a whitespace-only category name when renaming a category', async () => {
+    currentContext.value.content.categories = [
+      { id: 'family', name: 'Family', slug: 'family', sortOrder: 0, isVisible: true },
+    ];
+    await render(GalleryManager);
+
+    await act(async () => {
+      setInputValue(container.querySelector('#category-family-name'), '   ');
+      buttonByText('Save category').click();
+      await Promise.resolve();
+    });
+
+    expect(mutations.updateCategory).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Enter a category name.');
   });
 
   it('keeps delete confirmation keyboard-modal and restores focus after Escape cancels', async () => {

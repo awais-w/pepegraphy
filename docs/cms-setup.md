@@ -4,8 +4,8 @@
 
 1. Create a Supabase project for the environment.
 2. In **Authentication → Configuration → General**, turn off **Allow new users to sign up** and **Allow anonymous sign-ins**. This CMS has no public account-registration flow; create administrators only from the Supabase dashboard or trusted server-side tooling.
-3. In the SQL Editor, run `supabase/migrations/001_cms.sql`, then `supabase/migrations/002_cms_admin_allowlist.sql`, then `supabase/migrations/003_cms_media_storage_paths.sql`. The second migration is required for an existing project that previously ran `001_cms.sql`; it replaces the original broad authenticated policies. The third migration adds the Storage object paths needed to clean up uploaded media.
-4. Run `supabase/seed.sql`. It adds the baseline site content, categories, gallery metadata, and hero metadata. It does not create an Auth user or upload the bundled local images to Storage.
+3. For a new project, run `supabase/migrations/001_cms.sql`; it already includes the hardened policies and media Storage paths. For a project created with an earlier version of `001_cms.sql`, run `supabase/migrations/002_cms_admin_allowlist.sql`, then `supabase/migrations/003_cms_media_storage_paths.sql` before continuing. Migration 002 replaces the earlier broad authenticated policies, and migration 003 adds the Storage object paths needed to clean up uploaded media.
+4. After the applicable migrations have completed, run `supabase/seed.sql`. It adds the baseline site content, categories, gallery metadata, and hero metadata. It does not create an Auth user or upload the bundled local images to Storage.
 5. In **Authentication → Users**, create an email/password account for the single CMS administrator. Then allowlist that account in the SQL Editor, replacing the example address:
 
    ```sql
@@ -37,7 +37,7 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in the hosting provider's b
 
 Only the Supabase project URL and anon key may be exposed through Vite `VITE_` variables. Never place a service-role key, database password, personal access token, or any privileged secret in a Vite environment variable, client bundle, repository, or browser configuration. Use Supabase server-side tooling only for privileged maintenance tasks.
 
-Before release, confirm the production project has both migrations applied, the desired baseline seed data, exactly the intended administrator in `public.admin_users`, and the same RLS and Storage policies as the migrations. Re-check that **Allow new users to sign up** and **Allow anonymous sign-ins** are disabled.
+Before release, confirm the production project has the applicable migrations applied, the desired baseline seed data, exactly the intended administrator in `public.admin_users`, and the same RLS and Storage policies as the migrations. Re-check that **Allow new users to sign up** and **Allow anonymous sign-ins** are disabled.
 
 ## Media and storage rules
 
