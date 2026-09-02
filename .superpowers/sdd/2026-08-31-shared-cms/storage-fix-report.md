@@ -1,6 +1,6 @@
 # Storage Lifecycle Fix Report
 
-**Date:** 2026-09-02  
+**Date:** 2026-09-02
 **Implementation commit:** `b3bd14f fix: clean up CMS storage media`
 
 ## Delivered
