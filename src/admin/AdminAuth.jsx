@@ -4,7 +4,7 @@ import { isSupabaseConfigured, supabaseClient } from '../lib/supabaseClient';
 
 const initialForm = { email: '', password: '' };
 
-export function AdminAuth({ children }) {
+export function AdminAuth({ children, onAuthenticated }) {
   const [form, setForm] = useState(initialForm);
   const [session, setSession] = useState(null);
   const [state, setState] = useState(isSupabaseConfigured ? 'checking' : 'unavailable');
@@ -26,9 +26,10 @@ export function AdminAuth({ children }) {
 
         setSession(data.session);
         setState(data.session ? 'authenticated' : 'unauthenticated');
-      } catch {
+        if (data.session) void Promise.resolve(onAuthenticated?.()).catch(() => {});
+      } catch (sessionError) {
         if (!active) return;
-        setError('We could not check your session. Please try again.');
+        setError(sessionError instanceof Error ? sessionError.message : 'We could not check your session. Please try again.');
         setState('unauthenticated');
       }
     };
@@ -39,13 +40,14 @@ export function AdminAuth({ children }) {
       setSession(nextSession);
       setError(null);
       setState(nextSession ? 'authenticated' : 'unauthenticated');
+      if (nextSession) void Promise.resolve(onAuthenticated?.()).catch(() => {});
     });
 
     return () => {
       active = false;
       data.subscription.unsubscribe();
     };
-  }, []);
+  }, [onAuthenticated]);
 
   const updateField = (event) => {
     const { name, value } = event.target;
@@ -58,15 +60,23 @@ export function AdminAuth({ children }) {
 
     setError(null);
     setState('signing-in');
-    const { data, error: signInError } = await supabaseClient.auth.signInWithPassword(form);
-    if (signInError) {
-      setError(signInError.message);
-      setState('unauthenticated');
-      return;
-    }
+    try {
+      const { data, error: signInError } = await supabaseClient.auth.signInWithPassword(form);
+      if (signInError) {
+        setError(signInError.message);
+        setSession(null);
+        setState('unauthenticated');
+        return;
+      }
 
-    setSession(data.session);
-    setState('authenticated');
+      setSession(data.session);
+      setState('authenticated');
+      if (data.session) await onAuthenticated?.();
+    } catch (signInError) {
+      setError(signInError instanceof Error ? signInError.message : 'We could not sign you in. Please try again.');
+      setSession(null);
+      setState('unauthenticated');
+    }
   };
 
   const signOut = async () => {
@@ -74,15 +84,20 @@ export function AdminAuth({ children }) {
 
     setError(null);
     setState('signing-out');
-    const { error: signOutError } = await supabaseClient.auth.signOut();
-    if (signOutError) {
-      setError(signOutError.message);
-      setState('authenticated');
-      return;
-    }
+    try {
+      const { error: signOutError } = await supabaseClient.auth.signOut();
+      if (signOutError) {
+        setError(signOutError.message);
+        setState('authenticated');
+        return;
+      }
 
-    setSession(null);
-    setState('unauthenticated');
+      setSession(null);
+      setState('unauthenticated');
+    } catch (signOutError) {
+      setError(signOutError instanceof Error ? signOutError.message : 'We could not sign you out. Please try again.');
+      setState('authenticated');
+    }
   };
 
   if (state === 'checking') {
