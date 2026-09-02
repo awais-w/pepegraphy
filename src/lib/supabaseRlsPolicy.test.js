@@ -10,6 +10,8 @@ const cmsTables = [
 
 const migrationPath = new URL('../../supabase/migrations/001_cms.sql', import.meta.url);
 const hardeningMigrationPath = new URL('../../supabase/migrations/002_cms_admin_allowlist.sql', import.meta.url);
+const storagePathMigrationPath = new URL('../../supabase/migrations/003_cms_media_storage_paths.sql', import.meta.url);
+const seedPath = new URL('../../supabase/seed.sql', import.meta.url);
 
 const normalizeSql = (sql) => sql.replace(/\s+/g, ' ').trim().toLowerCase();
 
@@ -74,5 +76,20 @@ describe('CMS RLS migration', () => {
 
     const storagePolicies = policyStatementsFor(migration, 'storage.objects');
     expect(storagePolicies).toContain('create policy "cms admins can read site media" on storage.objects for select to authenticated using (bucket_id = \'site-media\' and public.is_cms_admin())');
+  });
+
+  it('stores managed media paths for fresh installs and existing CMS projects', async () => {
+    const [migration, storagePathMigration, seed] = await Promise.all([
+      readFile(migrationPath, 'utf8'),
+      readFile(storagePathMigrationPath, 'utf8'),
+      readFile(seedPath, 'utf8'),
+    ]);
+
+    expect(normalizeSql(migration)).toContain('create table public.hero_slides ( id uuid primary key default gen_random_uuid(), image_url text not null, storage_path text');
+    expect(normalizeSql(migration)).toContain('create table public.gallery_photos ( id uuid primary key default gen_random_uuid(), category_id uuid not null references public.gallery_categories(id) on delete cascade, image_url text not null, storage_path text');
+    expect(normalizeSql(storagePathMigration)).toContain('alter table public.hero_slides add column if not exists storage_path text');
+    expect(normalizeSql(storagePathMigration)).toContain('alter table public.gallery_photos add column if not exists storage_path text');
+    expect(seed).toContain('insert into public.hero_slides (image_url, storage_path, alt_text, sort_order)');
+    expect(seed).toContain('insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, sort_order)');
   });
 });

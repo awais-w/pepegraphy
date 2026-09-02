@@ -24,47 +24,47 @@ insert into public.gallery_categories (id, slug, name, sort_order) values
   ('10000000-0000-4000-8000-000000000008', 'boudoir', 'boudoir', 7)
 on conflict (slug) do update set name = excluded.name, sort_order = excluded.sort_order, is_visible = true;
 
-insert into public.gallery_photos (category_id, image_url, alt_text, sort_order)
-select category.id, photo.image_url, photo.alt_text, photo.sort_order
+insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, sort_order)
+select category.id, photo.image_url, photo.storage_path, photo.alt_text, photo.sort_order
 from (values
-  ('events', '/gallery/img_1.jpg', 'Stage performance event', 0),
-  ('nature', '/gallery/img_2.jpg', 'Fire salamander in nature', 1),
-  ('events', '/gallery/img_3.jpg', 'Aerial acrobat performance', 2),
-  ('pet', '/gallery/img_4.jpg', 'Pug dog with birthday hat', 3),
-  ('reportage', '/gallery/img_5.jpg', 'DJ event reportage photography', 4),
-  ('female', '/gallery/img_6.jpg', 'Female portrait in sequin dress', 5),
-  ('boudoir', '/gallery/img_7.jpg', 'Boudoir portrait at vanity table', 6),
-  ('children', '/gallery/img_8.jpg', 'Child portrait in winter hood', 7),
-  ('male', '/gallery/img_9.jpg', 'Male portrait', 8),
-  ('female', '/gallery/img_10.jpg', 'Female portrait with hat and gloves', 9),
-  ('female', '/gallery/img_12.jpg', 'Female outdoor portrait', 10),
-  ('female', '/gallery/img_13.jpg', 'Female artistic portrait', 11),
-  ('female', '/gallery/img_14.jpg', 'Redhead female portrait close-up', 12),
-  ('female', '/gallery/img_15.jpg', 'Female portrait with spring blossoms', 13),
-  ('female', '/gallery/img_16.jpg', 'Female full-length portrait', 14),
-  ('female', '/gallery/img_18.jpg', 'Female outdoor portrait (medium close-up)', 15)
-) as photo(category_slug, image_url, alt_text, sort_order)
+  ('events', '/gallery/img_1.jpg', null::text, 'Stage performance event', 0),
+  ('nature', '/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 1),
+  ('events', '/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 2),
+  ('pet', '/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 3),
+  ('reportage', '/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 4),
+  ('female', '/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 5),
+  ('boudoir', '/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 6),
+  ('children', '/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 7),
+  ('male', '/gallery/img_9.jpg', null::text, 'Male portrait', 8),
+  ('female', '/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 9),
+  ('female', '/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 10),
+  ('female', '/gallery/img_13.jpg', null::text, 'Female artistic portrait', 11),
+  ('female', '/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 12),
+  ('female', '/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 13),
+  ('female', '/gallery/img_16.jpg', null::text, 'Female full-length portrait', 14),
+  ('female', '/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 15)
+) as photo(category_slug, image_url, storage_path, alt_text, sort_order)
 join public.gallery_categories as category on category.slug = photo.category_slug
 where not exists (select 1 from public.gallery_photos existing where existing.image_url = photo.image_url);
 
-insert into public.hero_slides (image_url, alt_text, sort_order)
-select photo.image_url, photo.alt_text, photo.sort_order
+insert into public.hero_slides (image_url, storage_path, alt_text, sort_order)
+select photo.image_url, photo.storage_path, photo.alt_text, photo.sort_order
 from (values
-  ('/gallery/img_1.jpg', 'Stage performance event', 0),
-  ('/gallery/img_2.jpg', 'Fire salamander in nature', 1),
-  ('/gallery/img_3.jpg', 'Aerial acrobat performance', 2),
-  ('/gallery/img_4.jpg', 'Pug dog with birthday hat', 3),
-  ('/gallery/img_5.jpg', 'DJ event reportage photography', 4),
-  ('/gallery/img_6.jpg', 'Female portrait in sequin dress', 5),
-  ('/gallery/img_7.jpg', 'Boudoir portrait at vanity table', 6),
-  ('/gallery/img_8.jpg', 'Child portrait in winter hood', 7),
-  ('/gallery/img_9.jpg', 'Male portrait', 8),
-  ('/gallery/img_10.jpg', 'Female portrait with hat and gloves', 9),
-  ('/gallery/img_12.jpg', 'Female outdoor portrait', 10),
-  ('/gallery/img_13.jpg', 'Female artistic portrait', 11),
-  ('/gallery/img_14.jpg', 'Redhead female portrait close-up', 12),
-  ('/gallery/img_15.jpg', 'Female portrait with spring blossoms', 13),
-  ('/gallery/img_16.jpg', 'Female full-length portrait', 14),
-  ('/gallery/img_18.jpg', 'Female outdoor portrait (medium close-up)', 15)
-) as photo(image_url, alt_text, sort_order)
+  ('/gallery/img_1.jpg', null::text, 'Stage performance event', 0),
+  ('/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 1),
+  ('/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 2),
+  ('/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 3),
+  ('/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 4),
+  ('/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 5),
+  ('/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 6),
+  ('/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 7),
+  ('/gallery/img_9.jpg', null::text, 'Male portrait', 8),
+  ('/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 9),
+  ('/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 10),
+  ('/gallery/img_13.jpg', null::text, 'Female artistic portrait', 11),
+  ('/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 12),
+  ('/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 13),
+  ('/gallery/img_16.jpg', null::text, 'Female full-length portrait', 14),
+  ('/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 15)
+) as photo(image_url, storage_path, alt_text, sort_order)
 where not exists (select 1 from public.hero_slides existing where existing.image_url = photo.image_url);

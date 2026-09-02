@@ -165,7 +165,7 @@ export function HeroManager() {
               onSave={updateHeroSlide}
               onMove={moveSlide}
               onDelete={(item, trigger) => setPendingDelete({ item, trigger })}
-              onReplace={(id, image) => updateHeroSlide(id, { imageUrl: image.url })}
+              onReplace={(id, image) => updateHeroSlide(id, { imageUrl: image.url, storagePath: image.path })}
             />
           ))}
         </div>

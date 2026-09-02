@@ -4,7 +4,7 @@
 
 1. Create a Supabase project for the environment.
 2. In **Authentication → Configuration → General**, turn off **Allow new users to sign up** and **Allow anonymous sign-ins**. This CMS has no public account-registration flow; create administrators only from the Supabase dashboard or trusted server-side tooling.
-3. In the SQL Editor, run `supabase/migrations/001_cms.sql` and then `supabase/migrations/002_cms_admin_allowlist.sql`. The second migration is required for an existing project that previously ran `001_cms.sql`; it replaces the original broad authenticated policies.
+3. In the SQL Editor, run `supabase/migrations/001_cms.sql`, then `supabase/migrations/002_cms_admin_allowlist.sql`, then `supabase/migrations/003_cms_media_storage_paths.sql`. The second migration is required for an existing project that previously ran `001_cms.sql`; it replaces the original broad authenticated policies. The third migration adds the Storage object paths needed to clean up uploaded media.
 4. Run `supabase/seed.sql`. It adds the baseline site content, categories, gallery metadata, and hero metadata. It does not create an Auth user or upload the bundled local images to Storage.
 5. In **Authentication → Users**, create an email/password account for the single CMS administrator. Then allowlist that account in the SQL Editor, replacing the example address:
 
@@ -41,7 +41,7 @@ Before release, confirm the production project has both migrations applied, the 
 
 ## Media and storage rules
 
-The admin accepts browser-recognised image files only, with a maximum file size of 10 MB per file. Images are stored in the public `site-media` bucket under `hero/` or `gallery/`; the CMS stores their URL, alt text, visibility, and order. Keep uploads appropriately sized for web delivery and monitor the project's Supabase Storage quota and bandwidth usage.
+The admin accepts browser-recognised image files only, with a maximum file size of 10 MB per file. Images are stored in the public `site-media` bucket under `hero/` or `gallery/`; the CMS stores their public URL, Storage path, alt text, visibility, and order. A replacement uploads the new object before metadata changes, rolls it back if metadata cannot be saved, and then removes the old object. Deleting a hero slide, photo, or category removes the associated uploaded Storage objects; any post-metadata cleanup failure is shown to the administrator for follow-up. Bundled seed images have no Storage path and are never removed from Storage.
 
 Public reads are intentional for this portfolio. Only an authenticated user whose `auth.uid()` is listed in `public.admin_users` can read through the authenticated Storage API or upload, update, and delete objects in `site-media`. Removing an allowlist row immediately prevents future client-side CMS reads and writes; removing the Auth account also removes its allowlist row through the foreign key.
 

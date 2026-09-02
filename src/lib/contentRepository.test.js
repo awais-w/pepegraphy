@@ -102,4 +102,154 @@ describe('content repository', () => {
       'Storage cleanup unavailable',
     ]);
   });
+
+  it('persists an uploaded hero slide storage path with its metadata', async () => {
+    const insert = vi.fn(() => ({ select: () => ({ single: async () => ({ data: { id: 'hero-1' } }) }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: { from: vi.fn(() => ({ insert })) },
+    });
+
+    await repository.createHeroSlide({
+      imageUrl: 'https://cdn.example/hero.jpg',
+      storagePath: 'hero/new-hero.jpg',
+      altText: 'New hero',
+    });
+
+    expect(insert).toHaveBeenCalledWith({
+      image_url: 'https://cdn.example/hero.jpg',
+      storage_path: 'hero/new-hero.jpg',
+      alt_text: 'New hero',
+      caption: '',
+      sort_order: 0,
+      is_visible: true,
+    });
+  });
+
+  it('deletes photo metadata and its associated storage object', async () => {
+    const remove = vi.fn(async () => ({ data: [] }));
+    const select = vi.fn(() => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }) }));
+    const deleteRecord = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn(() => ({ select, delete: deleteRecord })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await repository.deletePhoto('photo-1');
+
+    expect(select).toHaveBeenCalledWith('storage_path');
+    expect(deleteRecord).toHaveBeenCalledOnce();
+    expect(remove).toHaveBeenCalledWith(['gallery/photo.jpg']);
+  });
+
+  it('surfaces a photo storage cleanup failure after metadata deletion', async () => {
+    const remove = vi.fn(async () => ({ error: new Error('Storage unavailable') }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn(() => ({
+          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }) }),
+          delete: () => ({ eq: async () => ({ data: [] }) }),
+        })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await expect(repository.deletePhoto('photo-1')).rejects.toThrow('Unable to remove photo image from storage.');
+  });
+
+  it('collects category photo paths before cascading metadata deletion and removes them', async () => {
+    const remove = vi.fn(async () => ({ data: [] }));
+    const photoSelect = vi.fn(() => ({ eq: async () => ({ data: [
+      { storage_path: 'gallery/first.jpg' },
+      { storage_path: null },
+      { storage_path: 'gallery/second.jpg' },
+    ] }) }));
+    const deleteCategory = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn((table) => table === 'gallery_photos'
+          ? { select: photoSelect }
+          : { delete: deleteCategory }),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await repository.deleteCategory('category-1');
+
+    expect(photoSelect).toHaveBeenCalledWith('storage_path');
+    expect(deleteCategory).toHaveBeenCalledOnce();
+    expect(remove).toHaveBeenCalledWith(['gallery/first.jpg', 'gallery/second.jpg']);
+  });
+
+  it('rolls back a newly uploaded replacement when hero metadata update fails', async () => {
+    const remove = vi.fn(async () => ({ data: [] }));
+    const update = vi.fn(() => ({ eq: () => ({ select: () => ({ single: async () => ({ error: new Error('Metadata update unavailable') }) }) }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn(() => ({
+          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          update,
+        })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await expect(repository.updateHeroSlide('hero-1', {
+      imageUrl: 'https://cdn.example/new.jpg',
+      storagePath: 'hero/new.jpg',
+    })).rejects.toThrow('Metadata update unavailable');
+
+    expect(remove).toHaveBeenCalledWith(['hero/new.jpg']);
+  });
+
+  it('removes the old hero storage object after replacement metadata succeeds', async () => {
+    const remove = vi.fn(async () => ({ data: [] }));
+    const update = vi.fn(() => ({ eq: () => ({ select: () => ({ single: async () => ({ data: { id: 'hero-1' } }) }) }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn(() => ({
+          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          update,
+        })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await repository.updateHeroSlide('hero-1', {
+      imageUrl: 'https://cdn.example/new.jpg',
+      storagePath: 'hero/new.jpg',
+    });
+
+    expect(update).toHaveBeenCalledWith({
+      image_url: 'https://cdn.example/new.jpg',
+      storage_path: 'hero/new.jpg',
+    });
+    expect(remove).toHaveBeenCalledWith(['hero/old.jpg']);
+  });
+
+  it('surfaces old hero storage cleanup failures after replacement metadata succeeds', async () => {
+    const remove = vi.fn(async () => ({ error: new Error('Old object unavailable') }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn(() => ({
+          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          update: () => ({ eq: () => ({ select: () => ({ single: async () => ({ data: { id: 'hero-1' } }) }) }) }),
+        })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await expect(repository.updateHeroSlide('hero-1', {
+      imageUrl: 'https://cdn.example/new.jpg',
+      storagePath: 'hero/new.jpg',
+    })).rejects.toThrow('Unable to remove previous hero slide image from storage.');
+  });
 });

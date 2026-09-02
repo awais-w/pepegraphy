@@ -37,6 +37,24 @@ export function createContentRepository({ client = supabaseClient, configured = 
     }
   };
 
+  const deleteStorageObjects = async (paths, fallback) => {
+    const uniquePaths = [...new Set(paths.filter((path) => typeof path === 'string' && path.trim()))];
+    if (uniquePaths.length === 0) return;
+
+    try {
+      const result = await requireClient().storage.from(STORAGE_BUCKET).remove(uniquePaths);
+      if (result?.error) throw toError(result.error, fallback);
+    } catch (error) {
+      const cleanupError = toError(error, fallback);
+      throw new Error(`${fallback} ${cleanupError.message}`, { cause: error });
+    }
+  };
+
+  const storagePathFor = async (table, id, fallback) => {
+    const result = await requireClient().from(table).select('storage_path').eq('id', id).single();
+    return assertNoError(result, fallback)?.storage_path ?? null;
+  };
+
   const insertWithCleanup = async (table, payload, storagePath) => {
     try {
       const result = await requireClient().from(table).insert(payload).select().single();
@@ -56,6 +74,50 @@ export function createContentRepository({ client = supabaseClient, configured = 
       }
       throw error;
     }
+  };
+
+  const updateMediaRecord = async (table, id, patch, fields, label) => {
+    const hasReplacement = Object.hasOwn(patch, 'storagePath') || Object.hasOwn(patch, 'storage_path');
+    const newStoragePath = patch.storagePath ?? patch.storage_path;
+    const payload = metadataPayload(patch, fields);
+
+    if (!hasReplacement) {
+      const result = await requireClient().from(table).update(payload).eq('id', id).select().single();
+      return assertNoError(result, `Unable to update ${label}.`);
+    }
+
+    let previousStoragePath;
+    let updatedRecord;
+    try {
+      previousStoragePath = await storagePathFor(table, id, `Unable to retrieve ${label} storage metadata.`);
+      const result = await requireClient().from(table).update(payload).eq('id', id).select().single();
+      updatedRecord = assertNoError(result, `Unable to update ${label}.`);
+    } catch (error) {
+      if (newStoragePath) {
+        try {
+          await deleteStorageObjects([newStoragePath], 'Unable to remove replacement image from storage.');
+        } catch (cleanupError) {
+          throw new AggregateError(
+            [toError(error, `Unable to update ${label}.`), toError(cleanupError, 'Unable to remove replacement image from storage.')],
+            'Unable to clean up replacement image after metadata update failed.',
+            { cause: cleanupError },
+          );
+        }
+      }
+      throw error;
+    }
+
+    if (previousStoragePath && previousStoragePath !== newStoragePath) {
+      await deleteStorageObjects([previousStoragePath], `Unable to remove previous ${label} image from storage.`);
+    }
+    return updatedRecord;
+  };
+
+  const deleteMediaRecord = async (table, id, label) => {
+    const storagePath = await storagePathFor(table, id, `Unable to retrieve ${label} storage metadata.`);
+    const result = await requireClient().from(table).delete().eq('id', id);
+    assertNoError(result, `Unable to delete ${label}.`);
+    await deleteStorageObjects([storagePath], `Unable to remove ${label} image from storage.`);
   };
 
   return {
@@ -121,6 +183,7 @@ export function createContentRepository({ client = supabaseClient, configured = 
     async createHeroSlide(input) {
       return insertWithCleanup('hero_slides', {
         image_url: input.imageUrl,
+        storage_path: input.storagePath ?? null,
         alt_text: input.altText || '',
         caption: input.caption || '',
         sort_order: input.sortOrder ?? 0,
@@ -129,18 +192,14 @@ export function createContentRepository({ client = supabaseClient, configured = 
     },
 
     async updateHeroSlide(id, patch) {
-      const result = await requireClient().from('hero_slides')
-        .update(metadataPayload(patch, [
+      return updateMediaRecord('hero_slides', id, patch, [
           ['image_url', 'imageUrl'], ['alt_text', 'altText'], ['caption', 'caption'],
-          ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
-        ]))
-        .eq('id', id).select().single();
-      return assertNoError(result, 'Unable to update hero slide.');
+          ['storage_path', 'storagePath'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
+        ], 'hero slide');
     },
 
     async deleteHeroSlide(id) {
-      const result = await requireClient().from('hero_slides').delete().eq('id', id);
-      assertNoError(result, 'Unable to delete hero slide.');
+      return deleteMediaRecord('hero_slides', id, 'hero slide');
     },
 
     async createCategory(name, sortOrder = 0) {
@@ -159,14 +218,19 @@ export function createContentRepository({ client = supabaseClient, configured = 
     },
 
     async deleteCategory(id) {
+      const photoResult = await requireClient().from('gallery_photos').select('storage_path').eq('category_id', id);
+      const photoStoragePaths = assertNoError(photoResult, 'Unable to retrieve category photo storage metadata.')
+        ?.map((photo) => photo?.storage_path) ?? [];
       const result = await requireClient().from('gallery_categories').delete().eq('id', id);
       assertNoError(result, 'Unable to delete category.');
+      await deleteStorageObjects(photoStoragePaths, 'Unable to remove category photo images from storage.');
     },
 
     async createPhoto(input) {
       return insertWithCleanup('gallery_photos', {
         category_id: input.categoryId,
         image_url: input.imageUrl,
+        storage_path: input.storagePath ?? null,
         alt_text: input.altText || '',
         sort_order: input.sortOrder ?? 0,
         is_visible: input.isVisible ?? true,
@@ -174,18 +238,14 @@ export function createContentRepository({ client = supabaseClient, configured = 
     },
 
     async updatePhoto(id, patch) {
-      const result = await requireClient().from('gallery_photos')
-        .update(metadataPayload(patch, [
+      return updateMediaRecord('gallery_photos', id, patch, [
           ['category_id', 'categoryId'], ['image_url', 'imageUrl'], ['alt_text', 'altText'],
-          ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
-        ]))
-        .eq('id', id).select().single();
-      return assertNoError(result, 'Unable to update photo.');
+          ['storage_path', 'storagePath'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
+        ], 'photo');
     },
 
     async deletePhoto(id) {
-      const result = await requireClient().from('gallery_photos').delete().eq('id', id);
-      assertNoError(result, 'Unable to delete photo.');
+      return deleteMediaRecord('gallery_photos', id, 'photo');
     },
   };
 }

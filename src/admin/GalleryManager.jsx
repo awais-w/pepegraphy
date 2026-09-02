@@ -296,7 +296,7 @@ export function GalleryManager() {
                 onSave={updatePhoto}
                 onMove={movePhoto}
                 onDelete={(item, trigger) => setPendingDelete({ kind: 'photo', item, trigger })}
-                onReplace={(id, image) => updatePhoto(id, { imageUrl: image.url })}
+                onReplace={(id, image) => updatePhoto(id, { imageUrl: image.url, storagePath: image.path })}
               />
             ))}
           </div>

@@ -115,6 +115,7 @@ export const defaultContent = {
     src: image.src,
     alt: image.alt,
     caption: '',
+    storagePath: null,
     sortOrder: index,
     isVisible: true,
   })),
@@ -130,6 +131,7 @@ export const defaultContent = {
     categoryId: image.category,
     src: image.src,
     alt: image.alt,
+    storagePath: null,
     sortOrder: index,
     isVisible: true,
   })),
@@ -188,6 +190,7 @@ export function normalizeContent(remoteRows = {}) {
     src: row.image_url ?? row.src ?? '',
     alt: row.alt_text ?? row.alt ?? '',
     caption: row.caption ?? '',
+    storagePath: row.storage_path ?? row.storagePath ?? null,
     sortOrder: order(row, index),
     isVisible: visible(row),
   }));
@@ -203,6 +206,7 @@ export function normalizeContent(remoteRows = {}) {
     categoryId: row.category_id ?? row.categoryId ?? '',
     src: row.image_url ?? row.src ?? '',
     alt: row.alt_text ?? row.alt ?? '',
+    storagePath: row.storage_path ?? row.storagePath ?? null,
     sortOrder: order(row, index),
     isVisible: visible(row),
   }));

@@ -17,6 +17,7 @@ create table public.site_content (
 create table public.hero_slides (
   id uuid primary key default gen_random_uuid(),
   image_url text not null,
+  storage_path text,
   alt_text text not null default '',
   caption text not null default '',
   sort_order integer not null default 0,
@@ -39,6 +40,7 @@ create table public.gallery_photos (
   id uuid primary key default gen_random_uuid(),
   category_id uuid not null references public.gallery_categories(id) on delete cascade,
   image_url text not null,
+  storage_path text,
   alt_text text not null default '',
   sort_order integer not null default 0,
   is_visible boolean not null default true,
