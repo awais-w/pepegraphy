@@ -1,12 +1,19 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AdminAuth } from './AdminAuth';
 import { ContentEditor } from './ContentEditor';
 import { GalleryManager } from './GalleryManager';
 import { HeroManager } from './HeroManager';
+import { useContent } from '../context/ContentContext';
 import './admin.css';
 
 function AdminShell({ session, signOut, signingOut, error }) {
+  const { refresh } = useContent();
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
   return (
     <main className="admin-shell" aria-label="Pepegraphy content administration">
       <header className="admin-header">

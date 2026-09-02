@@ -12,6 +12,10 @@ const auth = vi.hoisted(() => ({
   signOut: vi.fn(),
 }));
 
+const content = vi.hoisted(() => ({
+  refresh: vi.fn(),
+}));
+
 vi.mock('../lib/supabaseClient', () => ({
   isSupabaseConfigured: true,
   supabaseClient: { auth },
@@ -20,6 +24,7 @@ vi.mock('../lib/supabaseClient', () => ({
 vi.mock('./ContentEditor', () => ({ ContentEditor: () => null }));
 vi.mock('./HeroManager', () => ({ HeroManager: () => null }));
 vi.mock('./GalleryManager', () => ({ GalleryManager: () => null }));
+vi.mock('../context/ContentContext', () => ({ useContent: () => content }));
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -34,6 +39,7 @@ describe('Admin authentication gate', () => {
     auth.onAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });
+    content.refresh.mockResolvedValue(undefined);
     container = document.createElement('div');
     document.body.append(container);
   });
@@ -74,6 +80,17 @@ describe('Admin authentication gate', () => {
       'Hero carousel',
       'Gallery',
     ]));
+  });
+
+  it('refreshes content when an administrator session becomes available', async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: 'test-token', user: { id: 'admin-user' } } },
+      error: null,
+    });
+
+    await renderAdmin();
+
+    expect(content.refresh).toHaveBeenCalledTimes(1);
   });
 
   it('returns to the sign-in form after signing out', async () => {
