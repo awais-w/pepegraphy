@@ -1,4 +1,3 @@
-import React from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -7,22 +6,34 @@ import Specialities from './components/Specialities';
 import Booking from './components/Booking';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import { useContent } from './context/ContentContext';
+import { buildPublicContent } from './lib/publicContent';
+import AdminApp from './admin/AdminApp';
 
-function App() {
+function PublicApp() {
+  const { content } = useContent();
+  const publicContent = buildPublicContent(content);
+
   return (
     <div className="bg-brand-black min-h-screen overflow-x-hidden">
-      <Navbar />
+      <Navbar navigation={publicContent.navigation} />
       <main>
-        <Hero />
-        <About />
-        <Portfolio />
-        <Specialities />
-        <Booking />
-        <Contact />
+        <Hero hero={publicContent.hero} />
+        <About about={publicContent.about} />
+        <Portfolio portfolio={publicContent.portfolio} />
+        <Specialities specialities={publicContent.specialities} />
+        <Booking booking={publicContent.booking} />
+        <Contact contact={publicContent.contact} categories={publicContent.portfolio.categories} />
       </main>
-      <Footer />
+      <Footer footer={publicContent.footer} />
     </div>
   );
+}
+
+function App() {
+  if (window.location.pathname === '/admin') return <AdminApp />;
+
+  return <PublicApp />;
 }
 
 export default App;

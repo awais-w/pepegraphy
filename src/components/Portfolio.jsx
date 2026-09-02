@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { galleryImages as images, categories } from '../data/portfolioData';
 
 const slideVariants = {
   enter: (direction) => ({
@@ -20,7 +19,10 @@ const slideVariants = {
   }),
 };
 
-const Portfolio = () => {
+const Portfolio = ({ portfolio }) => {
+  const { images, categories } = portfolio;
+  const categorySlugs = categories.map((category) => category.slug);
+  const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
   const [filter, setFilter] = useState('all');
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [direction, setDirection] = useState(0);
@@ -28,43 +30,43 @@ const Portfolio = () => {
   const [touchEnd, setTouchEnd] = useState(null);
 
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
-  const currentCatIdx = categories.indexOf(filter);
-  const prevCategory = categories[(currentCatIdx - 1 + categories.length) % categories.length];
-  const nextCategory = categories[(currentCatIdx + 1) % categories.length];
+  const currentCatIdx = categorySlugs.indexOf(filter);
+  const prevCategory = categorySlugs[(currentCatIdx - 1 + categorySlugs.length) % categorySlugs.length];
+  const nextCategory = categorySlugs[(currentCatIdx + 1) % categorySlugs.length];
 
   const handlePrevImage = useCallback((e) => {
     if (e) e.stopPropagation();
     if (filteredImages.length <= 1) return;
     setDirection(-1);
     setSelectedIndex((prev) => (prev === null ? 0 : (prev - 1 + filteredImages.length) % filteredImages.length));
-  }, [filteredImages.length]);
+  }, [filteredImages.length, setDirection, setSelectedIndex]);
 
   const handleNextImage = useCallback((e) => {
     if (e) e.stopPropagation();
     if (filteredImages.length <= 1) return;
     setDirection(1);
     setSelectedIndex((prev) => (prev === null ? 0 : (prev + 1) % filteredImages.length));
-  }, [filteredImages.length]);
+  }, [filteredImages.length, setDirection, setSelectedIndex]);
 
   const handlePrevCategory = useCallback((e) => {
     if (e) e.stopPropagation();
     setDirection(-1);
     setFilter(prevCategory);
     setSelectedIndex(0);
-  }, [prevCategory]);
+  }, [prevCategory, setDirection, setFilter, setSelectedIndex]);
 
   const handleNextCategory = useCallback((e) => {
     if (e) e.stopPropagation();
     setDirection(1);
     setFilter(nextCategory);
     setSelectedIndex(0);
-  }, [nextCategory]);
+  }, [nextCategory, setDirection, setFilter, setSelectedIndex]);
 
   const handleClose = useCallback((e) => {
     if (e) e.stopPropagation();
     setSelectedIndex(null);
     setDirection(0);
-  }, []);
+  }, [setDirection, setSelectedIndex]);
 
   // Touch Swipe Handlers for mobile & tablet devices
   const onTouchStart = (e) => {
@@ -117,32 +119,32 @@ const Portfolio = () => {
   return (
     <section id="portfolio" className="py-20 md:py-40 bg-brand-black">
       <div className="container mx-auto px-4 sm:px-6">
-        
+
         <div className="mb-12 md:mb-24">
-          <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">Work</span>
-          <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">Portfolio</h2>
+          <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{portfolio.eyebrow}</span>
+          <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">{portfolio.title}</h2>
           <p className="text-white/40 max-w-2xl text-base sm:text-lg leading-relaxed font-light">
-            Browse by category, or explore the full collection. Every frame tells a story of a moment captured in its most honest form.
+            {portfolio.description}
           </p>
         </div>
 
         {/* Filter Bar */}
         <div className="flex flex-wrap gap-2 sm:gap-3 mb-12 sm:mb-16">
-          {categories.map((cat) => (
+          {categories.map((category) => (
             <button
-              key={cat}
+              key={category.slug}
               onClick={() => {
-                setFilter(cat);
+                setFilter(category.slug);
                 setSelectedIndex(null);
                 setDirection(0);
               }}
               className={`px-4 sm:px-6 py-1.5 sm:py-2 text-[8px] sm:text-[9px] tracking-[0.2em] uppercase rounded-full transition-all duration-300 border cursor-pointer ${
-                filter === cat 
-                  ? 'bg-brand-gold border-brand-gold text-black font-medium' 
+                filter === category.slug
+                  ? 'bg-brand-gold border-brand-gold text-black font-medium'
                   : 'bg-transparent border-white/10 text-white/50 hover:border-white/30 hover:text-white'
               }`}
             >
-              {cat === 'pet' ? 'Pets' : cat}
+              {category.name}
             </button>
           ))}
         </div>
@@ -164,14 +166,14 @@ const Portfolio = () => {
                   setSelectedIndex(idx);
                 }}
               >
-                <img 
-                  src={img.src} 
+                <img
+                  src={img.src}
                   alt={img.alt}
                   className="w-full h-auto transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-100"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 sm:p-6">
                   <span className="text-white text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-light">
-                    {img.category === 'pet' ? 'Pet Photography' : img.category}
+                    {categoryNames.get(img.category) || img.category}
                   </span>
                 </div>
               </motion.div>
@@ -195,27 +197,27 @@ const Portfolio = () => {
               {/* Category Quick Nav */}
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1 max-w-[80vw] sm:max-w-none scrollbar-none">
                 <span className="text-white/30 text-[9px] uppercase tracking-widest hidden md:inline mr-2">Category:</span>
-                {categories.map((cat) => (
+                {categories.map((category) => (
                   <button
-                    key={cat}
+                    key={category.slug}
                     onClick={() => {
                       setDirection(0);
-                      setFilter(cat);
+                      setFilter(category.slug);
                       setSelectedIndex(0);
                     }}
                     className={`px-2.5 sm:px-3 py-1 text-[8px] sm:text-[9px] tracking-[0.15em] uppercase rounded-full transition-all duration-300 cursor-pointer ${
-                      filter === cat
+                      filter === category.slug
                         ? 'bg-brand-gold text-black font-semibold'
                         : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'
                     }`}
                   >
-                    {cat === 'pet' ? 'Pets' : cat}
+                    {category.name}
                   </button>
                 ))}
               </div>
 
               {/* Close Button */}
-              <button 
+              <button
                 className="text-white/50 hover:text-brand-gold transition-colors p-2 shrink-0 ml-2 cursor-pointer"
                 onClick={handleClose}
                 aria-label="Close modal"
@@ -242,7 +244,7 @@ const Portfolio = () => {
               )}
 
               {/* Main Image View - Sliding Transition Container */}
-              <div 
+              <div
                 className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
                 onTouchStart={onTouchStart}
@@ -292,7 +294,7 @@ const Portfolio = () => {
 
             {/* Bottom Bar: Mobile Controls + Image Details & Category Jump */}
             <div className="w-full flex flex-col items-center pt-2 px-3 sm:px-0 border-t border-white/10 text-center gap-2 z-30" onClick={(e) => e.stopPropagation()}>
-              
+
               {/* Mobile Image Navigation Bar */}
               <div className="w-full flex items-center justify-between sm:justify-center gap-4">
                 {/* Mobile Prev Arrow */}
@@ -318,7 +320,7 @@ const Portfolio = () => {
                     <span className="w-4 h-[1px] bg-white/20 inline-block" />
                     <span>{String(filteredImages.length).padStart(2, '0')}</span>
                     <span className="text-white/20">|</span>
-                    <span className="text-brand-gold capitalize">{selectedImage.category}</span>
+                    <span className="text-brand-gold capitalize">{categoryNames.get(selectedImage.category) || selectedImage.category}</span>
                   </div>
                 </div>
 
@@ -343,7 +345,7 @@ const Portfolio = () => {
                   className="hover:text-brand-gold transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span>↑ Prev Cat:</span>
-                  <span className="text-white/70 capitalize">{prevCategory}</span>
+                  <span className="text-white/70 capitalize">{categoryNames.get(prevCategory) || prevCategory}</span>
                 </button>
 
                 <button
@@ -351,7 +353,7 @@ const Portfolio = () => {
                   className="hover:text-brand-gold transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <span>Next Cat:</span>
-                  <span className="text-white/70 capitalize">{nextCategory}</span>
+                  <span className="text-white/70 capitalize">{categoryNames.get(nextCategory) || nextCategory}</span>
                   <span>↓</span>
                 </button>
               </div>

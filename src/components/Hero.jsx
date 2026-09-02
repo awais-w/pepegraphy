@@ -1,51 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { galleryImages } from '../data/portfolioData';
 
-const Hero = () => {
+const Hero = ({ hero }) => {
+  const { slides: heroSlides, ...heroContent } = hero;
+  const slides = Array.isArray(heroSlides) ? heroSlides : [];
+  const hasSlides = slides.length > 0;
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
+    if (!hasSlides) return undefined;
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, 6000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [hasSlides, slides.length]);
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % galleryImages.length);
+    setCurrentIndex((prev) => (prev + 1) % slides.length);
   };
 
-  const currentImage = galleryImages[currentIndex];
+  const activeIndex = hasSlides ? currentIndex % slides.length : 0;
+  const currentImage = slides[activeIndex];
 
   return (
     <section id="hero" className="relative h-screen min-h-[650px] flex items-center justify-center overflow-hidden">
       {/* Background Carousel */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-brand-black">
         <AnimatePresence mode="popLayout">
-          <motion.img
-            key={currentImage.id}
-            src={currentImage.src}
-            alt={currentImage.alt || 'Gallery photo'}
-            initial={{ opacity: 0, scale: 1.08 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{
-              opacity: { duration: 1.8, ease: 'easeInOut' },
-              scale: { duration: 7, ease: 'linear' },
-            }}
-            className="absolute inset-0 w-full h-full object-cover object-top brightness-[0.38] saturate-[0.85]"
-          />
+          {currentImage && (
+            <motion.img
+              key={currentImage.id}
+              src={currentImage.src}
+              alt={currentImage.alt || 'Gallery photo'}
+              initial={{ opacity: 0, scale: 1.08 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.02 }}
+              transition={{
+                opacity: { duration: 1.8, ease: 'easeInOut' },
+                scale: { duration: 7, ease: 'linear' },
+              }}
+              className="absolute inset-0 w-full h-full object-cover object-top brightness-[0.38] saturate-[0.85]"
+            />
+          )}
         </AnimatePresence>
 
         {/* Elegant stardust noise overlay */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]" />
-        
+
         {/* Subtle dark gradient overlay for text legibility */}
         <div className="absolute inset-0 bg-gradient-to-b from-brand-black/40 via-brand-black/20 to-brand-black" />
       </div>
@@ -58,7 +64,7 @@ const Hero = () => {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="text-brand-gold text-[9px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] uppercase mb-6"
         >
-          Natural · Authentic · Timeless
+          {heroContent.eyebrow}
         </motion.p>
 
         <motion.h1
@@ -67,7 +73,7 @@ const Hero = () => {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="text-white text-[24px] sm:text-7xl md:text-9xl font-serif tracking-[0.05em] sm:tracking-[0.1em] font-light mb-8"
         >
-          PEPEGRAPHY
+          {heroContent.title}
         </motion.h1>
 
         <motion.p
@@ -76,7 +82,7 @@ const Hero = () => {
           transition={{ delay: 0.8, duration: 1 }}
           className="text-white/70 font-serif italic text-base sm:text-xl md:text-2xl mb-12"
         >
-          Photography by Petra Styasztny
+          {heroContent.subtitle}
         </motion.p>
 
         <motion.div
@@ -85,16 +91,16 @@ const Hero = () => {
           transition={{ delay: 1, duration: 0.8 }}
         >
           <a
-            href="#portfolio"
+            href={heroContent.ctaHref}
             className="inline-block border border-white/30 px-8 sm:px-10 py-3 sm:py-4 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white hover:bg-white hover:text-black transition-all duration-500 backdrop-blur-xs"
           >
-            View Portfolio
+            {heroContent.ctaLabel}
           </a>
         </motion.div>
       </div>
 
       {/* Carousel Left/Right Manual Controls */}
-      <button
+      {hasSlides && <button
         onClick={handlePrev}
         aria-label="Previous slide"
         className="absolute left-4 sm:left-8 z-20 text-white/30 hover:text-brand-gold transition-colors duration-300 p-2 hidden sm:block"
@@ -102,9 +108,9 @@ const Hero = () => {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
           <path d="M15 18l-6-6 6-6" />
         </svg>
-      </button>
+      </button>}
 
-      <button
+      {hasSlides && <button
         onClick={handleNext}
         aria-label="Next slide"
         className="absolute right-4 sm:right-8 z-20 text-white/30 hover:text-brand-gold transition-colors duration-300 p-2 hidden sm:block"
@@ -112,18 +118,18 @@ const Hero = () => {
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
           <path d="M9 18l6-6-6-6" />
         </svg>
-      </button>
+      </button>}
 
       {/* Slide Counter & Category indicator */}
-      <div className="absolute bottom-10 left-6 sm:left-12 z-20 hidden sm:flex items-center gap-4 text-white/40 text-[9px] tracking-[0.2em] uppercase font-light">
+      {hasSlides && <div className="absolute bottom-10 left-6 sm:left-12 z-20 hidden sm:flex items-center gap-4 text-white/40 text-[9px] tracking-[0.2em] uppercase font-light">
         <span className="text-brand-gold font-mono">
-          {String(currentIndex + 1).padStart(2, '0')}
+          {String(activeIndex + 1).padStart(2, '0')}
         </span>
         <div className="w-8 h-[1px] bg-white/20" />
-        <span>{String(galleryImages.length).padStart(2, '0')}</span>
+        <span>{String(slides.length).padStart(2, '0')}</span>
         <span className="text-white/20 ml-2">|</span>
         <span className="text-white/60 ml-2 capitalize">{currentImage.category}</span>
-      </div>
+      </div>}
 
       {/* Scroll indicator */}
       <motion.div

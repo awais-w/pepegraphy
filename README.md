@@ -1,16 +1,23 @@
-# React + Vite
+# Pepegraphy
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Photography portfolio built with React and Vite. It can run with bundled content by default or use Supabase as its shared CMS.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+## Supabase CMS setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. In **Authentication → Configuration → General**, disable **Allow new users to sign up** and **Allow anonymous sign-ins**.
+2. For a new project, run [`supabase/migrations/001_cms.sql`](supabase/migrations/001_cms.sql). For a project created with an earlier `001_cms.sql`, run [`supabase/migrations/002_cms_admin_allowlist.sql`](supabase/migrations/002_cms_admin_allowlist.sql), then [`supabase/migrations/003_cms_media_storage_paths.sql`](supabase/migrations/003_cms_media_storage_paths.sql), before seeding.
+3. After the applicable migrations, run [`supabase/seed.sql`](supabase/seed.sql) to create the baseline public content and media metadata.
+4. Create the single email/password administrator in **Authentication → Users**, then add its `auth.users.id` to `public.admin_users`. Only allowlisted users can administer the CMS.
+5. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from **Project Settings → API**.
+6. Start the app with `npm run dev` and sign in at `/admin`. See [the CMS setup checklist](docs/cms-setup.md) for the allowlist SQL and release verification.
 
-## Expanding the ESLint configuration
+Only the project URL and anon key belong in `VITE_` variables. Never expose a service-role key in the Vite app, commit it to the repository, or add it to a client-side hosting environment.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+See [CMS setup and deployment](docs/cms-setup.md) for the production checklist, storage rules, reseeding behaviour, and verification steps.

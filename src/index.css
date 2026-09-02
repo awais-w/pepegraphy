@@ -3,7 +3,7 @@
 @theme {
   --font-serif: "Cormorant Garamond", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
-  
+
   --color-brand-gold: #c9a96e;
   --color-brand-gold-light: #e8cfa0;
   --color-brand-black: #0e0d0c;
@@ -12,10 +12,14 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   html {
     @apply scroll-smooth overflow-x-hidden;
   }
-  
+
   body {
     @apply bg-brand-black text-[#f0ece6] font-sans antialiased overflow-x-hidden;
   }

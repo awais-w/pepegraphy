@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Navbar = () => {
+const Navbar = ({ navigation }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -12,12 +12,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'About', href: '#about' },
-    { name: 'Portfolio', href: '#portfolio' },
-    { name: 'Booking', href: '#booking' },
-    { name: 'Contact', href: '#contact' },
-  ];
+  const navLinks = navigation.links.map(({ label, href }) => ({ name: label, href }));
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -25,15 +20,15 @@ const Navbar = () => {
     }`}>
       <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
         <a href="#hero" className="text-xl sm:text-2xl font-serif tracking-tighter sm:tracking-[0.2em] text-white hover:text-brand-gold transition-colors">
-          PEPEGRAPHY
+          {navigation.brand}
         </a>
 
         {/* Desktop Nav */}
         <ul className="hidden md:flex gap-10">
           {navLinks.map((link) => (
             <li key={link.name}>
-              <a 
-                href={link.href} 
+              <a
+                href={link.href}
                 className="text-[10px] font-sans tracking-[0.2em] uppercase text-white/70 hover:text-white transition-colors relative group"
               >
                 {link.name}
@@ -44,9 +39,10 @@ const Navbar = () => {
         </ul>
 
         {/* Mobile Toggle */}
-        <button 
+        <button
           className="md:hidden text-white p-2"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -64,7 +60,7 @@ const Navbar = () => {
             <ul className="flex flex-col py-6">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a 
+                  <a
                     href={link.href}
                     className="block px-8 py-4 text-xs tracking-[0.2em] uppercase text-white/70 hover:text-white hover:bg-white/5 transition-all"
                     onClick={() => setIsMobileMenuOpen(false)}
