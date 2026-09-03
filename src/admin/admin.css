@@ -181,7 +181,7 @@
   color: var(--admin-muted);
 }
 
-.admin-shell { display: grid; grid-template-columns: var(--admin-sidebar-width) minmax(0, 1fr); margin: 0; }
+.admin-shell { display: grid; grid-template-columns: var(--admin-sidebar-width) minmax(0, 1fr); align-items: start; margin: 0; }
 
 .admin-sidebar {
   background: var(--admin-sidebar);
@@ -192,7 +192,6 @@
   padding: 1.5rem 1rem;
   position: sticky;
   top: 0;
-  height: 100vh;
 }
 
 .admin-brand {
