@@ -188,7 +188,6 @@
   border-inline-end: 1px solid var(--admin-border);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   padding: 1.5rem 1rem;
   position: sticky;
   top: 0;
