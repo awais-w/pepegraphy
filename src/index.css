@@ -17,11 +17,11 @@
   }
 
   html {
-    @apply scroll-smooth overflow-x-hidden;
+    @apply scroll-smooth overflow-x-clip;
   }
 
   body {
-    @apply bg-brand-black text-[#f0ece6] font-sans antialiased overflow-x-hidden;
+    @apply bg-brand-black text-[#f0ece6] font-sans antialiased overflow-x-clip;
   }
 }
 
