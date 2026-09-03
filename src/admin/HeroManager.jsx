@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { moveItem } from '../lib/contentRepository';
 import { ConfirmDialog, MediaUploader } from './MediaUploader';
+import { useToast } from './Toast';
 
 const messageFor = (error, fallback) => error instanceof Error ? error.message : fallback;
 const ordered = (items) => [...(items ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
@@ -86,6 +87,7 @@ function HeroSlideEditor({ slide, index, total, onSave, onMove, onDelete, onRepl
 
 export function HeroManager() {
   const { content, error: contentError, createHeroSlide, updateHeroSlide, deleteHeroSlide } = useContent();
+  const toast = useToast();
   const slides = ordered(content?.heroSlides);
   const [altText, setAltText] = useState('');
   const [caption, setCaption] = useState('');
@@ -107,6 +109,7 @@ export function HeroManager() {
     setCaption('');
     setIsVisible(true);
     setFeedback({ type: 'success', message: 'Hero slide added.' });
+    toast('Changes published');
   };
 
   const moveSlide = async (index, direction) => {
@@ -115,8 +118,10 @@ export function HeroManager() {
       const reorderedSlides = moveItem(slides, index, direction);
       await Promise.all(reorderedSlides.map((slide, sortOrder) => updateHeroSlide(slide.id, { sortOrder })));
       setFeedback({ type: 'success', message: 'Hero slide order saved.' });
+      toast('Changes published');
     } catch (moveError) {
       setFeedback({ type: 'error', message: messageFor(moveError, 'Unable to reorder hero slides.') });
+      toast(messageFor(moveError, 'Unable to reorder hero slides.'), 'error');
     }
   };
 
@@ -126,9 +131,11 @@ export function HeroManager() {
     try {
       await deleteHeroSlide(pendingDelete.item.id);
       setFeedback({ type: 'success', message: 'Hero slide deleted.' });
+      toast('Changes published');
       setPendingDelete(null);
     } catch (deleteError) {
       setFeedback({ type: 'error', message: messageFor(deleteError, 'Unable to delete the hero slide.') });
+      toast(messageFor(deleteError, 'Unable to delete the hero slide.'), 'error');
     } finally {
       setIsDeleting(false);
     }

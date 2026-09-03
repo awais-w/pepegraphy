@@ -10,6 +10,11 @@ vi.mock('../context/ContentContext', () => ({
   useContent: () => currentContext.value,
 }));
 
+vi.mock('./Toast', () => ({
+  ToastProvider: ({ children }) => children,
+  useToast: () => vi.fn(),
+}));
+
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 import { ContentEditor } from './ContentEditor';

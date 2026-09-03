@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { validateStructuredField } from '../lib/contentModel';
+import { useToast } from './Toast';
 
 const SECTION_SCHEMA = [
   {
@@ -103,6 +104,7 @@ export function ContentEditor() {
   const [jsonEdits, setJsonEdits] = useState({});
   const [savingKeys, setSavingKeys] = useState({});
   const [feedback, setFeedback] = useState(null);
+  const toast = useToast();
 
   const sectionContent = (section) => {
     const jsonValues = jsonEdits[section.key] ?? {};
@@ -146,11 +148,13 @@ export function ContentEditor() {
     try {
       await saveSection(section.key, sectionContent(section));
       setFeedback({ type: 'success', message: `${section.title} saved.` });
+      toast('Changes published');
     } catch (saveError) {
       setFeedback({
         type: 'error',
         message: saveError instanceof Error ? saveError.message : `Unable to save ${section.title.toLowerCase()}.`,
       });
+      toast(saveError instanceof Error ? saveError.message : `Unable to save ${section.title.toLowerCase()}.`, 'error');
     } finally {
       setSavingKeys((current) => {
         const remaining = { ...current };

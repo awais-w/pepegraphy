@@ -5,6 +5,7 @@ import { AdminAuth } from './AdminAuth';
 import { ContentEditor } from './ContentEditor';
 import { GalleryManager } from './GalleryManager';
 import { HeroManager } from './HeroManager';
+import { ToastProvider } from './Toast';
 import { useContent } from '../context/ContentContext';
 import './admin.css';
 
@@ -108,7 +109,11 @@ function AdminShell({ session, signOut, signingOut, error }) {
 function AdminApp() {
   const { refresh } = useContent();
 
-  return <AdminAuth onAuthenticated={refresh}>{(auth) => <AdminShell {...auth} />}</AdminAuth>;
+  return (
+    <ToastProvider>
+      <AdminAuth onAuthenticated={refresh}>{(auth) => <AdminShell {...auth} />}</AdminAuth>
+    </ToastProvider>
+  );
 }
 
 export default AdminApp;

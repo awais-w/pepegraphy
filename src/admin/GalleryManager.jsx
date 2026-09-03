@@ -4,6 +4,7 @@ import { useContent } from '../context/ContentContext';
 import { moveItem } from '../lib/contentRepository';
 import { slugify } from '../lib/contentModel';
 import { ConfirmDialog, MediaUploader } from './MediaUploader';
+import { useToast } from './Toast';
 
 const messageFor = (error, fallback) => error instanceof Error ? error.message : fallback;
 const ordered = (items) => [...(items ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
@@ -149,6 +150,7 @@ export function GalleryManager() {
     updatePhoto,
     deletePhoto,
   } = useContent();
+  const toast = useToast();
   const categories = ordered(content?.categories);
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -168,10 +170,12 @@ export function GalleryManager() {
     const name = newCategoryName.trim();
     if (!name) {
       setFeedback({ type: 'error', message: 'Enter a category name.' });
+      toast('Enter a category name.', 'error');
       return;
     }
     if (categories.some((category) => slugify(category.name) === newCategorySlug || category.slug === newCategorySlug)) {
       setFeedback({ type: 'error', message: 'A category with this name already exists.' });
+      toast('A category with this name already exists.', 'error');
       return;
     }
 
@@ -181,8 +185,10 @@ export function GalleryManager() {
       setNewCategoryName('');
       if (category?.id) setSelectedCategoryId(category.id);
       setFeedback({ type: 'success', message: 'Category created.' });
+      toast('Changes published');
     } catch (createError) {
       setFeedback({ type: 'error', message: messageFor(createError, 'Unable to create the category.') });
+      toast(messageFor(createError, 'Unable to create the category.'), 'error');
     }
   };
 
@@ -192,8 +198,10 @@ export function GalleryManager() {
       const reorderedCategories = moveItem(categories, index, direction);
       await Promise.all(reorderedCategories.map((category, sortOrder) => updateCategory(category.id, { sortOrder })));
       setFeedback({ type: 'success', message: 'Category order saved.' });
+      toast('Changes published');
     } catch (moveError) {
       setFeedback({ type: 'error', message: messageFor(moveError, 'Unable to reorder categories.') });
+      toast(messageFor(moveError, 'Unable to reorder categories.'), 'error');
     }
   };
 
@@ -210,6 +218,7 @@ export function GalleryManager() {
     setNewPhotoAltText('');
     setNewPhotoIsVisible(true);
     setFeedback({ type: 'success', message: 'Photo added.' });
+    toast('Changes published');
   };
 
   const movePhoto = async (index, direction) => {
@@ -218,8 +227,10 @@ export function GalleryManager() {
       const reorderedPhotos = moveItem(selectedPhotos, index, direction);
       await Promise.all(reorderedPhotos.map((photo, sortOrder) => updatePhoto(photo.id, { sortOrder })));
       setFeedback({ type: 'success', message: 'Photo order saved.' });
+      toast('Changes published');
     } catch (moveError) {
       setFeedback({ type: 'error', message: messageFor(moveError, 'Unable to reorder photos.') });
+      toast(messageFor(moveError, 'Unable to reorder photos.'), 'error');
     }
   };
 
@@ -230,9 +241,11 @@ export function GalleryManager() {
       if (pendingDelete.kind === 'category') await deleteCategory(pendingDelete.item.id);
       else await deletePhoto(pendingDelete.item.id);
       setFeedback({ type: 'success', message: `${pendingDelete.kind === 'category' ? 'Category' : 'Photo'} deleted.` });
+      toast('Changes published');
       setPendingDelete(null);
     } catch (deleteError) {
       setFeedback({ type: 'error', message: messageFor(deleteError, `Unable to delete the ${pendingDelete.kind}.`) });
+      toast(messageFor(deleteError, `Unable to delete the ${pendingDelete.kind}.`), 'error');
     } finally {
       setIsDeleting(false);
     }
