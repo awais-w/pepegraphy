@@ -358,13 +358,20 @@
 
 .admin-panel legend, .admin-media-form legend {
   color: var(--admin-accent-strong);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 1.15rem;
   font-weight: 600;
   padding-inline: 0.35rem;
 }
 
 .admin-panel h3 { font-size: 1.6rem; line-height: 1.1; margin-bottom: 0.8rem; }
+.admin-content-editor > .admin-panel > h3 {
+  color: var(--admin-accent-strong);
+  font-size: 1.15rem;
+  line-height: 1.25;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
 .admin-panel small { color: var(--admin-muted); font-size: 0.8rem; }
 
 .admin-content-editor, .admin-media-manager, .admin-gallery-section,
@@ -383,7 +390,8 @@
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
   min-width: 0;
-  padding: 1.5rem;
+  padding: 2.25rem 1.5rem 1.5rem;
+  position: relative;
   width: 100%;
 }
 
@@ -399,6 +407,16 @@
 .admin-content-editor > .admin-panel > fieldset > p {
   display: grid;
   gap: 0.55rem;
+}
+
+.admin-content-editor > .admin-panel > h3 {
+  background: var(--admin-canvas);
+  left: 1.25rem;
+  margin: 0;
+  padding-inline: 0.65rem;
+  position: absolute;
+  top: 0;
+  transform: translateY(-50%);
 }
 
 .admin-content-editor .admin-panel > p:last-of-type { margin-bottom: 1rem; }
