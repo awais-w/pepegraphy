@@ -393,7 +393,19 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     }
 
     if (field.type === 'markdown') {
-      const currentValue = typeof (editedValue ?? storedValue) === 'string' ? editedValue ?? storedValue : readLocalized(editedValue ?? storedValue, editingLanguage);
+      const rawValue = editedValue ?? storedValue;
+      let currentValue = '';
+      if (typeof rawValue === 'string') {
+        currentValue = rawValue;
+      } else if (Array.isArray(rawValue)) {
+        currentValue = rawValue.map((item) => {
+          if (typeof item === 'string') return item;
+          if (item && typeof item === 'object') return item[editingLanguage] || item.en || '';
+          return '';
+        }).filter(Boolean).join('\n\n');
+      } else if (rawValue && typeof rawValue === 'object') {
+        currentValue = rawValue[editingLanguage] || rawValue.en || '';
+      }
       const updateCurrent = (text) => updateField(section.key, field, ensureLocalized(editedValue ?? storedValue, editingLanguage, text));
       return (
         <MarkdownEditor

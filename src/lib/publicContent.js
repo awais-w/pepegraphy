@@ -26,6 +26,19 @@ const withTitleLines = (section) => ({
 
 const isVisible = (item) => item?.isVisible !== false && item?.is_visible !== false;
 
+function toMarkdownString(value, language) {
+  const localized = localizeContentTree(value, language);
+  if (Array.isArray(localized)) {
+    return localized.map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object') return item[language] || item.en || '';
+      return '';
+    }).filter(Boolean).join('\n\n');
+  }
+  if (typeof localized === 'string') return localized;
+  return '';
+}
+
 export function buildPublicContent(content = defaultContent, language = getDefaultLanguage()) {
   const source = mergeContent(defaultContent, content);
   const siteContent = source.siteContent;
@@ -62,11 +75,11 @@ export function buildPublicContent(content = defaultContent, language = getDefau
     },
     about: withTitleLines({
       ...localize(mergeSection(defaultContent.siteContent.about, siteContent.about)),
-      bodyHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.about, siteContent.about).body)),
+      bodyHtml: renderMarkdown(toMarkdownString(mergeSection(defaultContent.siteContent.about, siteContent.about).body, language)),
     }),
     portfolio: {
       ...localize(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio)),
-      descriptionHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio).description)),
+      descriptionHtml: renderMarkdown(toMarkdownString(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio).description, language)),
       categories: [{ slug: 'all', name: pickLocalized({ en: 'All', hu: 'Összes' }, language) }, ...publicCategories],
       images: photos,
     },
@@ -74,7 +87,7 @@ export function buildPublicContent(content = defaultContent, language = getDefau
     booking: localize(mergeSection(defaultContent.siteContent.booking, siteContent.booking)),
     contact: withTitleLines({
       ...localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact)),
-      descriptionHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact).description)),
+      descriptionHtml: renderMarkdown(toMarkdownString(mergeSection(defaultContent.siteContent.contact, siteContent.contact).description, language)),
     }),
     footer: localize(mergeSection(defaultContent.siteContent.footer, siteContent.footer)),
   };
