@@ -163,12 +163,20 @@ describe('ContentEditor', () => {
     });
   });
 
-  it('rejects syntactically valid JSON that does not match the navigation links shape', async () => {
+  it('saves navigation links from simple label/href text', async () => {
     await renderEditor();
-    const links = container.querySelector('#navigation-links');
+    const enLinks = container.querySelector('#navigation-links-en');
+    const huLinks = container.querySelector('#navigation-links-hu');
+
+    expect(enLinks).not.toBeNull();
+    expect(huLinks).not.toBeNull();
 
     await act(async () => {
-      setInputValue(links, '{ "label": "About", "href": "#about" }');
+      setInputValue(enLinks, 'label=About, href=#about\nlabel=Portfolio, href=#portfolio');
+    });
+
+    await act(async () => {
+      setInputValue(huLinks, 'label=Rólam, href=#about\nlabel=Portfólió, href=#portfolio');
     });
 
     await act(async () => {
@@ -176,8 +184,13 @@ describe('ContentEditor', () => {
       await Promise.resolve();
     });
 
-    expect(saveSection).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="alert"]')?.textContent).toContain('JSON array of link objects');
+    expect(saveSection).toHaveBeenCalledWith('navigation', {
+      brand: 'PEPEGRAPHY',
+      links: [
+        { label: { en: 'About', hu: 'Rólam' }, href: '#about' },
+        { label: { en: 'Portfolio', hu: 'Portfólió' }, href: '#portfolio' },
+      ],
+    });
   });
 
   it('warns when fallback content is active and disables a section while it saves', async () => {

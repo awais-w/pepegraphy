@@ -25,7 +25,7 @@ const SECTION_SCHEMA = [
     title: 'Navigation',
     fields: [
       { key: 'brand', label: 'Brand' },
-      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href. Use { "en": "...", "hu": "..." } for label to support bilingual nav.' },
+      { key: 'links', label: 'Links', type: 'navigation-links', description: 'One link per line. Format: label=..., href=...' },
     ],
   },
   {
@@ -137,6 +137,60 @@ function ensureLocalized(existing, language, nextValue) {
   return { [language]: nextValue };
 }
 
+function parseNavigationText(value) {
+  const items = [];
+  const lines = String(value ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  for (const line of lines) {
+    const labelMatch = line.match(/label=(.+?)(?:,|\s+href=|$)/i);
+    const hrefMatch = line.match(/href=(.+)/i);
+    if (!labelMatch && !hrefMatch) continue;
+
+    const label = labelMatch ? labelMatch[1].trim() : '';
+    let href = hrefMatch ? hrefMatch[1].trim() : '#';
+    if (!href.startsWith('#')) href = `#${href}`;
+
+    if (label || href) {
+      items.push({ label, href });
+    }
+  }
+
+  return items;
+}
+
+function serializeNavigationBilingual(enText, huText) {
+  const enItems = parseNavigationText(enText);
+  const huItems = parseNavigationText(huText);
+  const maxLength = Math.max(enItems.length, huItems.length, 1);
+
+  const result = [];
+  for (let index = 0; index < maxLength; index++) {
+    const enItem = enItems[index] || {};
+    const huItem = huItems[index] || {};
+    const href = enItem.href || huItem.href || '#';
+    const label = { en: enItem.label || '', hu: huItem.label || '' };
+
+    result.push({ label, href });
+  }
+
+  return result;
+}
+
+function readNavigationText(value, language) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      const label = typeof item?.label === 'string' ? item.label : item?.label?.[language] || '';
+      const href = typeof item?.href === 'string' ? item.href : '#';
+      return `label=${label}, href=${href}`;
+    }).join('\n');
+  }
+
+  return String(value ?? '');
+}
+
 export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
   const { content, error, saveSection } = useContent();
   const siteContent = content?.siteContent ?? {};
@@ -207,6 +261,41 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     const storedValue = siteContent[section.key]?.[field.key];
     const editedValue = edits[section.key]?.[field.key];
     const translatable = isTranslatable(section.key, field.key);
+
+    if (field.type === 'navigation-links') {
+      const enValue = readNavigationText(editedValue ?? storedValue, 'en');
+      const huValue = readNavigationText(editedValue ?? storedValue, 'hu');
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'en')}
+              value={enValue}
+              onChange={(event) => {
+                const nextHu = readNavigationText(editedValue ?? storedValue, 'hu');
+                const combined = serializeNavigationBilingual(event.target.value, nextHu);
+                updateField(section.key, field, combined);
+              }}
+              rows="6"
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'hu')}
+              value={huValue}
+              onChange={(event) => {
+                const nextEn = readNavigationText(editedValue ?? storedValue, 'en');
+                const combined = serializeNavigationBilingual(nextEn, event.target.value);
+                updateField(section.key, field, combined);
+              }}
+              rows="6"
+            />
+          </div>
+        </div>
+      );
+    }
 
     if (field.type === 'json') {
       const jsonValue = jsonEdits[section.key]?.[field.key] ?? JSON.stringify(editedValue ?? storedValue ?? '', null, 2);
