@@ -91,20 +91,22 @@ function AdminShell({ session, signOut, signingOut, error }) {
           })}
         </nav>
 
-        <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
+        <div className="admin-sidebar-actions">
+          <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
 
-        <div className="admin-account">
-          <span className="admin-account-avatar" aria-hidden="true">
-            {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
-          </span>
-          <span className="admin-account-copy">
-            <strong>Administrator</strong>
-            <small>{session.user?.email ?? 'Signed in'}</small>
-          </span>
-          <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
-            <LogOut aria-hidden="true" size={18} />
-            <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
-          </button>
+          <div className="admin-account">
+            <span className="admin-account-avatar" aria-hidden="true">
+              {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
+            </span>
+            <span className="admin-account-copy">
+              <strong>Administrator</strong>
+              <small>{session.user?.email ?? 'Signed in'}</small>
+            </span>
+            <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
+              <LogOut aria-hidden="true" size={18} />
+              <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
+            </button>
+          </div>
         </div>
       </aside>
 

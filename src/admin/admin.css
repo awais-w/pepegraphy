@@ -623,6 +623,7 @@
   .admin-brand small, .admin-account-copy { display: none; }
   .admin-navigation { display: flex; justify-content: center; }
   .admin-navigation a { min-height: 2.5rem; }
+  .admin-sidebar-actions { align-items: center; display: flex; gap: 0.5rem; }
   .admin-account { border: 0; display: flex; margin: 0; padding: 0; }
   .admin-account-avatar { display: none; }
 }
