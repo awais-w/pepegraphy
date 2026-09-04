@@ -7,8 +7,6 @@ import { GalleryManager } from './GalleryManager';
 import { HeroManager } from './HeroManager';
 import { ToastProvider } from './Toast';
 import { useContent } from '../context/ContentContext';
-import { useLanguage } from '../i18n/LanguageContext';
-import { getDefaultLanguage, getSupportedLanguages } from '../i18n/translations';
 import './admin.css';
 
 const SECTIONS = [
@@ -16,32 +14,6 @@ const SECTIONS = [
   { id: 'hero-carousel', label: 'Hero carousel', title: 'Hero slides', description: 'Curate the photographs and captions visitors see first.', icon: Layers3, component: HeroManager },
   { id: 'gallery', label: 'Gallery', title: 'Gallery', description: 'Organise portfolio categories and their photographs.', icon: Images, component: GalleryManager },
 ];
-
-const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
-
-function AdminLanguageSwitcher() {
-  const { language, setLanguage, supportedLanguages } = useLanguage();
-  const fallback = getDefaultLanguage();
-  const languages = supportedLanguages?.length ? supportedLanguages : getSupportedLanguages();
-  return (
-    <div className="admin-language-switcher" role="group" aria-label="Preview language">
-      {languages.map((code) => {
-        const isActive = (language ?? fallback) === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setLanguage(code)}
-            aria-pressed={isActive}
-            className={isActive ? 'admin-language-switcher-active' : undefined}
-          >
-            {LANGUAGE_LABELS[code] ?? code.toUpperCase()}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 const getInitialSection = () => {
   const hash = window.location.hash.replace('#', '');
@@ -118,7 +90,6 @@ function AdminShell({ session, signOut, signingOut, error }) {
             <p>{activeSectionData.description}</p>
           </div>
           <div className="admin-header-actions">
-            <AdminLanguageSwitcher />
             <a className="admin-public-link" href="/" target="_blank" rel="noreferrer">
               View public site
               <ExternalLink aria-hidden="true" size={16} />
