@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React, { useState } from 'react';
+import React from 'react';
 
 const TOOLBAR = [
   { label: 'B', action: 'bold', title: 'Bold', prefix: '**', suffix: '**' },
@@ -27,8 +27,6 @@ function wrapSelection(textarea, prefix, suffix) {
 }
 
 export function MarkdownEditor({ id, value, onChange, rows = 6 }) {
-  const [preview, setPreview] = useState(false);
-
   return (
     <div className="admin-markdown-editor">
       <div className="admin-markdown-toolbar">
@@ -46,23 +44,13 @@ export function MarkdownEditor({ id, value, onChange, rows = 6 }) {
             {item.label}
           </button>
         ))}
-        <button type="button" onClick={() => setPreview((current) => !current)}>
-          {preview ? 'Edit' : 'Preview'}
-        </button>
       </div>
-      {preview ? (
-        <div
-          className="admin-markdown-preview"
-          dangerouslySetInnerHTML={{ __html: value }}
-        />
-      ) : (
-        <textarea
-          id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          rows={rows}
-        />
-      )}
+      <textarea
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={rows}
+      />
     </div>
   );
 }

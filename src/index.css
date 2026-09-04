@@ -23,6 +23,10 @@
   body {
     @apply bg-brand-black text-[#f0ece6] font-sans antialiased overflow-x-clip;
   }
+
+  b, strong {
+    font-weight: bold;
+  }
 }
 
 /* Custom Scrollbar */

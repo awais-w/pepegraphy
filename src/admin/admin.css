@@ -680,8 +680,7 @@
   color: var(--admin-text);
 }
 
-.admin-markdown-editor textarea,
-.admin-markdown-preview {
+.admin-markdown-editor textarea {
   background: var(--admin-surface);
   color: var(--admin-text);
   font: inherit;
@@ -693,75 +692,5 @@
   outline: none;
   resize: vertical;
   width: 100%;
-}
-
-.admin-markdown-preview {
-  border: 0;
-  line-height: 1.7;
-  min-height: 12rem;
-  overflow: auto;
-}
-
-.admin-markdown-preview h1,
-.admin-markdown-preview h2,
-.admin-markdown-preview h3,
-.admin-markdown-preview h4 {
-  color: var(--admin-accent-strong);
-  font-family: var(--font-serif);
-  margin: 1rem 0 0.5rem;
-}
-
-.admin-markdown-preview p {
-  margin: 0 0 0.75rem;
-}
-
-.admin-markdown-preview ul,
-.admin-markdown-preview ol {
-  margin: 0 0 0.75rem;
-  padding-inline-start: 1.5rem;
-}
-
-.admin-markdown-preview li {
-  margin-bottom: 0.35rem;
-}
-
-.admin-markdown-preview blockquote {
-  border-inline-start: 3px solid var(--admin-accent);
-  color: var(--admin-muted);
-  margin: 0 0 0.75rem;
-  padding-inline-start: 0.75rem;
-}
-
-.admin-markdown-preview code {
-  background: var(--admin-input);
-  border-radius: var(--admin-radius-sm);
-  padding: 0.15rem 0.35rem;
-}
-
-.admin-markdown-preview pre {
-  background: var(--admin-input);
-  border-radius: var(--admin-radius-sm);
-  overflow: auto;
-  padding: 0.75rem;
-}
-
-.admin-markdown-preview pre code {
-  background: transparent;
-  padding: 0;
-}
-
-.admin-markdown-preview a {
-  color: var(--admin-accent-strong);
-  text-decoration: underline;
-}
-
-.admin-markdown-preview img {
-  max-width: 100%;
-}
-
-.admin-markdown-preview hr {
-  border: 0;
-  border-block-start: 1px solid var(--admin-border);
-  margin: 1rem 0;
 }
 
