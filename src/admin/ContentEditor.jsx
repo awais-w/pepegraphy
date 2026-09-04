@@ -380,7 +380,6 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
               id={fieldId(section.key, field.key, editingLanguage)}
               value={currentValue}
@@ -406,7 +405,6 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
               id={fieldId(section.key, field.key, editingLanguage)}
               value={currentValue}
@@ -432,7 +430,6 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
               id={fieldId(section.key, field.key, editingLanguage)}
               value={currentValue}
@@ -458,7 +455,6 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
               id={fieldId(section.key, field.key, editingLanguage)}
               value={currentValue}
@@ -484,7 +480,6 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
               id={fieldId(section.key, field.key, editingLanguage)}
               value={currentValue}
