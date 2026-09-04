@@ -363,10 +363,6 @@
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 48rem) {
-  .admin-bilingual-field { grid-template-columns: 1fr 1fr; }
-}
-
 .admin-bilingual-field > div {
   border: 1px dashed var(--admin-border);
   border-radius: var(--admin-radius-sm);
