@@ -65,13 +65,23 @@ function AdminShell({ session, signOut, signingOut, error }) {
   return (
     <main className="admin-shell" aria-label="Pepegraphy content administration">
       <aside className="admin-sidebar" aria-label="Studio administration">
-        <a className="admin-brand" href="/" aria-label="Pepegraphy public site">
-          <span className="admin-brand-mark" aria-hidden="true">P</span>
-          <span>
-            <strong>Pepegraphy</strong>
-            <small>Studio administration</small>
-          </span>
-        </a>
+        <div className="admin-sidebar-header">
+          <a className="admin-brand" href="/" aria-label="Pepegraphy public site">
+            <span className="admin-brand-mark" aria-hidden="true">P</span>
+            <span>
+              <strong>Pepegraphy</strong>
+              <small>Studio administration</small>
+            </span>
+          </a>
+
+          <div className="admin-sidebar-header-actions">
+            <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
+            <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
+              <LogOut aria-hidden="true" size={18} />
+              <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
+            </button>
+          </div>
+        </div>
 
         <nav className="admin-navigation" aria-label="Admin sections">
           {SECTIONS.map((section) => {
@@ -92,25 +102,6 @@ function AdminShell({ session, signOut, signingOut, error }) {
         </nav>
 
         <div className="admin-sidebar-spacer" />
-
-        <div className="admin-sidebar-footer">
-          <div className="admin-sidebar-separator" />
-          <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
-
-          <div className="admin-account">
-            <span className="admin-account-avatar" aria-hidden="true">
-              {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
-            </span>
-            <span className="admin-account-copy">
-              <strong>Administrator</strong>
-              <small>{session.user?.email ?? 'Signed in'}</small>
-            </span>
-            <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
-              <LogOut aria-hidden="true" size={18} />
-              <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
-            </button>
-          </div>
-        </div>
       </aside>
 
       <div className="admin-workspace">
