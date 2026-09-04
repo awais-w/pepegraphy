@@ -10,60 +10,109 @@ function imageValidationError(file) {
   return null;
 }
 
-export function MediaUploader({ id, label, folder, submitLabel, onUploaded, disabled = false }) {
+export function MediaUploader({ id, label, folder, submitLabel, onUploaded, disabled = false, multiple = false }) {
   const { uploadImage } = useContent();
   const inputRef = useRef(null);
-  const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [error, setError] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const [errors, setErrors] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => () => {
-    if (previewUrl?.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
-  }, [previewUrl]);
+    previewUrls.forEach((url) => { if (url?.startsWith('blob:')) URL.revokeObjectURL(url); });
+  }, [previewUrls]);
 
-  const selectFile = (event) => {
-    const nextFile = event.target.files?.[0];
-    const validationError = imageValidationError(nextFile);
-    if (validationError) {
-      setFile(null);
-      setPreviewUrl(null);
-      setError(validationError);
-      return;
-    }
+  const selectFiles = (event) => {
+    const nextFiles = Array.from(event.target.files || []);
+    const validationErrors = nextFiles.map(imageValidationError);
+    const validFiles = [];
+    const newErrors = [];
+    const newPreviews = [];
 
-    setFile(nextFile);
-    setError(null);
-    setPreviewUrl(typeof URL.createObjectURL === 'function' ? URL.createObjectURL(nextFile) : null);
+    nextFiles.forEach((file, index) => {
+      const error = validationErrors[index];
+      if (error) {
+        newErrors.push({ name: file.name, error });
+      } else {
+        validFiles.push(file);
+        newPreviews.push(typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : null);
+      }
+    });
+
+    setFiles(validFiles);
+    setPreviewUrls(newPreviews);
+    setErrors(newErrors);
   };
 
   const upload = async () => {
-    if (!file) return;
+    if (!files.length) return;
 
     setIsUploading(true);
-    setError(null);
+    setErrors([]);
+    setUploadProgress({ current: 0, total: files.length });
+
     try {
-      const uploadedImage = await uploadImage(file, folder);
-      await onUploaded(uploadedImage);
-      setFile(null);
-      setPreviewUrl(null);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress({ current: i + 1, total: files.length });
+        const uploadedImage = await uploadImage(file, folder);
+        await onUploaded(uploadedImage);
+      }
+
+      setFiles([]);
+      setPreviewUrls([]);
+      setUploadProgress({ current: 0, total: 0 });
       if (inputRef.current) inputRef.current.value = '';
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : 'Unable to upload the image.');
+      setErrors((current) => [...current, { name: 'Upload', error: uploadError instanceof Error ? uploadError.message : 'Unable to upload the image.' }]);
     } finally {
       setIsUploading(false);
     }
   };
 
+  const removeFile = (index) => {
+    setFiles((current) => current.filter((_, i) => i !== index));
+    setPreviewUrls((current) => current.filter((_, i) => i !== index));
+    setErrors((current) => current.filter((_, i) => i !== index));
+  };
+
   return (
     <div className="admin-media-uploader">
       <label htmlFor={id}>{label}</label>
-      <input ref={inputRef} id={id} type="file" accept="image/*" onChange={selectFile} disabled={disabled || isUploading} />
-      {previewUrl && <img className="admin-media-preview" src={previewUrl} alt="Selected image preview" />}
-      {file && <p className="admin-media-file-name">Ready to upload: {file.name}</p>}
-      {error && <p className="admin-message" role="alert">{error}</p>}
-      <button type="button" className="admin-button-secondary" onClick={upload} disabled={disabled || isUploading || !file}>
-        {isUploading ? 'Uploading image…' : submitLabel}
+      <input
+        ref={inputRef}
+        id={id}
+        type="file"
+        accept="image/*"
+        multiple={multiple}
+        onChange={selectFiles}
+        disabled={disabled || isUploading}
+      />
+      {previewUrls.length > 0 && (
+        <div className="admin-media-previews">
+          {previewUrls.map((url, index) => (
+            <div key={index} className="admin-media-preview-item">
+              <img className="admin-media-preview" src={url} alt={`Preview ${index + 1}`} />
+              {!isUploading && (
+                <button type="button" className="admin-media-remove" onClick={() => removeFile(index)} aria-label="Remove image">
+                  ×
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {files.length > 0 && (
+        <p className="admin-media-file-names">
+          {isUploading ? `Uploading ${uploadProgress.current} of ${uploadProgress.total}...` : `${files.length} file${files.length === 1 ? '' : 's'} selected`}
+        </p>
+      )}
+      {errors.map((item, index) => (
+        <p key={index} className="admin-message" role="alert">{item.error}</p>
+      ))}
+      <button type="button" className="admin-button-secondary" onClick={upload} disabled={disabled || isUploading || !files.length}>
+        {isUploading ? 'Uploading...' : submitLabel}
       </button>
     </div>
   );

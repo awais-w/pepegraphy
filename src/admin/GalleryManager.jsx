@@ -301,7 +301,7 @@ export function GalleryManager() {
               Show on site
             </label>
           </p>
-          <MediaUploader id="new-photo-image" label="Photo image" folder="gallery" submitLabel="Upload photo" disabled={categories.length === 0} onUploaded={addPhoto} />
+          <MediaUploader id="new-photo-image" label="Photo image" folder="gallery" submitLabel="Upload photo" multiple disabled={categories.length === 0} onUploaded={addPhoto} />
         </fieldset>
         {activeCategoryId && selectedPhotos.length === 0 && <p className="admin-empty-state" role="status">No photos in this category yet. Upload an image to add one.</p>}
         {selectedPhotos.length > 0 && (

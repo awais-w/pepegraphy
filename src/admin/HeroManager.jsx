@@ -161,7 +161,7 @@ export function HeroManager() {
             Show on site
           </label>
         </p>
-        <MediaUploader id="new-hero-image" label="Hero slide image" folder="hero" submitLabel="Upload hero slide" onUploaded={addSlide} />
+        <MediaUploader id="new-hero-image" label="Hero slide image" folder="hero" submitLabel="Upload hero slide" multiple onUploaded={addSlide} />
       </fieldset>
       {slides.length === 0 ? (
         <p className="admin-empty-state" role="status">No hero slides yet. Upload an image to start the carousel.</p>
