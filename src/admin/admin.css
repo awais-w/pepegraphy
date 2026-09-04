@@ -638,7 +638,6 @@
     flex-wrap: wrap; 
     gap: 0.35rem; 
     flex: 1 1 auto; 
-    min-width: 0; 
     justify-content: center; 
   }
   .admin-navigation a { min-height: 2.5rem; }
