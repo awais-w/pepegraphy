@@ -556,10 +556,7 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
                 const translatable = isTranslatable(section.key, field.key);
                 return (
                   <div key={field.key} className="admin-field">
-                    <label htmlFor={id}>
-                      {section.title} {field.label}
-                      {translatable ? ` · ${LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}` : ''}
-                    </label>
+                    <label htmlFor={id}>{section.title} {field.label}</label>
                     {renderFieldEditor(section, field)}
                   </div>
                 );
