@@ -291,7 +291,6 @@
   display: grid;
   gap: 0.65rem;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  margin-top: auto;
   padding: 1rem 0.25rem 0;
 }
 
@@ -312,6 +311,17 @@
 .admin-account-copy { min-width: 0; }
 .admin-account-copy strong { font-size: 0.75rem; }
 .admin-icon-button { min-height: 2.25rem; padding: 0; width: 2.25rem; }
+
+.admin-sidebar-spacer { flex-grow: 1; }
+
+.admin-sidebar-footer {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-sidebar-separator {
+  border-top: 1px solid var(--admin-border);
+}
 
 .admin-workspace { min-width: 0; padding: clamp(1.5rem, 4vw, 3.5rem); }
 
@@ -621,9 +631,9 @@
   }
   .admin-brand { margin: 0; }
   .admin-brand small, .admin-account-copy { display: none; }
-  .admin-navigation { display: flex; justify-content: center; }
+  .admin-navigation { display: flex; flex-wrap: wrap; justify-content: center; }
   .admin-navigation a { min-height: 2.5rem; }
-  .admin-sidebar-actions { align-items: center; display: flex; gap: 0.5rem; }
+  .admin-sidebar-footer { grid-column: 1 / -1; }
   .admin-account { border: 0; display: flex; margin: 0; padding: 0; }
   .admin-account-avatar { display: none; }
 }
@@ -639,6 +649,14 @@
     padding-bottom: 0.15rem;
   }
   .admin-navigation a { flex: 0 0 auto; }
+  .admin-sidebar-footer {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    grid-column: 1 / -1;
+  }
+  .admin-sidebar-separator { display: none; }
   .admin-workspace { padding: 1.25rem 1rem 2rem; }
   .admin-header { align-items: stretch; flex-direction: column; gap: 1.25rem; }
   .admin-public-link { align-self: flex-start; }

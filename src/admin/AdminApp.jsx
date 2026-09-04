@@ -91,7 +91,10 @@ function AdminShell({ session, signOut, signingOut, error }) {
           })}
         </nav>
 
-        <div className="admin-sidebar-actions">
+        <div className="admin-sidebar-spacer" />
+
+        <div className="admin-sidebar-footer">
+          <div className="admin-sidebar-separator" />
           <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
 
           <div className="admin-account">
