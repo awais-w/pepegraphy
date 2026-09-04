@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slideVariants = {
@@ -30,6 +30,10 @@ const Portfolio = ({ portfolio }) => {
   const [touchEnd, setTouchEnd] = useState(null);
 
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
+  const displayImages = useMemo(() => {
+    const shuffled = [...filteredImages].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 8);
+  }, [filteredImages]);
   const currentCatIdx = categorySlugs.indexOf(filter);
   const prevCategory = categorySlugs[(currentCatIdx - 1 + categorySlugs.length) % categorySlugs.length];
   const nextCategory = categorySlugs[(currentCatIdx + 1) % categorySlugs.length];
@@ -150,7 +154,7 @@ const Portfolio = ({ portfolio }) => {
         {/* Gallery Grid */}
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
           <AnimatePresence mode="popLayout">
-            {filteredImages.map((img, idx) => (
+            {displayImages.map((img, idx) => (
               <motion.div
                 key={img.id}
                 layout
@@ -161,7 +165,7 @@ const Portfolio = ({ portfolio }) => {
                 className="relative group cursor-pointer overflow-hidden bg-brand-surface break-inside-avoid"
                 onClick={() => {
                   setDirection(0);
-                  setSelectedIndex(idx);
+                  setSelectedIndex(displayImages.findIndex(item => item.id === img.id));
                 }}
               >
                 <img
@@ -226,7 +230,7 @@ const Portfolio = ({ portfolio }) => {
               </button>
             </div>
 
-            {/* Middle Section: Image with Horizontal Slide Transition */}
+            {/* Middle Section: Thumbnails + Image with Horizontal Slide Transition */}
             <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2 overflow-hidden">
               {/* Desktop Left Image Arrow */}
               {filteredImages.length > 1 && (
@@ -243,37 +247,64 @@ const Portfolio = ({ portfolio }) => {
 
               {/* Main Image View - Sliding Transition Container */}
               <div
-                className="relative w-full sm:max-w-5xl h-full flex flex-col items-center justify-center px-0 touch-pan-y overflow-hidden"
+                className="relative w-full sm:w-auto flex-1 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-0 sm:px-2 touch-pan-y overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
-                <AnimatePresence mode="popLayout" custom={direction}>
-                  <motion.img
-                    key={selectedImage.id}
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-                    drag={filteredImages.length > 1 ? "x" : false}
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.2}
-                    onDragEnd={(e, { offset, velocity }) => {
-                      const swipeThreshold = 40;
-                      if (offset.x < -swipeThreshold || velocity.x < -250) {
-                        handleNextImage();
-                      } else if (offset.x > swipeThreshold || velocity.x > 250) {
-                        handlePrevImage();
-                      }
-                    }}
-                    src={selectedImage.src}
-                    alt={selectedImage.alt}
-                    className="w-full sm:w-auto max-w-full max-h-[74vh] sm:max-h-[70vh] object-contain shadow-2xl cursor-grab active:cursor-grabbing"
-                  />
-                </AnimatePresence>
+                {/* Thumbnail Column - Desktop: vertical, Mobile: horizontal row */}
+                <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[70vh] pb-2 sm:pb-0 sm:pr-1 scrollbar-none">
+                  {filteredImages.map((thumbImg, thumbIdx) => (
+                    <button
+                      key={thumbImg.id}
+                      onClick={() => {
+                        setDirection(0);
+                        setSelectedIndex(thumbIdx);
+                      }}
+                      className={`shrink-0 sm:shrink w-16 h-16 sm:w-auto sm:h-auto overflow-hidden border-2 transition-all cursor-pointer ${
+                        selectedIndex === thumbIdx
+                          ? 'border-brand-gold opacity-100'
+                          : 'border-transparent opacity-60 hover:opacity-100'
+                      }`}
+                      aria-label={`View image ${thumbIdx + 1}`}
+                    >
+                      <img
+                        src={thumbImg.src}
+                        alt={thumbImg.alt}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative flex-1 flex items-center justify-center w-full sm:w-auto min-w-0">
+                  <AnimatePresence mode="popLayout" custom={direction}>
+                    <motion.img
+                      key={selectedImage.id}
+                      custom={direction}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+                      drag={filteredImages.length > 1 ? "x" : false}
+                      dragConstraints={{ left: 0, right: 0 }}
+                      dragElastic={0.2}
+                      onDragEnd={(e, { offset, velocity }) => {
+                        const swipeThreshold = 40;
+                        if (offset.x < -swipeThreshold || velocity.x < -250) {
+                          handleNextImage();
+                        } else if (offset.x > swipeThreshold || velocity.x > 250) {
+                          handlePrevImage();
+                        }
+                      }}
+                      src={selectedImage.src}
+                      alt={selectedImage.alt}
+                      className="w-full sm:w-auto max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain shadow-2xl cursor-grab active:cursor-grabbing"
+                    />
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Desktop Right Image Arrow */}
