@@ -1,24 +1,37 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone } from 'lucide-react';
+import { useTranslations } from '../i18n/useTranslations';
 
 const Contact = ({ contact, categories }) => {
+  const t = useTranslations();
   const [formState, setFormState] = useState({ name: '', email: '', type: '', message: '' });
   const [status, setStatus] = useState('');
+
+  const typeOptions = [
+    { value: 'male', label: t.contactFormTypes.find((opt) => opt.value === 'male')?.label ?? 'Male Portraiture' },
+    { value: 'female', label: t.contactFormTypes.find((opt) => opt.value === 'female')?.label ?? 'Female Portraiture' },
+    { value: 'children', label: t.contactFormTypes.find((opt) => opt.value === 'children')?.label ?? 'Children' },
+    { value: 'events', label: t.contactFormTypes.find((opt) => opt.value === 'events')?.label ?? 'Parties & Events' },
+    { value: 'reportage', label: t.contactFormTypes.find((opt) => opt.value === 'reportage')?.label ?? 'Reportage' },
+    { value: 'nature', label: t.contactFormTypes.find((opt) => opt.value === 'nature')?.label ?? 'Nature' },
+    { value: 'pet', label: t.contactFormTypes.find((opt) => opt.value === 'pet')?.label ?? 'Pets' },
+    { value: 'boudoir', label: t.contactFormTypes.find((opt) => opt.value === 'boudoir')?.label ?? 'Boudoir' },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formState.name || !formState.email) {
-      setStatus('Please fill in your name and email.');
+      setStatus(t.contactFormError ?? 'Please fill in your name and email.');
       return;
     }
 
-    const subject = encodeURIComponent(`Pepegraphy enquiry — ${formState.type || 'General'}`);
+    const subject = encodeURIComponent(`${t.contactFormSubjectPrefix ?? 'Pepegraphy enquiry'} — ${formState.type || (t.contactFormGeneral ?? 'General')}`);
     const body = encodeURIComponent(
-      `Hi Petra,\n\nMy name is ${formState.name}.\n\n${formState.message}\n\nBest,\n${formState.name}\n${formState.email}`
+      `${t.contactFormGreeting ?? 'Hi Petra'},\n\n${t.contactFormNameIntro ?? 'My name is'} ${formState.name}.\n\n${formState.message}\n\n${t.contactFormSignOff ?? 'Best'},\n${formState.name}\n${formState.email}`
     );
     window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-    setStatus('Opening your email client…');
+    setStatus(t.contactFormOpening ?? 'Opening your email client…');
   };
 
   return (
@@ -71,7 +84,7 @@ const Contact = ({ contact, categories }) => {
           >
             <div className="space-y-5 sm:space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">Your name</label>
+                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">{t.contactFormName}</label>
                 <input
                   type="text"
                   placeholder="Jane Smith"
@@ -80,7 +93,7 @@ const Contact = ({ contact, categories }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">Email address</label>
+                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">{t.contactFormEmail}</label>
                 <input
                   type="email"
                   placeholder="jane@example.com"
@@ -89,22 +102,25 @@ const Contact = ({ contact, categories }) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">Type of shoot</label>
+                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">{t.contactFormType}</label>
                 <select
                   className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white/50 focus:text-white appearance-none text-sm sm:text-base"
                   onChange={(e) => setFormState({...formState, type: e.target.value})}
                 >
-                  <option value="">Select a category...</option>
-                  {categories.filter((category) => category.slug !== 'all').map((category) => (
-                    <option key={category.slug} value={category.slug}>{category.name}</option>
-                  ))}
+                  <option value="">{t.contactFormTypePlaceholder ?? 'Select a category...'}</option>
+                  {categories.filter((category) => category.slug !== 'all').map((category) => {
+                    const localized = typeOptions.find((opt) => opt.value === category.slug);
+                    return (
+                      <option key={category.slug} value={category.slug}>{localized?.label ?? category.name}</option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">Message</label>
+                <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">{t.contactFormMessage}</label>
                 <textarea
                   rows="4"
-                  placeholder="Tell me about your vision..."
+                  placeholder={t.contactFormMessagePlaceholder ?? 'Tell me about your vision...'}
                   className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 resize-none text-sm sm:text-base"
                   onChange={(e) => setFormState({...formState, message: e.target.value})}
                 />
@@ -115,7 +131,7 @@ const Contact = ({ contact, categories }) => {
               type="submit"
               className="w-full bg-brand-gold text-black py-4 sm:py-5 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-brand-gold-light transition-all duration-500"
             >
-              Send Message
+              {t.contactFormSubmit}
             </button>
             {status && <p className="text-[9px] text-brand-gold text-center tracking-wider">{status}</p>}
           </motion.form>

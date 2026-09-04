@@ -119,13 +119,27 @@ describe('public content adapter', () => {
         booking: { features: null },
         footer: { links: [{ label: 'Contact', href: '#contact' }] },
       },
-    }));
+    }), 'en');
 
-    expect(publicContent.navigation.links).toEqual(defaultContent.siteContent.navigation.links);
-    expect(publicContent.about.body).toEqual(defaultContent.siteContent.about.body);
-    expect(publicContent.about.stats).toEqual(defaultContent.siteContent.about.stats);
-    expect(publicContent.specialities.items).toEqual(defaultContent.siteContent.specialities.items);
-    expect(publicContent.booking.features).toEqual(defaultContent.siteContent.booking.features);
+    expect(publicContent.navigation.links).toEqual(defaultContent.siteContent.navigation.links.map((link) => ({
+      ...link,
+      label: link.label.en,
+    })));
+    expect(publicContent.about.body).toEqual(defaultContent.siteContent.about.body.map((entry) => entry.en));
+    expect(publicContent.about.stats).toEqual(defaultContent.siteContent.about.stats.map((stat) => ({
+      ...stat,
+      label: stat.label.en,
+    })));
+    expect(publicContent.specialities.items).toEqual(defaultContent.siteContent.specialities.items.map((item) => ({
+      ...item,
+      title: item.title.en,
+      description: item.description.en,
+    })));
+    expect(publicContent.booking.features).toEqual(defaultContent.siteContent.booking.features.map((feature) => ({
+      ...feature,
+      title: feature.title.en,
+      description: feature.description.en,
+    })));
     expect(publicContent.footer.links).toEqual([{ label: 'Contact', href: '#contact' }]);
   });
 });

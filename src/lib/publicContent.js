@@ -1,4 +1,5 @@
 import { defaultContent, mergeContent } from './contentModel';
+import { getDefaultLanguage, localizeContentTree, pickLocalized } from '../i18n/translations';
 
 const mergeSection = (fallback, section) => ({
   ...fallback,
@@ -24,7 +25,7 @@ const withTitleLines = (section) => ({
 
 const isVisible = (item) => item?.isVisible !== false && item?.is_visible !== false;
 
-export function buildPublicContent(content = defaultContent) {
+export function buildPublicContent(content = defaultContent, language = getDefaultLanguage()) {
   const source = mergeContent(defaultContent, content);
   const siteContent = source.siteContent;
   const categories = source.categories.filter(isVisible).map((category) => ({
@@ -45,10 +46,12 @@ export function buildPublicContent(content = defaultContent) {
     }));
   const photoById = new Map(photos.map((photo) => [String(photo.id), photo]));
 
+  const localize = (value) => localizeContentTree(value, language);
+
   return {
-    navigation: mergeSection(defaultContent.siteContent.navigation, siteContent.navigation),
+    navigation: localize(mergeSection(defaultContent.siteContent.navigation, siteContent.navigation)),
     hero: {
-      ...mergeSection(defaultContent.siteContent.hero, siteContent.hero),
+      ...localize(mergeSection(defaultContent.siteContent.hero, siteContent.hero)),
       slides: source.heroSlides.filter(isVisible).map((slide) => ({
         id: slide.id,
         src: slide.src,
@@ -56,15 +59,15 @@ export function buildPublicContent(content = defaultContent) {
         category: slide.caption || photoById.get(String(slide.id))?.category || '',
       })),
     },
-    about: withTitleLines(mergeSection(defaultContent.siteContent.about, siteContent.about)),
+    about: withTitleLines(localize(mergeSection(defaultContent.siteContent.about, siteContent.about))),
     portfolio: {
-      ...mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio),
-      categories: [{ slug: 'all', name: 'All' }, ...publicCategories],
+      ...localize(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio)),
+      categories: [{ slug: 'all', name: pickLocalized({ en: 'All', hu: 'Összes' }, language) }, ...publicCategories],
       images: photos,
     },
-    specialities: mergeSection(defaultContent.siteContent.specialities, siteContent.specialities),
-    booking: mergeSection(defaultContent.siteContent.booking, siteContent.booking),
-    contact: withTitleLines(mergeSection(defaultContent.siteContent.contact, siteContent.contact)),
-    footer: mergeSection(defaultContent.siteContent.footer, siteContent.footer),
+    specialities: localize(mergeSection(defaultContent.siteContent.specialities, siteContent.specialities)),
+    booking: localize(mergeSection(defaultContent.siteContent.booking, siteContent.booking)),
+    contact: withTitleLines(localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact))),
+    footer: localize(mergeSection(defaultContent.siteContent.footer, siteContent.footer)),
   };
 }

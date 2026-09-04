@@ -1,8 +1,25 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { validateStructuredField } from '../lib/contentModel';
+import { useLanguage } from '../i18n/LanguageContext';
+import { getDefaultLanguage, getSupportedLanguages } from '../i18n/translations';
 import { useToast } from './Toast';
+
+const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
+
+const TRANSLATABLE_FIELDS = {
+  navigation: new Set(['brand']),
+  hero: new Set(['eyebrow', 'title', 'subtitle', 'ctaLabel']),
+  about: new Set(['eyebrow', 'title', 'body', 'imageAlt']),
+  portfolio: new Set(['eyebrow', 'title', 'description']),
+  specialities: new Set(['eyebrow', 'title', 'items']),
+  booking: new Set(['eyebrow', 'title', 'features', 'ctaLabel']),
+  contact: new Set(['eyebrow', 'title', 'description']),
+  footer: new Set(['brand', 'tagline', 'copyright']),
+};
+
+const isTranslatable = (sectionKey, fieldKey) => TRANSLATABLE_FIELDS[sectionKey]?.has(fieldKey) ?? false;
 
 const SECTION_SCHEMA = [
   {
@@ -10,7 +27,7 @@ const SECTION_SCHEMA = [
     title: 'Navigation',
     fields: [
       { key: 'brand', label: 'Brand' },
-      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href.' },
+      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href. Use { "en": "...", "hu": "..." } for label to support bilingual nav.' },
     ],
   },
   {
@@ -31,10 +48,10 @@ const SECTION_SCHEMA = [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
       { key: 'titleLineBreakAfterWords', label: 'Title line break after words', type: 'number' },
-      { key: 'body', label: 'Body', type: 'json', description: 'A JSON array of paragraph strings.' },
+      { key: 'body', label: 'Body', type: 'json', description: 'A JSON array of paragraph strings or { "en": "...", "hu": "..." } bilingual objects.' },
       { key: 'imageUrl', label: 'Image URL' },
       { key: 'imageAlt', label: 'Image alternative text' },
-      { key: 'stats', label: 'Stats', type: 'json', description: 'A JSON array of statistic objects with value and label.' },
+      { key: 'stats', label: 'Stats', type: 'json', description: 'A JSON array of statistic objects with value and label. Use { "en": "...", "hu": "..." } for label to support bilingual stats.' },
     ],
   },
   {
@@ -52,7 +69,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
-      { key: 'items', label: 'Items', type: 'json', description: 'A JSON array of speciality objects with icon, title, and description.' },
+      { key: 'items', label: 'Items', type: 'json', description: 'A JSON array of speciality objects with icon, title ({ en, hu }), and description ({ en, hu }).' },
     ],
   },
   {
@@ -61,7 +78,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
-      { key: 'features', label: 'Features', type: 'json', description: 'A JSON array of feature objects with title and description.' },
+      { key: 'features', label: 'Features', type: 'json', description: 'A JSON array of feature objects with title ({ en, hu }) and description ({ en, hu }).' },
       { key: 'ctaLabel', label: 'Call to action label' },
       { key: 'ctaHref', label: 'Call to action link' },
       { key: 'backgroundImageUrl', label: 'Background image URL' },
@@ -85,26 +102,55 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'brand', label: 'Brand' },
       { key: 'tagline', label: 'Tagline' },
-      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href.' },
+      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href. Use { "en": "...", "hu": "..." } for label to support bilingual footer links.' },
       { key: 'copyright', label: 'Copyright' },
     ],
   },
 ];
 
-const fieldId = (sectionKey, fieldKey) => `${sectionKey}-${fieldKey.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`;
+const fieldId = (sectionKey, fieldKey, suffix = '') => {
+  const base = `${sectionKey}-${fieldKey.replaceAll(/([A-Z])/g, '-$1').toLowerCase()}`;
+  return suffix ? `${base}-${suffix}` : base;
+};
 
 function fieldValue(value) {
   return value ?? '';
 }
 
+function readBilingual(value, language) {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object') {
+    const localized = value[language];
+    if (typeof localized === 'string') return localized;
+    const fallback = value[getDefaultLanguage()];
+    if (typeof fallback === 'string') return fallback;
+  }
+  return '';
+}
+
+function ensureBilingual(existing, language, nextValue) {
+  if (typeof existing === 'string') {
+    return { en: existing, [language]: nextValue };
+  }
+  if (existing && typeof existing === 'object') {
+    return { ...existing, [language]: nextValue };
+  }
+  return { [language]: nextValue };
+}
+
 export function ContentEditor() {
   const { content, error, saveSection } = useContent();
+  const { language } = useLanguage();
   const siteContent = content?.siteContent ?? {};
   const [edits, setEdits] = useState({});
   const [jsonEdits, setJsonEdits] = useState({});
   const [savingKeys, setSavingKeys] = useState({});
   const [feedback, setFeedback] = useState(null);
   const toast = useToast();
+
+  const supportedLanguages = useMemo(() => getSupportedLanguages(), []);
+  const editingLanguage = supportedLanguages.includes(language) ? language : getDefaultLanguage();
 
   const sectionContent = (section) => {
     const jsonValues = jsonEdits[section.key] ?? {};
@@ -123,11 +169,7 @@ export function ContentEditor() {
     return { ...siteContent[section.key], ...edits[section.key], ...parsedJson };
   };
 
-  const updateField = (sectionKey, field) => (event) => {
-    const value = field.type === 'number' && event.target.value !== ''
-      ? Number(event.target.value)
-      : event.target.value;
-
+  const updateField = (sectionKey, field, value) => {
     setEdits((current) => ({
       ...current,
       [sectionKey]: { ...current[sectionKey], [field.key]: value },
@@ -164,6 +206,83 @@ export function ContentEditor() {
     }
   };
 
+  const renderFieldEditor = (section, field) => {
+    const id = fieldId(section.key, field.key);
+    const storedValue = siteContent[section.key]?.[field.key];
+    const editedValue = edits[section.key]?.[field.key];
+    const translatable = isTranslatable(section.key, field.key);
+
+    if (field.type === 'json') {
+      const jsonValue = jsonEdits[section.key]?.[field.key] ?? JSON.stringify(editedValue ?? storedValue ?? '', null, 2);
+      return (
+        <>
+          <textarea id={id} value={jsonValue} onChange={updateJsonField(section.key, field.key)} aria-describedby={`${id}-help`} rows="8" />
+          <small id={`${id}-help`}>{field.description}</small>
+        </>
+      );
+    }
+
+    if (field.type === 'textarea') {
+      if (translatable) {
+        const enValue = fieldValue(editedValue?.en ?? readBilingual(storedValue, 'en'));
+        const huValue = fieldValue(editedValue?.hu ?? readBilingual(storedValue, 'hu'));
+        return (
+          <div className="admin-bilingual-field">
+            <div>
+              <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+              <textarea
+                id={fieldId(section.key, field.key, 'en')}
+                value={enValue}
+                onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'en', event.target.value))}
+                rows="4"
+              />
+            </div>
+            <div>
+              <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+              <textarea
+                id={fieldId(section.key, field.key, 'hu')}
+                value={huValue}
+                onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'hu', event.target.value))}
+                rows="4"
+              />
+            </div>
+          </div>
+        );
+      }
+      return <textarea id={id} value={fieldValue(editedValue ?? storedValue)} onChange={(event) => updateField(section.key, field, event.target.value)} />;
+    }
+
+    if (translatable) {
+      const enValue = fieldValue(editedValue?.en ?? readBilingual(storedValue, 'en'));
+      const huValue = fieldValue(editedValue?.hu ?? readBilingual(storedValue, 'hu'));
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <input
+              id={fieldId(section.key, field.key, 'en')}
+              type={field.type ?? 'text'}
+              value={enValue}
+              onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'en', event.target.value))}
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <input
+              id={fieldId(section.key, field.key, 'hu')}
+              type={field.type ?? 'text'}
+              value={huValue}
+              onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'hu', event.target.value))}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    const numberCoerce = (event) => field.type === 'number' && event.target.value !== '' ? Number(event.target.value) : event.target.value;
+    return <input id={id} type={field.type ?? 'text'} value={fieldValue(editedValue ?? storedValue)} onChange={(event) => updateField(section.key, field, numberCoerce(event))} />;
+  };
+
   return (
     <div className="admin-content-editor">
       {error && (
@@ -178,30 +297,18 @@ export function ContentEditor() {
       )}
       {SECTION_SCHEMA.map((section) => {
         const isSaving = Boolean(savingKeys[section.key]);
-
         return (
           <section className="admin-panel" key={section.key} aria-labelledby={`${section.key}-editor-title`}>
             <h3 id={`${section.key}-editor-title`}>{section.title}</h3>
             <fieldset disabled={isSaving}>
               {section.fields.map((field) => {
                 const id = fieldId(section.key, field.key);
-                const value = fieldValue(edits[section.key]?.[field.key] ?? siteContent[section.key]?.[field.key]);
-                const jsonValue = jsonEdits[section.key]?.[field.key] ?? JSON.stringify(value, null, 2);
-
+                const translatable = isTranslatable(section.key, field.key);
                 return (
-                  <p key={field.key}>
-                    <label htmlFor={id}>{section.title} {field.label}</label>
-                    {field.type === 'json' ? (
-                      <>
-                        <textarea id={id} value={jsonValue} onChange={updateJsonField(section.key, field.key)} aria-describedby={`${id}-help`} rows="6" />
-                        <small id={`${id}-help`}>{field.description}</small>
-                      </>
-                    ) : field.type === 'textarea' ? (
-                      <textarea id={id} value={value} onChange={updateField(section.key, field)} />
-                    ) : (
-                      <input id={id} type={field.type ?? 'text'} value={value} onChange={updateField(section.key, field)} />
-                    )}
-                  </p>
+                  <div key={field.key} className="admin-field">
+                    <label htmlFor={id}>{section.title} {field.label}{translatable ? ` · ${LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}` : ''}</label>
+                    {renderFieldEditor(section, field)}
+                  </div>
                 );
               })}
               <button type="button" className="admin-button-secondary" onClick={() => save(section)}>

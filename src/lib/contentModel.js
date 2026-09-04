@@ -1,30 +1,39 @@
-import { categories as defaultCategories, galleryImages, portfolioSection } from '../data/portfolioData';
+import { categories as defaultCategories, galleryImages } from '../data/portfolioData';
+
+const bil = (en, hu) => ({ en, hu });
 
 const defaultNavLinks = [
-  { label: 'About', href: '#about' },
-  { label: 'Portfolio', href: '#portfolio' },
-  { label: 'Booking', href: '#booking' },
-  { label: 'Contact', href: '#contact' },
+  { label: bil('About', 'Rólam'), href: '#about' },
+  { label: bil('Portfolio', 'Portfólió'), href: '#portfolio' },
+  { label: bil('Booking', 'Foglalás'), href: '#booking' },
+  { label: bil('Contact', 'Kapcsolat'), href: '#contact' },
 ];
 
 const defaultSpecialities = [
-  { icon: '♂', title: 'Male Portraiture', description: 'Sessions that celebrate strength, charisma and individuality — from polished professional headshots to relaxed, character-driven portraits.' },
-  { icon: '♀', title: 'Female Portraiture', description: 'Elegant, empowering sessions that celebrate every facet of womanhood — natural beauty, confidence, and personality, captured authentically.' },
-  { icon: '✦', title: 'Children', description: 'Joyful, candid images that freeze childhood in its purest form — all the energy, wonder, and laughter that defines those fleeting years.' },
-  { icon: '◆', title: 'Parties & Events', description: 'From intimate gatherings to milestone celebrations — birthdays, christenings, anniversaries — every moment of joy, preserved.' },
-  { icon: '◈', title: 'Reportage', description: 'Documentary-style photography that captures raw emotion, mood, and the unfiltered truth of a moment — honest and powerful storytelling.' },
-  { icon: '❋', title: 'Nature', description: 'Landscapes, flora, fauna — the natural world in all its serene beauty, from sweeping vistas to intimate close-up details.' },
-  { icon: '⬡', title: 'Pet Photography', description: 'Personality-packed portraits of your furry companions — playful, tender, and always full of the character that makes them uniquely yours.' },
-  { icon: '◇', title: 'Boudoir', description: 'Intimate, empowering sessions designed around confidence and self-celebration. Tasteful, elegant, and entirely on your terms.' },
+  { icon: '♂', title: bil('Male Portraiture', 'Férfi portré'), description: bil('Sessions that celebrate strength, charisma and individuality — from polished professional headshots to relaxed, character-driven portraits.', 'Fotózások, amelyek megünneplik az erőt, a karizmát és az egyéniséget — a kifinomult céges portréktól a laza, karakteres képekig.') },
+  { icon: '♀', title: bil('Female Portraiture', 'Női portré'), description: bil('Elegant, empowering sessions that celebrate every facet of womanhood — natural beauty, confidence, and personality, captured authentically.', 'Elegáns, magabiztos fotózások, amelyek a nőiességet minden oldalról megünneplik — természetes szépség, önbizalom és személyiség, hitelesen megörökítve.') },
+  { icon: '✦', title: bil('Children', 'Gyermekek'), description: bil('Joyful, candid images that freeze childhood in its purest form — all the energy, wonder, and laughter that defines those fleeting years.', 'Vidám, spontán képek, amelyek a gyermekkort a legtisztább formájában ragadják meg — minden energia, csoda és nevetés, ami ezeket a mulandó éveket meghatározza.') },
+  { icon: '◆', title: bil('Parties & Events', 'Bulik és események'), description: bil('From intimate gatherings to milestone celebrations — birthdays, christenings, anniversaries — every moment of joy, preserved.', 'Az intim összejövetelektől a mérföldkő ünnepségekig — születésnapok, keresztelők, évfordulók — minden örömteli pillanat megőrizve.') },
+  { icon: '◈', title: bil('Reportage', 'Riport'), description: bil('Documentary-style photography that captures raw emotion, mood, and the unfiltered truth of a moment — honest and powerful storytelling.', 'Dokumentarista stílusú fotózás, amely a nyers érzelmeket, a hangulatot és a pillanat szűretlen igazságát ragadja meg — őszinte és hatásos történetmesélés.') },
+  { icon: '❋', title: bil('Nature', 'Természet'), description: bil('Landscapes, flora, fauna — the natural world in all its serene beauty, from sweeping vistas to intimate close-up details.', 'Tájak, növények, állatok — a természet csendes szépsége, a lenyűgöző panorámáktól az intim részletekig.') },
+  { icon: '⬡', title: bil('Pet Photography', 'Háziállat fotózás'), description: bil('Personality-packed portraits of your furry companions — playful, tender, and always full of the character that makes them uniquely yours.', 'Személyiséggel teli portrék a szőrös társakról — játékos, gyengéd, és mindig tele azzal a karakterrel, ami egyedivé teszi őket.') },
+  { icon: '◇', title: bil('Boudoir', 'Boudoir'), description: bil('Intimate, empowering sessions designed around confidence and self-celebration. Tasteful, elegant, and entirely on your terms.', 'Intim, önbizalom-erősítő fotózás, amely a magabiztosság és az önmegünneplés köré épül. Ízléses, elegáns, és teljesen a te szabályaid szerint.') },
 ];
 
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const isString = (value) => typeof value === 'string';
+const isBilingualOrString = (value) => {
+  if (typeof value === 'string') return true;
+  if (!isRecord(value)) return false;
+  const keys = Object.keys(value);
+  if (keys.length === 0) return true;
+  return keys.every((key) => (key === 'en' || key === 'hu') && isString(value[key]));
+};
 const isArrayOf = (value, itemValidator) => Array.isArray(value) && value.every(itemValidator);
-const isLink = (value) => isRecord(value) && isString(value.label) && isString(value.href);
-const isStat = (value) => isRecord(value) && isString(value.value) && isString(value.label);
-const isSpeciality = (value) => isRecord(value) && isString(value.icon) && isString(value.title) && isString(value.description);
-const isFeature = (value) => isRecord(value) && isString(value.title) && isString(value.description);
+const isLink = (value) => isRecord(value) && isBilingualOrString(value.label) && isString(value.href);
+const isStat = (value) => isRecord(value) && isString(value.value) && isBilingualOrString(value.label);
+const isSpeciality = (value) => isRecord(value) && isString(value.icon) && isBilingualOrString(value.title) && isBilingualOrString(value.description);
+const isFeature = (value) => isRecord(value) && isBilingualOrString(value.title) && isBilingualOrString(value.description);
 
 export const structuredFieldDescriptions = {
   navigation: { links: 'a JSON array of link objects with label and href' },
@@ -54,60 +63,66 @@ export function validateStructuredField(sectionKey, fieldKey, value) {
   throw new Error(`Enter ${structuredFieldDescriptions[sectionKey][fieldKey]}.`);
 }
 
+const defaultPortfolioSection = {
+  eyebrow: bil('Work', 'Munkák'),
+  title: bil('Portfolio', 'Portfólió'),
+  description: bil('Browse by category, or explore the full collection. Every frame tells a story of a moment captured in its most honest form.', 'Böngéssz kategóriák szerint, vagy fedezd fel a teljes gyűjteményt. Minden kép egy történetet mesél el a pillanatról, amely a legőszintébb formájában lett megörökítve.'),
+};
+
 export const defaultContent = {
   siteContent: {
     navigation: { brand: 'PEPEGRAPHY', links: defaultNavLinks },
     hero: {
-      eyebrow: 'Natural · Authentic · Timeless',
+      eyebrow: bil('Natural · Authentic · Timeless', 'Természetes · Hiteles · Időtlen'),
       title: 'PEPEGRAPHY',
-      subtitle: 'Photography by Petra Styasztny',
-      ctaLabel: 'View Portfolio',
+      subtitle: bil('Photography by Petra Styasztny', 'Fotográfia Petra Styasztny részéről'),
+      ctaLabel: bil('View Portfolio', 'Portfólió megtekintése'),
       ctaHref: '#portfolio',
     },
     about: {
-      eyebrow: 'About Me',
-      title: 'Real moments. Real people.',
+      eyebrow: bil('About Me', 'Rólam'),
+      title: bil('Real moments. Real people.', 'Valódi pillanatok. Valódi emberek.'),
       titleLineBreakAfterWords: 2,
       body: [
-        "Hello, I'm Petra Styasztny — the photographer behind Pepegraphy. I believe the most beautiful photographs aren't staged; they're stolen from real life. My approach is relaxed, unhurried, and always guided by authenticity.",
-        'Whether I\'m capturing a quiet family afternoon, the electric atmosphere of a party, or the quiet confidence of a portrait session, my goal is the same: to show you — and the world — exactly as you are, at your very best.',
+        bil("Hello, I'm Petra Styasztny — the photographer behind Pepegraphy. I believe the most beautiful photographs aren't staged; they're stolen from real life. My approach is relaxed, unhurried, and always guided by authenticity.", 'Szia, Petra Styasztny vagyok — a Pepegraphy fotósa. Hiszem, hogy a legszebb fotók nem beállítottak; a való életből ellesett pillanatok. A hozzáállásom laza, nyugodt, és mindig a hitelességre épít.'),
+        bil("Whether I'm capturing a quiet family afternoon, the electric atmosphere of a party, or the quiet confidence of a portrait session, my goal is the same: to show you — and the world — exactly as you are, at your very best.", 'Akár egy csendes családi délutánt, akár egy buli pezsdítő hangulatát, akár egy portré magabiztos csendjét örökítem meg, a célom mindig ugyanaz: megmutatni téged — és a világnak — pontosan úgy, ahogy vagy, a legjobb formádban.'),
       ],
       imageUrl: '/petra-portrait.png',
-      imageAlt: 'Petra Styasztny',
+      imageAlt: bil('Petra Styasztny', 'Petra Styasztny portré'),
       stats: [
-        { value: '8', label: 'Specialities' },
-        { value: '∞', label: 'Photos' },
-        { value: '100%', label: 'Authentic' },
+        { value: '8', label: bil('Specialities', 'Specialitások') },
+        { value: '∞', label: bil('Photos', 'Fotók') },
+        { value: '100%', label: bil('Authentic', 'Hiteles') },
       ],
     },
-    portfolio: portfolioSection,
-    specialities: { eyebrow: 'What I offer', title: 'Specialities', items: defaultSpecialities },
+    portfolio: defaultPortfolioSection,
+    specialities: { eyebrow: bil('What I offer', 'Specialitásaim'), title: bil('Specialities', 'Specialitások'), items: defaultSpecialities },
     booking: {
-      eyebrow: 'Booking',
-      title: 'Ready for your shoot?',
+      eyebrow: bil('Booking', 'Foglalás'),
+      title: bil('Ready for your shoot?', 'Készen állsz a fotózásra?'),
       features: [
-        { title: 'No time limits', description: 'Your session runs as long as it needs to — no watching the clock.' },
-        { title: 'Unlimited photos', description: 'Every great shot is yours. No artificial limits on your delivered gallery.' },
-        { title: 'Tailored sessions', description: 'Each shoot is shaped around you — your personality, your vision, your comfort.' },
-        { title: 'Affordable pricing', description: "Premium photography doesn't need a premium price tag. Transparent, fair rates." },
+        { title: bil('No time limits', 'Nincs időkorlát'), description: bil('Your session runs as long as it needs to — no watching the clock.', 'A fotózás addig tart, ameddig szükséges — nem kell az órát nézni.') },
+        { title: bil('Unlimited photos', 'Korlátlan fotók'), description: bil('Every great shot is yours. No artificial limits on your delivered gallery.', 'Minden jó kép a tiéd. Nincs mesterséges korlát a kézbesített galériában.') },
+        { title: bil('Tailored sessions', 'Személyre szabott fotózás'), description: bil('Each shoot is shaped around you — your personality, your vision, your comfort.', 'Minden fotózás köréd épül — a személyiséged, az elképzelésed, a kényelmed köré.') },
+        { title: bil('Affordable pricing', 'Megfizethető árak'), description: bil("Premium photography doesn't need a premium price tag. Transparent, fair rates.", 'A prémium fotózásnak nem kell prémium árat jelentenie. Átlátható, tisztességes árazás.') },
       ],
-      ctaLabel: 'Get in touch',
+      ctaLabel: bil('Get in touch', 'Vedd fel a kapcsolatot'),
       ctaHref: '#contact',
       backgroundImageUrl: '/hero-bg.png',
     },
     contact: {
-      eyebrow: 'Contact',
-      title: "Let's create something beautiful.",
+      eyebrow: bil('Contact', 'Kapcsolat'),
+      title: bil("Let's create something beautiful.", 'Hozzunk létre valami gyönyörűt.'),
       titleLineBreakAfterWords: 2,
-      description: "Reach out to discuss your shoot. Whether you have a clear vision or are starting from scratch, I'm here to guide you through every step.",
+      description: bil("Reach out to discuss your shoot. Whether you have a clear vision or are starting from scratch, I'm here to guide you through every step.", 'Vedd fel velem a kapcsolatot a fotózás megbeszéléséhez. Akár van konkrét elképzelésed, akár a nulláról indulsz, minden lépésben segítek. '),
       email: 'petrastyasztny@gmail.com',
       phone: '+44 7975 605 120',
     },
     footer: {
       brand: 'PEPEGRAPHY',
-      tagline: 'Natural · Authentic · Timeless photography by Petra Styasztny',
+      tagline: bil('Natural · Authentic · Timeless photography by Petra Styasztny', 'Természetes · Hiteles · Időtlen fotográfia Petra Styasztny részéről'),
       links: defaultNavLinks,
-      copyright: '© 2026 Pepegraphy. All rights reserved.',
+      copyright: bil('© 2026 Pepegraphy. All rights reserved.', '© 2026 Pepegraphy. Minden jog fenntartva.'),
     },
   },
   heroSlides: galleryImages.map((image, index) => ({
@@ -138,8 +153,22 @@ export const defaultContent = {
 };
 
 const isCompatibleFieldValue = (fallbackValue, value) => {
-  if (typeof fallbackValue === 'string') return isString(value);
+  if (typeof fallbackValue === 'string') return isString(value) || isBilingualOrString(value);
   if (typeof fallbackValue === 'number') return typeof value === 'number' && Number.isFinite(value);
+  if (isRecord(fallbackValue)) {
+    if (isString(value) || isBilingualOrString(value)) return true;
+    if (!isRecord(value)) return false;
+    return Object.keys(fallbackValue).every((key) => {
+      if (!(key in value)) return true;
+      return isCompatibleFieldValue(fallbackValue[key], value[key]);
+    });
+  }
+  if (Array.isArray(fallbackValue)) {
+    if (!Array.isArray(value)) return false;
+    if (fallbackValue.length === 0) return true;
+    const sample = fallbackValue[0];
+    return value.every((entry) => isCompatibleFieldValue(sample, entry));
+  }
   return true;
 };
 

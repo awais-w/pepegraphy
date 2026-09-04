@@ -7,12 +7,14 @@ import Booking from './components/Booking';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { useContent } from './context/ContentContext';
+import { useLanguage } from './i18n/LanguageContext';
 import { buildPublicContent } from './lib/publicContent';
 import AdminApp from './admin/AdminApp';
 
 function PublicApp() {
   const { content } = useContent();
-  const publicContent = buildPublicContent(content);
+  const { language } = useLanguage();
+  const publicContent = buildPublicContent(content, language);
 
   return (
     <div className="bg-brand-black min-h-screen overflow-x-hidden">

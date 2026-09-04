@@ -1,6 +1,43 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
+import { getDefaultLanguage, getSupportedLanguages } from '../i18n/translations';
+
+const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
+
+const LanguageSwitcher = ({ direction = 'row' }) => {
+  const { language, setLanguage, supportedLanguages } = useLanguage();
+  const languages = supportedLanguages?.length ? supportedLanguages : getSupportedLanguages();
+  const fallback = getDefaultLanguage();
+  return (
+    <div
+      className={`flex items-center gap-1 ${direction === 'column' ? 'flex-col items-stretch' : ''}`}
+      role="group"
+      aria-label="Language switcher"
+    >
+      {languages.map((code) => {
+        const isActive = (language ?? fallback) === code;
+        return (
+          <button
+            key={code}
+            type="button"
+            onClick={() => setLanguage(code)}
+            aria-pressed={isActive}
+            aria-label={`Switch language to ${code.toUpperCase()}`}
+            className={`text-[10px] tracking-[0.2em] uppercase px-2 py-1 transition-colors border ${
+              isActive
+                ? 'text-brand-gold border-brand-gold'
+                : 'text-white/60 border-white/10 hover:text-white hover:border-white/30'
+            } ${direction === 'column' ? 'w-full text-center' : ''}`}
+          >
+            {LANGUAGE_LABELS[code] ?? code.toUpperCase()}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 const Navbar = ({ navigation }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,13 +55,13 @@ const Navbar = ({ navigation }) => {
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled ? 'bg-brand-black/90 backdrop-blur-md py-4 border-b border-white/10' : 'bg-transparent py-6'
     }`}>
-      <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center">
+      <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center gap-4">
         <a href="#hero" className="text-xl sm:text-2xl font-serif tracking-tighter sm:tracking-[0.2em] text-white hover:text-brand-gold transition-colors">
           {navigation.brand}
         </a>
 
         {/* Desktop Nav */}
-        <ul className="hidden md:flex gap-10">
+        <ul className="hidden md:flex gap-10 items-center">
           {navLinks.map((link) => (
             <li key={link.name}>
               <a
@@ -36,16 +73,22 @@ const Navbar = ({ navigation }) => {
               </a>
             </li>
           ))}
+          <li>
+            <LanguageSwitcher />
+          </li>
         </ul>
 
-        {/* Mobile Toggle */}
-        <button
-          className="md:hidden text-white p-2"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile Controls */}
+        <div className="flex md:hidden items-center gap-3">
+          <LanguageSwitcher />
+          <button
+            className="text-white p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}

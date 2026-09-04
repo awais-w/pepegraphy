@@ -18,10 +18,11 @@ vi.mock('./Toast', () => ({
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 import { ContentEditor } from './ContentEditor';
+import { LanguageProvider } from '../i18n/LanguageContext';
 
 const siteContent = {
-  navigation: { brand: 'PEPEGRAPHY', links: [{ label: 'About', href: '#about' }] },
-  hero: { eyebrow: 'Natural', title: 'PEPEGRAPHY', subtitle: 'Photography', ctaLabel: 'View work', ctaHref: '#portfolio' },
+  navigation: { brand: 'PEPEGRAPHY', links: [{ label: { en: 'About', hu: 'Rólam' }, href: '#about' }] },
+  hero: { eyebrow: { en: 'Natural', hu: 'Természetes' }, title: 'PEPEGRAPHY', subtitle: 'Photography', ctaLabel: 'View work', ctaHref: '#portfolio' },
   about: {
     eyebrow: 'About',
     title: 'Real moments',
@@ -41,7 +42,7 @@ const siteContent = {
     ctaHref: '#contact',
     backgroundImageUrl: '/hero.jpg',
   },
-  contact: { eyebrow: 'Contact', title: 'Let\'s create', titleLineBreakAfterWords: 2, description: 'Start a conversation.', email: 'hello@example.com', phone: '+44 1234' },
+  contact: { eyebrow: 'Contact', title: "Let's create", titleLineBreakAfterWords: 2, description: 'Start a conversation.', email: 'hello@example.com', phone: '+44 1234' },
   footer: { brand: 'PEPEGRAPHY', tagline: 'Natural photography', links: [{ label: 'About', href: '#about' }], copyright: '© 2026 Pepegraphy' },
 };
 
@@ -68,7 +69,7 @@ describe('ContentEditor', () => {
   async function renderEditor() {
     await act(async () => {
       root = createRoot(container);
-      root.render(<ContentEditor />);
+      root.render(<LanguageProvider><ContentEditor /></LanguageProvider>);
     });
   }
 
@@ -98,31 +99,39 @@ describe('ContentEditor', () => {
       'Specialities items',
       'Booking features',
       'Footer links',
-    ].forEach((label) => expect(container.querySelector(`label[for="${label.toLowerCase().replaceAll(' ', '-')}"]`)).not.toBeNull());
+    ].forEach((label) => {
+      const selector = label
+        .toLowerCase()
+        .replaceAll(' ', '-');
+      const labelEl = container.querySelector(`label[for="${selector}"]`)
+        ?? container.querySelector(`label[for="${selector}-en"]`)
+        ?? container.querySelector(`label[for="${selector}-hu"]`);
+      expect(labelEl).not.toBeNull();
+    });
   });
 
   it('updates an edited field in controlled state before saving its complete section', async () => {
     await renderEditor();
-    const title = container.querySelector('#hero-title');
+    const titleEn = container.querySelector('#hero-title-en');
 
     await act(async () => {
-      setInputValue(title, 'Petra Photography');
+      setInputValue(titleEn, 'Petra Photography');
     });
 
-    expect(title.value).toBe('Petra Photography');
+    expect(titleEn.value).toBe('Petra Photography');
 
     await act(async () => {
       buttonByText('Save hero').click();
       await Promise.resolve();
     });
 
-    expect(saveSection).toHaveBeenCalledWith('hero', {
-      eyebrow: 'Natural',
-      title: 'Petra Photography',
+    expect(saveSection).toHaveBeenCalledWith('hero', expect.objectContaining({
+      eyebrow: { en: 'Natural', hu: 'Természetes' },
+      title: expect.objectContaining({ en: 'Petra Photography' }),
       subtitle: 'Photography',
       ctaLabel: 'View work',
       ctaHref: '#portfolio',
-    });
+    }));
   });
 
   it('preserves complete nested section content when saving a JSON field edit', async () => {

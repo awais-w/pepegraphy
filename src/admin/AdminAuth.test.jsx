@@ -29,6 +29,11 @@ vi.mock('../context/ContentContext', () => ({ useContent: () => content }));
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 import AdminApp from './AdminApp';
+import { LanguageProvider } from '../i18n/LanguageContext';
+
+function renderWithProviders(element) {
+  return <LanguageProvider>{element}</LanguageProvider>;
+}
 
 describe('Admin authentication gate', () => {
   let container;
@@ -61,7 +66,7 @@ describe('Admin authentication gate', () => {
   async function renderAdmin() {
     await act(async () => {
       root = createRoot(container);
-      root.render(<AdminApp />);
+      root.render(renderWithProviders(<AdminApp />));
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   }
