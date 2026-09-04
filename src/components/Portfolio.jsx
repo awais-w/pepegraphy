@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slideVariants = {
@@ -28,6 +28,7 @@ const Portfolio = ({ portfolio }) => {
   const [direction, setDirection] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+  const thumbnailScrollRef = useRef(null);
 
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
   const displayImages = useMemo(() => {
@@ -230,31 +231,34 @@ const Portfolio = ({ portfolio }) => {
               </button>
             </div>
 
-            {/* Middle Section: Thumbnails + Image with Horizontal Slide Transition */}
-            <div className="relative w-full flex-1 flex items-center justify-between my-2 px-0 sm:px-2 overflow-hidden">
-              {/* Desktop Left Image Arrow */}
-              {filteredImages.length > 1 && (
-                <button
-                  onClick={handlePrevImage}
-                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
-                  aria-label="Previous image"
-                >
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
+            {/* Middle Section: Thumbnails + Enlarged Image */}
+            <div className="relative w-full flex-1 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 my-2 px-0 sm:px-2 overflow-hidden">
+              
+              {/* Thumbnails Column - Desktop: vertical with chevrons, Mobile: horizontal row */}
+              <div className="flex sm:flex-col items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                
+                {/* Left Chevron - Desktop only */}
+                {filteredImages.length > 1 && (
+                  <button
+                    onClick={() => {
+                      if (thumbnailScrollRef.current) {
+                        thumbnailScrollRef.current.scrollBy({ top: -100, behavior: 'smooth' });
+                      }
+                    }}
+                    className="hidden sm:flex z-30 p-1.5 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
+                    aria-label="Previous thumbnails"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
 
-              {/* Main Image View - Sliding Transition Container */}
-              <div
-                className="relative w-full sm:w-auto flex-1 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-0 sm:px-2 touch-pan-y overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                {/* Thumbnail Column - Desktop: vertical, Mobile: horizontal row */}
-                <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[70vh] pb-2 sm:pb-0 sm:pr-1 scrollbar-none">
+                {/* Thumbnails Container */}
+                <div 
+                  ref={thumbnailScrollRef}
+                  className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[70vh] pb-2 sm:pb-0 sm:pr-1 scrollbar-none scroll-smooth"
+                >
                   {filteredImages.map((thumbImg, thumbIdx) => (
                     <button
                       key={thumbImg.id}
@@ -262,7 +266,7 @@ const Portfolio = ({ portfolio }) => {
                         setDirection(0);
                         setSelectedIndex(thumbIdx);
                       }}
-                      className={`shrink-0 sm:shrink w-16 h-16 sm:w-auto sm:h-auto overflow-hidden border-2 transition-all cursor-pointer ${
+                      className={`shrink-0 sm:shrink w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-all cursor-pointer ${
                         selectedIndex === thumbIdx
                           ? 'border-brand-gold opacity-100'
                           : 'border-transparent opacity-60 hover:opacity-100'
@@ -278,47 +282,52 @@ const Portfolio = ({ portfolio }) => {
                   ))}
                 </div>
 
-                <div className="relative flex-1 flex items-center justify-center w-full sm:w-auto min-w-0">
-                  <AnimatePresence mode="popLayout" custom={direction}>
-                    <motion.img
-                      key={selectedImage.id}
-                      custom={direction}
-                      variants={slideVariants}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
-                      drag={filteredImages.length > 1 ? "x" : false}
-                      dragConstraints={{ left: 0, right: 0 }}
-                      dragElastic={0.2}
-                      onDragEnd={(e, { offset, velocity }) => {
-                        const swipeThreshold = 40;
-                        if (offset.x < -swipeThreshold || velocity.x < -250) {
-                          handleNextImage();
-                        } else if (offset.x > swipeThreshold || velocity.x > 250) {
-                          handlePrevImage();
-                        }
-                      }}
-                      src={selectedImage.src}
-                      alt={selectedImage.alt}
-                      className="w-full sm:w-auto max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain shadow-2xl cursor-grab active:cursor-grabbing"
-                    />
-                  </AnimatePresence>
-                </div>
+                {/* Right Chevron - Desktop only */}
+                {filteredImages.length > 1 && (
+                  <button
+                    onClick={() => {
+                      if (thumbnailScrollRef.current) {
+                        thumbnailScrollRef.current.scrollBy({ top: 100, behavior: 'smooth' });
+                      }
+                    }}
+                    className="hidden sm:flex z-30 p-1.5 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
+                    aria-label="Next thumbnails"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
               </div>
 
-              {/* Desktop Right Image Arrow */}
-              {filteredImages.length > 1 && (
-                <button
-                  onClick={handleNextImage}
-                  className="hidden sm:flex z-30 p-3 text-white/40 hover:text-brand-gold hover:bg-white/5 rounded-full transition-all duration-300 cursor-pointer shrink-0"
-                  aria-label="Next image"
-                >
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              )}
+              {/* Enlarged Image */}
+              <div className="relative flex-1 flex items-center justify-center w-full sm:w-auto min-w-0">
+                <AnimatePresence mode="popLayout" custom={direction}>
+                  <motion.img
+                    key={selectedImage.id}
+                    custom={direction}
+                    variants={slideVariants}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+                    drag={filteredImages.length > 1 ? "x" : false}
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(e, { offset, velocity }) => {
+                      const swipeThreshold = 40;
+                      if (offset.x < -swipeThreshold || velocity.x < -250) {
+                        handleNextImage();
+                      } else if (offset.x > swipeThreshold || velocity.x > 250) {
+                        handlePrevImage();
+                      }
+                    }}
+                    src={selectedImage.src}
+                    alt={selectedImage.alt}
+                    className="w-full sm:w-auto max-w-full max-h-[60vh] sm:max-h-[70vh] object-contain shadow-2xl cursor-grab active:cursor-grabbing"
+                  />
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Bottom Bar: Mobile Controls + Image Details & Category Jump */}
