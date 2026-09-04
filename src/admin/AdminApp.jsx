@@ -16,7 +16,7 @@ const SECTIONS = [
   { id: 'gallery', label: 'Gallery', title: 'Gallery', description: 'Organise portfolio categories and their photographs.', icon: Images, component: GalleryManager },
 ];
 
-const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
+const LANGUAGE_LABELS = { en: '🇬🇧 EN', hu: '🇭🇺 HU' };
 
 const getInitialSection = () => {
   const hash = window.location.hash.replace('#', '');
@@ -101,7 +101,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
             <strong>Administrator</strong>
             <small>{session.user?.email ?? 'Signed in'}</small>
           </span>
-          <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} aria-label={signingOut ? 'Signing out' : 'Sign out'}>
+          <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
             <LogOut aria-hidden="true" size={18} />
             <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
           </button>

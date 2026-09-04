@@ -333,6 +333,7 @@
 
 .admin-language-switcher {
   align-items: center;
+  align-self: flex-start;
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-sm);
   display: inline-flex;
