@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React from 'react';
+import React, { useRef } from 'react';
 
 const TOOLBAR = [
   { label: 'B', action: 'bold', title: 'Bold', prefix: '**', suffix: '**' },
@@ -11,22 +11,29 @@ const TOOLBAR = [
   { label: '—', action: 'rule', title: 'Divider', prefix: '\n---\n', suffix: '' },
 ];
 
-function wrapSelection(textarea, prefix, suffix) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const before = textarea.value.slice(0, start);
-  const selected = textarea.value.slice(start, end);
-  const after = textarea.value.slice(end);
-  const next = `${before}${prefix}${selected}${suffix}${after}`;
-
-  textarea.value = next;
-  const cursor = start + prefix.length + selected.length + suffix.length;
-  textarea.setSelectionRange(cursor, cursor);
-  textarea.dispatchEvent(new Event('input', { bubbles: true }));
-  textarea.focus();
-}
-
 export function MarkdownEditor({ id, value, onChange, rows = 6 }) {
+  const textareaRef = useRef(null);
+
+  const apply = (prefix, suffix) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const before = textarea.value.slice(0, start);
+    const selected = textarea.value.slice(start, end);
+    const after = textarea.value.slice(end);
+    const next = `${before}${prefix}${selected}${suffix}${after}`;
+
+    onChange(next);
+
+    requestAnimationFrame(() => {
+      const cursor = start + prefix.length + selected.length + suffix.length;
+      textarea.setSelectionRange(cursor, cursor);
+      textarea.focus();
+    });
+  };
+
   return (
     <div className="admin-markdown-editor">
       <div className="admin-markdown-toolbar">
@@ -36,9 +43,9 @@ export function MarkdownEditor({ id, value, onChange, rows = 6 }) {
             type="button"
             title={item.title}
             aria-label={item.title}
-            onClick={() => {
-              const textarea = document.getElementById(id);
-              if (textarea?.tagName === 'TEXTAREA') wrapSelection(textarea, item.prefix, item.suffix);
+            onMouseDown={(event) => {
+              event.preventDefault();
+              apply(item.prefix, item.suffix);
             }}
           >
             {item.label}
@@ -46,6 +53,7 @@ export function MarkdownEditor({ id, value, onChange, rows = 6 }) {
         ))}
       </div>
       <textarea
+        ref={textareaRef}
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}

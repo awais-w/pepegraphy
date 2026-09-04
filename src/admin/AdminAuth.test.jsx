@@ -177,13 +177,15 @@ describe('Admin authentication gate', () => {
 
     await renderAdmin();
 
+    const signOutButton = [...container.querySelectorAll('button')].find((button) => button.textContent === 'Sign out');
+
     await act(async () => {
-      [...container.querySelectorAll('button')].find((button) => button.textContent === 'Sign out').click();
+      signOutButton.click();
       await Promise.resolve();
     });
 
     expect(container.querySelector('[role="alert"]')?.textContent).toBe('Sign-out service is unavailable.');
-    expect(container.querySelector('button')?.textContent).toBe('Sign out');
+    expect(signOutButton?.textContent).toBe('Sign out');
   });
 
   it('refreshes content when an authenticated auth state event arrives', async () => {

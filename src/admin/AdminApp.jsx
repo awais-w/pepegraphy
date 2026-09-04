@@ -91,6 +91,8 @@ function AdminShell({ session, signOut, signingOut, error }) {
           })}
         </nav>
 
+        <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
+
         <div className="admin-account">
           <span className="admin-account-avatar" aria-hidden="true">
             {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
@@ -114,7 +116,6 @@ function AdminShell({ session, signOut, signingOut, error }) {
             <p>{activeSectionData.description}</p>
           </div>
           <div className="admin-header-actions">
-            <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
             <a className="admin-public-link" href="/" target="_blank" rel="noreferrer">
               View public site
               <ExternalLink aria-hidden="true" size={16} />

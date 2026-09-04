@@ -614,7 +614,9 @@
     min-height: 0;
     overflow-y: visible;
     padding: 0.85rem 1rem;
-    position: static;
+    position: sticky;
+    top: 0;
+    z-index: 20;
   }
   .admin-brand { margin: 0; }
   .admin-brand small, .admin-account-copy { display: none; }
