@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getDefaultLanguage, getSupportedLanguages } from '../i18n/translations';
 
-const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
+const LANGUAGE_LABELS = { en: '🇬🇧 EN', hu: '🇭🇺 HU' };
 
 const LanguageSwitcher = ({ direction = 'row' }) => {
   const { language, setLanguage, supportedLanguages } = useLanguage();
@@ -25,7 +25,7 @@ const LanguageSwitcher = ({ direction = 'row' }) => {
             onClick={() => setLanguage(code)}
             aria-pressed={isActive}
             aria-label={`Switch language to ${code.toUpperCase()}`}
-            className={`text-[10px] tracking-[0.2em] uppercase px-2 py-1 transition-colors border ${
+            className={`text-[10px] tracking-[0.2em] uppercase px-2 py-1 cursor-pointer transition-colors border ${
               isActive
                 ? 'text-brand-gold border-brand-gold'
                 : 'text-white/60 border-white/10 hover:text-white hover:border-white/30'
