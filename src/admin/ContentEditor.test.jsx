@@ -69,7 +69,7 @@ describe('ContentEditor', () => {
   async function renderEditor() {
     await act(async () => {
       root = createRoot(container);
-      root.render(<LanguageProvider><ContentEditor /></LanguageProvider>);
+      root.render(<LanguageProvider><ContentEditor editingLanguage="en" onLanguageChange={() => {}} /></LanguageProvider>);
     });
   }
 

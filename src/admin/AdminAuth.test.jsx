@@ -103,6 +103,7 @@ describe('Admin authentication gate', () => {
 
     expect(container.querySelector('aside[aria-label="Studio administration"]')).not.toBeNull();
     expect(container.querySelector('.admin-public-link[href="/"]')?.textContent).toContain('View public site');
+    expect(container.querySelector('.admin-language-switcher')?.textContent).toContain('EN');
     expect(container.querySelector('[aria-current="page"]')?.textContent).toBe('Content');
   });
 

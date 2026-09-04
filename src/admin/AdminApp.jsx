@@ -7,6 +7,7 @@ import { GalleryManager } from './GalleryManager';
 import { HeroManager } from './HeroManager';
 import { ToastProvider } from './Toast';
 import { useContent } from '../context/ContentContext';
+import { getSupportedLanguages } from '../i18n/translations';
 import './admin.css';
 
 const SECTIONS = [
@@ -15,13 +16,36 @@ const SECTIONS = [
   { id: 'gallery', label: 'Gallery', title: 'Gallery', description: 'Organise portfolio categories and their photographs.', icon: Images, component: GalleryManager },
 ];
 
+const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
+
 const getInitialSection = () => {
   const hash = window.location.hash.replace('#', '');
   return SECTIONS.some((section) => section.id === hash) ? hash : SECTIONS[0].id;
 };
 
+function LanguageSwitcher({ value, onChange }) {
+  const languages = getSupportedLanguages();
+
+  return (
+    <div className="admin-language-switcher" role="group" aria-label="Editing language">
+      {languages.map((code) => (
+        <button
+          key={code}
+          type="button"
+          onClick={() => onChange(code)}
+          aria-pressed={value === code}
+          className={value === code ? 'admin-language-switcher-active' : undefined}
+        >
+          {LANGUAGE_LABELS[code] ?? code.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function AdminShell({ session, signOut, signingOut, error }) {
   const [activeSection, setActiveSection] = useState(getInitialSection);
+  const [editingLanguage, setEditingLanguage] = useState('en');
 
   useEffect(() => {
     const handleHashChange = () => setActiveSection(getInitialSection());
@@ -90,6 +114,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
             <p>{activeSectionData.description}</p>
           </div>
           <div className="admin-header-actions">
+            <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
             <a className="admin-public-link" href="/" target="_blank" rel="noreferrer">
               View public site
               <ExternalLink aria-hidden="true" size={16} />
@@ -101,7 +126,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
 
         <section className="admin-panel admin-section-panel" id={activeSectionData.id} tabIndex="-1" aria-labelledby={`${activeSectionData.id}-title`}>
           <h2 className="admin-visually-hidden" id={`${activeSectionData.id}-title`}>{activeSectionData.title}</h2>
-          <ActiveComponent />
+          <ActiveComponent editingLanguage={editingLanguage} onLanguageChange={setEditingLanguage} />
         </section>
       </div>
     </main>

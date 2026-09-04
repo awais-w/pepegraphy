@@ -137,14 +137,13 @@ function ensureLocalized(existing, language, nextValue) {
   return { [language]: nextValue };
 }
 
-export function ContentEditor() {
+export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
   const { content, error, saveSection } = useContent();
   const siteContent = content?.siteContent ?? {};
   const [edits, setEdits] = useState({});
   const [jsonEdits, setJsonEdits] = useState({});
   const [savingKeys, setSavingKeys] = useState({});
   const [feedback, setFeedback] = useState(null);
-  const [editingLanguage, setEditingLanguage] = useState('en');
   const toast = useToast();
 
   const supportedLanguages = useMemo(() => ['en', 'hu'], []);
@@ -248,20 +247,6 @@ export function ContentEditor() {
 
   return (
     <div className="admin-content-editor">
-      <div className="admin-language-switcher" role="group" aria-label="Editing language">
-        {supportedLanguages.map((language) => (
-          <button
-            key={language}
-            type="button"
-            className={editingLanguage === language ? 'admin-language-active' : ''}
-            onClick={() => setEditingLanguage(language)}
-            aria-pressed={editingLanguage === language}
-          >
-            {LANGUAGE_LABELS[language] ?? language.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
       {error && (
         <p className="admin-message" role="alert">
           The CMS is unavailable, so you are editing fallback content. Changes will save when the CMS is available.
