@@ -367,31 +367,24 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     const translatable = isTranslatable(section.key, field.key);
 
     if (field.type === 'navigation-links' || field.type === 'footer-links') {
-      const enValue = readNavigationText(editedValue ?? storedValue, 'en');
-      const huValue = readNavigationText(editedValue ?? storedValue, 'hu');
+      const currentValue = readNavigationText(editedValue ?? storedValue, editingLanguage);
+      const otherValue = readNavigationText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
+      const updateCurrent = (text) => {
+        const nextOther = readNavigationText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
+        if (editingLanguage === 'en') {
+          updateField(section.key, field, serializeNavigationBilingual(text, nextOther));
+        } else {
+          updateField(section.key, field, serializeNavigationBilingual(nextOther, text));
+        }
+      };
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
-              id={fieldId(section.key, field.key, 'en')}
-              value={enValue}
-              onChange={(event) => {
-                const nextHu = readNavigationText(editedValue ?? storedValue, 'hu');
-                updateField(section.key, field, serializeNavigationBilingual(event.target.value, nextHu));
-              }}
-              rows="6"
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <textarea
-              id={fieldId(section.key, field.key, 'hu')}
-              value={huValue}
-              onChange={(event) => {
-                const nextEn = readNavigationText(editedValue ?? storedValue, 'en');
-                updateField(section.key, field, serializeNavigationBilingual(nextEn, event.target.value));
-              }}
+              id={fieldId(section.key, field.key, editingLanguage)}
+              value={currentValue}
+              onChange={(event) => updateCurrent(event.target.value)}
               rows="6"
             />
           </div>
@@ -400,31 +393,24 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     }
 
     if (field.type === 'body-paragraphs') {
-      const enValue = readBodyText(editedValue ?? storedValue, 'en');
-      const huValue = readBodyText(editedValue ?? storedValue, 'hu');
+      const currentValue = readBodyText(editedValue ?? storedValue, editingLanguage);
+      const otherValue = readBodyText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
+      const updateCurrent = (text) => {
+        const nextOther = readBodyText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
+        if (editingLanguage === 'en') {
+          updateField(section.key, field, serializeBodyBilingual(text, nextOther));
+        } else {
+          updateField(section.key, field, serializeBodyBilingual(nextOther, text));
+        }
+      };
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
-              id={fieldId(section.key, field.key, 'en')}
-              value={enValue}
-              onChange={(event) => {
-                const nextHu = readBodyText(editedValue ?? storedValue, 'hu');
-                updateField(section.key, field, serializeBodyBilingual(event.target.value, nextHu));
-              }}
-              rows="8"
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <textarea
-              id={fieldId(section.key, field.key, 'hu')}
-              value={huValue}
-              onChange={(event) => {
-                const nextEn = readBodyText(editedValue ?? storedValue, 'en');
-                updateField(section.key, field, serializeBodyBilingual(nextEn, event.target.value));
-              }}
+              id={fieldId(section.key, field.key, editingLanguage)}
+              value={currentValue}
+              onChange={(event) => updateCurrent(event.target.value)}
               rows="8"
             />
           </div>
@@ -433,31 +419,24 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     }
 
     if (field.type === 'stats') {
-      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['value', 'label']);
-      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['value', 'label']);
+      const currentValue = readFieldsText(editedValue ?? storedValue, editingLanguage, ['value', 'label']);
+      const otherValue = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['value', 'label']);
+      const updateCurrent = (text) => {
+        const nextOther = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['value', 'label']);
+        if (editingLanguage === 'en') {
+          updateField(section.key, field, serializeFieldsBilingual(text, nextOther, ['value', 'label']));
+        } else {
+          updateField(section.key, field, serializeFieldsBilingual(nextOther, text, ['value', 'label']));
+        }
+      };
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
-              id={fieldId(section.key, field.key, 'en')}
-              value={enValue}
-              onChange={(event) => {
-                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['value', 'label']);
-                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['value', 'label']));
-              }}
-              rows="6"
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <textarea
-              id={fieldId(section.key, field.key, 'hu')}
-              value={huValue}
-              onChange={(event) => {
-                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['value', 'label']);
-                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['value', 'label']));
-              }}
+              id={fieldId(section.key, field.key, editingLanguage)}
+              value={currentValue}
+              onChange={(event) => updateCurrent(event.target.value)}
               rows="6"
             />
           </div>
@@ -466,31 +445,24 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     }
 
     if (field.type === 'specialities') {
-      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['icon', 'title', 'description']);
-      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['icon', 'title', 'description']);
+      const currentValue = readFieldsText(editedValue ?? storedValue, editingLanguage, ['icon', 'title', 'description']);
+      const otherValue = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['icon', 'title', 'description']);
+      const updateCurrent = (text) => {
+        const nextOther = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['icon', 'title', 'description']);
+        if (editingLanguage === 'en') {
+          updateField(section.key, field, serializeFieldsBilingual(text, nextOther, ['icon', 'title', 'description']));
+        } else {
+          updateField(section.key, field, serializeFieldsBilingual(nextOther, text, ['icon', 'title', 'description']));
+        }
+      };
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
-              id={fieldId(section.key, field.key, 'en')}
-              value={enValue}
-              onChange={(event) => {
-                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['icon', 'title', 'description']);
-                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['icon', 'title', 'description']));
-              }}
-              rows="10"
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <textarea
-              id={fieldId(section.key, field.key, 'hu')}
-              value={huValue}
-              onChange={(event) => {
-                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['icon', 'title', 'description']);
-                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['icon', 'title', 'description']));
-              }}
+              id={fieldId(section.key, field.key, editingLanguage)}
+              value={currentValue}
+              onChange={(event) => updateCurrent(event.target.value)}
               rows="10"
             />
           </div>
@@ -499,31 +471,24 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     }
 
     if (field.type === 'features') {
-      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['title', 'description']);
-      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['title', 'description']);
+      const currentValue = readFieldsText(editedValue ?? storedValue, editingLanguage, ['title', 'description']);
+      const otherValue = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['title', 'description']);
+      const updateCurrent = (text) => {
+        const nextOther = readFieldsText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en', ['title', 'description']);
+        if (editingLanguage === 'en') {
+          updateField(section.key, field, serializeFieldsBilingual(text, nextOther, ['title', 'description']));
+        } else {
+          updateField(section.key, field, serializeFieldsBilingual(nextOther, text, ['title', 'description']));
+        }
+      };
       return (
         <div className="admin-bilingual-field">
           <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <label htmlFor={fieldId(section.key, field.key, editingLanguage)}>{LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}</label>
             <textarea
-              id={fieldId(section.key, field.key, 'en')}
-              value={enValue}
-              onChange={(event) => {
-                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['title', 'description']);
-                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['title', 'description']));
-              }}
-              rows="10"
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <textarea
-              id={fieldId(section.key, field.key, 'hu')}
-              value={huValue}
-              onChange={(event) => {
-                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['title', 'description']);
-                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['title', 'description']));
-              }}
+              id={fieldId(section.key, field.key, editingLanguage)}
+              value={currentValue}
+              onChange={(event) => updateCurrent(event.target.value)}
               rows="10"
             />
           </div>

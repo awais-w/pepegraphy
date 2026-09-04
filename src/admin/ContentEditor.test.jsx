@@ -113,6 +113,16 @@ describe('ContentEditor', () => {
     });
   });
 
+  it('renders language-specific inputs for bilingual fields', async () => {
+    await renderEditor();
+
+    const enLinks = container.querySelector('#navigation-links-en');
+    const huLinks = container.querySelector('#navigation-links-hu');
+
+    expect(enLinks).not.toBeNull();
+    expect(huLinks).toBeNull();
+  });
+
   it('updates an edited field in controlled state before saving its complete section', async () => {
     await renderEditor();
     const title = container.querySelector('#hero-title');
@@ -139,12 +149,12 @@ describe('ContentEditor', () => {
 
   it('preserves complete nested section content when saving a JSON field edit', async () => {
     await renderEditor();
-    const statsEn = container.querySelector('#about-stats-en');
+    const stats = container.querySelector('#about-stats-en');
 
-    expect(statsEn).not.toBeNull();
+    expect(stats).not.toBeNull();
 
     await act(async () => {
-      setInputValue(statsEn, 'value=10, label=Years');
+      setInputValue(stats, 'value=10, label=Years');
     });
 
     await act(async () => {
@@ -166,17 +176,11 @@ describe('ContentEditor', () => {
   it('saves navigation links from simple label/href text', async () => {
     await renderEditor();
     const enLinks = container.querySelector('#navigation-links-en');
-    const huLinks = container.querySelector('#navigation-links-hu');
 
     expect(enLinks).not.toBeNull();
-    expect(huLinks).not.toBeNull();
 
     await act(async () => {
       setInputValue(enLinks, 'label=About, href=#about\nlabel=Portfolio, href=#portfolio');
-    });
-
-    await act(async () => {
-      setInputValue(huLinks, 'label=Rólam, href=#about\nlabel=Portfólió, href=#portfolio');
     });
 
     await act(async () => {
@@ -188,7 +192,7 @@ describe('ContentEditor', () => {
       brand: 'PEPEGRAPHY',
       links: [
         { label: { en: 'About', hu: 'Rólam' }, href: '#about' },
-        { label: { en: 'Portfolio', hu: 'Portfólió' }, href: '#portfolio' },
+        { label: { en: 'Portfolio', hu: '' }, href: '#portfolio' },
       ],
     });
   });
