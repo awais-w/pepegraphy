@@ -139,12 +139,12 @@ describe('ContentEditor', () => {
 
   it('preserves complete nested section content when saving a JSON field edit', async () => {
     await renderEditor();
-    const stats = container.querySelector('#about-stats');
+    const statsEn = container.querySelector('#about-stats-en');
 
-    expect(stats).not.toBeNull();
+    expect(statsEn).not.toBeNull();
 
     await act(async () => {
-      setInputValue(stats, '[\n  { "value": "10", "label": "Years" }\n]');
+      setInputValue(statsEn, 'value=10, label=Years');
     });
 
     await act(async () => {
@@ -159,7 +159,7 @@ describe('ContentEditor', () => {
       body: ['First paragraph'],
       imageUrl: '/petra.jpg',
       imageAlt: 'Petra',
-      stats: [{ value: '10', label: 'Years' }],
+      stats: [{ value: { en: '10', hu: '8' }, label: { en: 'Years', hu: 'Specialities' } }],
     });
   });
 

@@ -46,10 +46,10 @@ const SECTION_SCHEMA = [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
       { key: 'titleLineBreakAfterWords', label: 'Title line break after words', type: 'number' },
-      { key: 'body', label: 'Body', type: 'json', description: 'A JSON array of paragraph strings or { "en": "...", "hu": "..." } bilingual objects.' },
+      { key: 'body', label: 'Body', type: 'body-paragraphs', description: 'One paragraph per line. Empty lines are ignored.' },
       { key: 'imageUrl', label: 'Image URL' },
       { key: 'imageAlt', label: 'Image alternative text' },
-      { key: 'stats', label: 'Stats', type: 'json', description: 'A JSON array of statistic objects with value and label. Use { "en": "...", "hu": "..." } for label to support bilingual stats.' },
+      { key: 'stats', label: 'Stats', type: 'stats', description: 'One stat per line. Format: value=..., label=...' },
     ],
   },
   {
@@ -67,7 +67,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
-      { key: 'items', label: 'Items', type: 'json', description: 'A JSON array of speciality objects with icon, title ({ en, hu }), and description ({ en, hu }).' },
+      { key: 'items', label: 'Items', type: 'specialities', description: 'One item per line. Format: icon=..., title=..., description=...' },
     ],
   },
   {
@@ -76,7 +76,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
-      { key: 'features', label: 'Features', type: 'json', description: 'A JSON array of feature objects with title ({ en, hu }) and description ({ en, hu }).' },
+      { key: 'features', label: 'Features', type: 'features', description: 'One feature per line. Format: title=..., description=...' },
       { key: 'ctaLabel', label: 'Call to action label' },
       { key: 'ctaHref', label: 'Call to action link' },
       { key: 'backgroundImageUrl', label: 'Background image URL' },
@@ -100,7 +100,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'brand', label: 'Brand' },
       { key: 'tagline', label: 'Tagline' },
-      { key: 'links', label: 'Links', type: 'json', description: 'A JSON array of link objects with label and href. Use { "en": "...", "hu": "..." } for label to support bilingual footer links.' },
+      { key: 'links', label: 'Links', type: 'navigation-links', description: 'One link per line. Format: label=..., href=...' },
       { key: 'copyright', label: 'Copyright' },
     ],
   },
@@ -191,6 +191,110 @@ function readNavigationText(value, language) {
   return String(value ?? '');
 }
 
+function parseBodyText(value) {
+  const paragraphs = String(value ?? '')
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0);
+
+  return paragraphs;
+}
+
+function serializeBodyBilingual(enText, huText) {
+  const enParagraphs = parseBodyText(enText);
+  const huParagraphs = parseBodyText(huText);
+  const maxLength = Math.max(enParagraphs.length, huParagraphs.length, 1);
+
+  const result = [];
+  for (let index = 0; index < maxLength; index++) {
+    const enParagraph = enParagraphs[index] || '';
+    const huParagraph = huParagraphs[index] || '';
+    result.push({ en: enParagraph, hu: huParagraph });
+  }
+
+  return result;
+}
+
+function readBodyText(value, language) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      const text = typeof item === 'string' ? item : item?.[language] || '';
+      return text;
+    }).join('\n\n');
+  }
+
+  return String(value ?? '');
+}
+
+function parseLineFields(text, fieldNames) {
+  const items = [];
+  const lines = String(text ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+
+  for (const line of lines) {
+    const item = {};
+    const regex = /(\w+)=((?:\\.|[^,])+)/g;
+    let match;
+    while ((match = regex.exec(line)) !== null) {
+      const key = match[1].trim().toLowerCase();
+      if (fieldNames.includes(key)) {
+        let value = match[2].trim();
+        value = value.replace(/\\,/g, ',').replace(/\\:/g, ':');
+        item[key] = value;
+      }
+    }
+    if (Object.keys(item).length > 0) {
+      items.push(item);
+    }
+  }
+
+  return items;
+}
+
+function serializeFieldsBilingual(enText, huText, fieldNames) {
+  const enItems = parseLineFields(enText, fieldNames);
+  const huItems = parseLineFields(huText, fieldNames);
+  const maxLength = Math.max(enItems.length, huItems.length, 1);
+
+  const result = [];
+  for (let index = 0; index < maxLength; index++) {
+    const enItem = enItems[index] || {};
+    const huItem = huItems[index] || {};
+    const entry = {};
+
+    for (const key of fieldNames) {
+      const enValue = enItem[key] || '';
+      const huValue = huItem[key] || '';
+      if (enValue || huValue) {
+        entry[key] = { en: enValue, hu: huValue };
+      }
+    }
+
+    result.push(entry);
+  }
+
+  return result;
+}
+
+function readFieldsText(value, language, fieldNames) {
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      if (typeof item === 'string') return item;
+      const parts = [];
+      for (const key of fieldNames) {
+        const raw = item?.[key];
+        const text = typeof raw === 'string' ? raw : raw?.[language] || '';
+        if (text) parts.push(`${key}=${text}`);
+      }
+      return parts.join(', ');
+    }).join('\n');
+  }
+
+  return String(value ?? '');
+}
+
 export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
   const { content, error, saveSection } = useContent();
   const siteContent = content?.siteContent ?? {};
@@ -262,7 +366,7 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
     const editedValue = edits[section.key]?.[field.key];
     const translatable = isTranslatable(section.key, field.key);
 
-    if (field.type === 'navigation-links') {
+    if (field.type === 'navigation-links' || field.type === 'footer-links') {
       const enValue = readNavigationText(editedValue ?? storedValue, 'en');
       const huValue = readNavigationText(editedValue ?? storedValue, 'hu');
       return (
@@ -274,8 +378,7 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
               value={enValue}
               onChange={(event) => {
                 const nextHu = readNavigationText(editedValue ?? storedValue, 'hu');
-                const combined = serializeNavigationBilingual(event.target.value, nextHu);
-                updateField(section.key, field, combined);
+                updateField(section.key, field, serializeNavigationBilingual(event.target.value, nextHu));
               }}
               rows="6"
             />
@@ -287,10 +390,141 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
               value={huValue}
               onChange={(event) => {
                 const nextEn = readNavigationText(editedValue ?? storedValue, 'en');
-                const combined = serializeNavigationBilingual(nextEn, event.target.value);
-                updateField(section.key, field, combined);
+                updateField(section.key, field, serializeNavigationBilingual(nextEn, event.target.value));
               }}
               rows="6"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'body-paragraphs') {
+      const enValue = readBodyText(editedValue ?? storedValue, 'en');
+      const huValue = readBodyText(editedValue ?? storedValue, 'hu');
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'en')}
+              value={enValue}
+              onChange={(event) => {
+                const nextHu = readBodyText(editedValue ?? storedValue, 'hu');
+                updateField(section.key, field, serializeBodyBilingual(event.target.value, nextHu));
+              }}
+              rows="8"
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'hu')}
+              value={huValue}
+              onChange={(event) => {
+                const nextEn = readBodyText(editedValue ?? storedValue, 'en');
+                updateField(section.key, field, serializeBodyBilingual(nextEn, event.target.value));
+              }}
+              rows="8"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'stats') {
+      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['value', 'label']);
+      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['value', 'label']);
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'en')}
+              value={enValue}
+              onChange={(event) => {
+                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['value', 'label']);
+                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['value', 'label']));
+              }}
+              rows="6"
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'hu')}
+              value={huValue}
+              onChange={(event) => {
+                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['value', 'label']);
+                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['value', 'label']));
+              }}
+              rows="6"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'specialities') {
+      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['icon', 'title', 'description']);
+      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['icon', 'title', 'description']);
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'en')}
+              value={enValue}
+              onChange={(event) => {
+                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['icon', 'title', 'description']);
+                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['icon', 'title', 'description']));
+              }}
+              rows="10"
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'hu')}
+              value={huValue}
+              onChange={(event) => {
+                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['icon', 'title', 'description']);
+                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['icon', 'title', 'description']));
+              }}
+              rows="10"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'features') {
+      const enValue = readFieldsText(editedValue ?? storedValue, 'en', ['title', 'description']);
+      const huValue = readFieldsText(editedValue ?? storedValue, 'hu', ['title', 'description']);
+      return (
+        <div className="admin-bilingual-field">
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'en')}
+              value={enValue}
+              onChange={(event) => {
+                const nextHu = readFieldsText(editedValue ?? storedValue, 'hu', ['title', 'description']);
+                updateField(section.key, field, serializeFieldsBilingual(event.target.value, nextHu, ['title', 'description']));
+              }}
+              rows="10"
+            />
+          </div>
+          <div>
+            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
+            <textarea
+              id={fieldId(section.key, field.key, 'hu')}
+              value={huValue}
+              onChange={(event) => {
+                const nextEn = readFieldsText(editedValue ?? storedValue, 'en', ['title', 'description']);
+                updateField(section.key, field, serializeFieldsBilingual(nextEn, event.target.value, ['title', 'description']));
+              }}
+              rows="10"
             />
           </div>
         </div>
