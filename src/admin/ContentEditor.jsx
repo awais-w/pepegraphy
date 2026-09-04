@@ -2,8 +2,6 @@
 import React, { useMemo, useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { validateStructuredField } from '../lib/contentModel';
-import { useLanguage } from '../i18n/LanguageContext';
-import { getDefaultLanguage, getSupportedLanguages } from '../i18n/translations';
 import { useToast } from './Toast';
 
 const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
@@ -117,19 +115,19 @@ function fieldValue(value) {
   return value ?? '';
 }
 
-function readBilingual(value, language) {
+function readLocalized(value, language) {
   if (value === undefined || value === null) return '';
   if (typeof value === 'string') return value;
   if (typeof value === 'object') {
     const localized = value[language];
     if (typeof localized === 'string') return localized;
-    const fallback = value[getDefaultLanguage()];
+    const fallback = value.en;
     if (typeof fallback === 'string') return fallback;
   }
   return '';
 }
 
-function ensureBilingual(existing, language, nextValue) {
+function ensureLocalized(existing, language, nextValue) {
   if (typeof existing === 'string') {
     return { en: existing, [language]: nextValue };
   }
@@ -141,16 +139,15 @@ function ensureBilingual(existing, language, nextValue) {
 
 export function ContentEditor() {
   const { content, error, saveSection } = useContent();
-  const { language } = useLanguage();
   const siteContent = content?.siteContent ?? {};
   const [edits, setEdits] = useState({});
   const [jsonEdits, setJsonEdits] = useState({});
   const [savingKeys, setSavingKeys] = useState({});
   const [feedback, setFeedback] = useState(null);
+  const [editingLanguage, setEditingLanguage] = useState('en');
   const toast = useToast();
 
-  const supportedLanguages = useMemo(() => getSupportedLanguages(), []);
-  const editingLanguage = supportedLanguages.includes(language) ? language : getDefaultLanguage();
+  const supportedLanguages = useMemo(() => ['en', 'hu'], []);
 
   const sectionContent = (section) => {
     const jsonValues = jsonEdits[section.key] ?? {};
@@ -222,69 +219,49 @@ export function ContentEditor() {
       );
     }
 
-    if (field.type === 'textarea') {
-      if (translatable) {
-        const enValue = fieldValue(editedValue?.en ?? readBilingual(storedValue, 'en'));
-        const huValue = fieldValue(editedValue?.hu ?? readBilingual(storedValue, 'hu'));
-        return (
-          <div className="admin-bilingual-field">
-            <div>
-              <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
-              <textarea
-                id={fieldId(section.key, field.key, 'en')}
-                value={enValue}
-                onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'en', event.target.value))}
-                rows="4"
-              />
-            </div>
-            <div>
-              <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-              <textarea
-                id={fieldId(section.key, field.key, 'hu')}
-                value={huValue}
-                onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'hu', event.target.value))}
-                rows="4"
-              />
-            </div>
-          </div>
-        );
-      }
-      return <textarea id={id} value={fieldValue(editedValue ?? storedValue)} onChange={(event) => updateField(section.key, field, event.target.value)} />;
-    }
+    const localizedValue = fieldValue(readLocalized(editedValue ?? storedValue, editingLanguage));
 
-    if (translatable) {
-      const enValue = fieldValue(editedValue?.en ?? readBilingual(storedValue, 'en'));
-      const huValue = fieldValue(editedValue?.hu ?? readBilingual(storedValue, 'hu'));
+    if (field.type === 'textarea') {
       return (
-        <div className="admin-bilingual-field">
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'en')}>English</label>
-            <input
-              id={fieldId(section.key, field.key, 'en')}
-              type={field.type ?? 'text'}
-              value={enValue}
-              onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'en', event.target.value))}
-            />
-          </div>
-          <div>
-            <label htmlFor={fieldId(section.key, field.key, 'hu')}>Magyar</label>
-            <input
-              id={fieldId(section.key, field.key, 'hu')}
-              type={field.type ?? 'text'}
-              value={huValue}
-              onChange={(event) => updateField(section.key, field, ensureBilingual(editedValue ?? storedValue, 'hu', event.target.value))}
-            />
-          </div>
-        </div>
+        <textarea
+          id={id}
+          value={localizedValue}
+          onChange={(event) => updateField(section.key, field, ensureLocalized(editedValue ?? storedValue, editingLanguage, event.target.value))}
+          rows="4"
+        />
       );
     }
 
-    const numberCoerce = (event) => field.type === 'number' && event.target.value !== '' ? Number(event.target.value) : event.target.value;
-    return <input id={id} type={field.type ?? 'text'} value={fieldValue(editedValue ?? storedValue)} onChange={(event) => updateField(section.key, field, numberCoerce(event))} />;
+  const numberCoerce = (event) => {
+    const value = event.target.value;
+    return field.type === 'number' && value !== '' ? Number(value) : value;
+  };
+  return (
+    <input
+      id={id}
+      type={field.type ?? 'text'}
+      value={localizedValue}
+      onChange={(event) => updateField(section.key, field, ensureLocalized(editedValue ?? storedValue, editingLanguage, numberCoerce(event)))}
+    />
+  );
   };
 
   return (
     <div className="admin-content-editor">
+      <div className="admin-language-switcher" role="group" aria-label="Editing language">
+        {supportedLanguages.map((language) => (
+          <button
+            key={language}
+            type="button"
+            className={editingLanguage === language ? 'admin-language-active' : ''}
+            onClick={() => setEditingLanguage(language)}
+            aria-pressed={editingLanguage === language}
+          >
+            {LANGUAGE_LABELS[language] ?? language.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
       {error && (
         <p className="admin-message" role="alert">
           The CMS is unavailable, so you are editing fallback content. Changes will save when the CMS is available.
@@ -306,7 +283,10 @@ export function ContentEditor() {
                 const translatable = isTranslatable(section.key, field.key);
                 return (
                   <div key={field.key} className="admin-field">
-                    <label htmlFor={id}>{section.title} {field.label}{translatable ? ` · ${LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}` : ''}</label>
+                    <label htmlFor={id}>
+                      {section.title} {field.label}
+                      {translatable ? ` · ${LANGUAGE_LABELS[editingLanguage] ?? editingLanguage.toUpperCase()}` : ''}
+                    </label>
                     {renderFieldEditor(section, field)}
                   </div>
                 );

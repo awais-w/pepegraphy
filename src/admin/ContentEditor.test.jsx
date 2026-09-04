@@ -74,6 +74,9 @@ describe('ContentEditor', () => {
   }
 
   function setInputValue(input, value) {
+    if (!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement)) {
+      throw new Error(`Expected input or textarea, got ${input?.tagName ?? 'null'}`);
+    }
     const prototype = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(prototype, 'value').set.call(input, value);
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -112,26 +115,26 @@ describe('ContentEditor', () => {
 
   it('updates an edited field in controlled state before saving its complete section', async () => {
     await renderEditor();
-    const titleEn = container.querySelector('#hero-title-en');
+    const title = container.querySelector('#hero-title');
 
     await act(async () => {
-      setInputValue(titleEn, 'Petra Photography');
+      setInputValue(title, 'Petra Photography');
     });
 
-    expect(titleEn.value).toBe('Petra Photography');
+    expect(title.value).toBe('Petra Photography');
 
     await act(async () => {
       buttonByText('Save hero').click();
       await Promise.resolve();
     });
 
-    expect(saveSection).toHaveBeenCalledWith('hero', expect.objectContaining({
+    expect(saveSection).toHaveBeenCalledWith('hero', {
       eyebrow: { en: 'Natural', hu: 'Természetes' },
-      title: expect.objectContaining({ en: 'Petra Photography' }),
+      title: { en: 'Petra Photography' },
       subtitle: 'Photography',
       ctaLabel: 'View work',
       ctaHref: '#portfolio',
-    }));
+    });
   });
 
   it('preserves complete nested section content when saving a JSON field edit', async () => {
