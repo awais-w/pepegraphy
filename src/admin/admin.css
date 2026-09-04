@@ -236,20 +236,6 @@
   top: 0;
 }
 
-.admin-sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.admin-sidebar-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .admin-brand {
   align-items: center;
   color: var(--admin-text);
@@ -645,25 +631,34 @@
     top: 0;
     z-index: 20;
   }
-  .admin-sidebar-header {
-    width: 100%;
-    margin-bottom: 0;
+  .admin-brand {
+    order: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
   }
-  .admin-brand { margin: 0; }
   .admin-brand small, .admin-account-copy { display: none; }
-  .admin-navigation { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 0.35rem; 
-    flex: 1 1 auto; 
-    justify-content: center; 
+  .admin-sidebar-footer {
+    order: 2;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .admin-navigation {
+    order: 3;
+    flex: 0 0 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: center;
   }
   .admin-navigation a { min-height: 2.5rem; }
   .admin-sidebar-spacer { display: none; }
+  .admin-sidebar-separator { display: none; }
 }
 
 @media (max-width: 44rem) {
-  .admin-sidebar-header-actions { gap: 0.35rem; }
   .admin-brand strong { font-size: 1.1rem; }
   .admin-navigation {
     justify-content: flex-start;
@@ -671,6 +666,7 @@
     padding-bottom: 0.15rem;
   }
   .admin-navigation a { flex: 0 0 auto; }
+  .admin-sidebar-header-actions { gap: 0.35rem; }
   .admin-workspace { padding: 1.25rem 1rem 2rem; }
   .admin-header { align-items: stretch; flex-direction: column; gap: 1.25rem; }
   .admin-public-link { align-self: flex-start; }
