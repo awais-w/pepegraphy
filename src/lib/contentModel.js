@@ -26,7 +26,7 @@ const isBilingualOrString = (value) => {
   if (typeof value === 'string') return true;
   if (!isRecord(value)) return false;
   const keys = Object.keys(value);
-  if (keys.length === 0) return true;
+  if (keys.length === 0) return false;
   return keys.every((key) => (key === 'en' || key === 'hu') && isString(value[key]));
 };
 const isArrayOf = (value, itemValidator) => Array.isArray(value) && value.every(itemValidator);
@@ -38,7 +38,7 @@ const isFeature = (value) => isRecord(value) && isBilingualOrString(value.title)
 export const structuredFieldDescriptions = {
   navigation: { links: 'a JSON array of link objects with label and href' },
   about: {
-    body: 'a JSON array of paragraph strings',
+    body: 'a markdown string or bilingual markdown string',
     stats: 'a JSON array of statistic objects with value and label',
   },
   specialities: { items: 'a JSON array of speciality objects with icon, title, and description' },
@@ -49,7 +49,7 @@ export const structuredFieldDescriptions = {
 const structuredFieldValidators = {
   navigation: { links: (value) => isArrayOf(value, isLink) },
   about: {
-    body: (value) => isArrayOf(value, isString),
+    body: (value) => isBilingualOrString(value),
     stats: (value) => isArrayOf(value, isStat),
   },
   specialities: { items: (value) => isArrayOf(value, isSpeciality) },
@@ -83,10 +83,7 @@ export const defaultContent = {
       eyebrow: bil('About Me', 'Rólam'),
       title: bil('Real moments. Real people.', 'Valódi pillanatok. Valódi emberek.'),
       titleLineBreakAfterWords: 2,
-      body: [
-        bil("Hello, I'm Petra Styasztny — the photographer behind Pepegraphy. I believe the most beautiful photographs aren't staged; they're stolen from real life. My approach is relaxed, unhurried, and always guided by authenticity.", 'Szia, Petra Styasztny vagyok — a Pepegraphy fotósa. Hiszem, hogy a legszebb fotók nem beállítottak; a való életből ellesett pillanatok. A hozzáállásom laza, nyugodt, és mindig a hitelességre épít.'),
-        bil("Whether I'm capturing a quiet family afternoon, the electric atmosphere of a party, or the quiet confidence of a portrait session, my goal is the same: to show you — and the world — exactly as you are, at your very best.", 'Akár egy csendes családi délutánt, akár egy buli pezsdítő hangulatát, akár egy portré magabiztos csendjét örökítem meg, a célom mindig ugyanaz: megmutatni téged — és a világnak — pontosan úgy, ahogy vagy, a legjobb formádban.'),
-      ],
+      body: bil("Hello, I'm Petra Styasztny — the photographer behind Pepegraphy. I believe the most beautiful photographs aren't staged; they're stolen from real life. My approach is relaxed, unhurried, and always guided by authenticity.\n\nWhether I'm capturing a quiet family afternoon, the electric atmosphere of a party, or the quiet confidence of a portrait session, my goal is the same: to show you — and the world — exactly as you are, at your very best.", 'Szia, Petra Styasztny vagyok — a Pepegraphy fotósa. Hiszem, hogy a legszebb fotók nem beállítottak; a való életből ellesett pillanatok. A hozzáállásom laza, nyugodt, és mindig a hitelességre épít.\n\nAkár egy csendes családi délutánt, akár egy buli pezsdítő hangulatát, akár egy portré magabiztos csendjét örökítem meg, a célom mindig ugyanaz: megmutatni téged — és a világnak — pontosan úgy, ahogy vagy, a legjobb formádban.'),
       imageUrl: '/petra-portrait.png',
       imageAlt: bil('Petra Styasztny', 'Petra Styasztny portré'),
       stats: [

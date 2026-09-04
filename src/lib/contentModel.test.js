@@ -57,7 +57,7 @@ describe('content model', () => {
     });
     expect(content.siteContent.about).toMatchObject({
       title: 'CMS title',
-      body: defaultContent.siteContent.about.body,
+      body: 'Not an array',
       stats: [{ value: '10', label: 'Years' }],
     });
     expect(content.siteContent.specialities.items).toEqual(defaultContent.siteContent.specialities.items);

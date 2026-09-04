@@ -125,7 +125,7 @@ describe('public content adapter', () => {
       ...link,
       label: link.label.en,
     })));
-    expect(publicContent.about.body).toEqual(defaultContent.siteContent.about.body.map((entry) => entry.en));
+    expect(publicContent.about.body).toBe(defaultContent.siteContent.about.body.en);
     expect(publicContent.about.stats).toEqual(defaultContent.siteContent.about.stats.map((stat) => ({
       ...stat,
       label: stat.label.en,
