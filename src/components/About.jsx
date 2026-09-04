@@ -42,9 +42,7 @@ const About = ({ about }) => {
               </h2>
             </div>
 
-            <div className="space-y-4 sm:space-y-6 text-white/60 text-base sm:text-lg leading-relaxed font-light">
-              {about.body.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            </div>
+            <div className="space-y-4 sm:space-y-6 text-white/60 text-base sm:text-lg leading-relaxed font-light" dangerouslySetInnerHTML={{ __html: about.bodyHtml }} />
 
             <div className="grid grid-cols-3 gap-4 sm:gap-8 pt-8 border-t border-white/10">
               {about.stats.map((stat) => (

@@ -54,9 +54,7 @@ const Contact = ({ contact, categories }) => {
                 </span>
               ))}
             </h2>
-            <p className="text-white/40 text-base sm:text-lg font-light leading-relaxed mb-10 sm:mb-12 max-w-md">
-              {contact.description}
-            </p>
+            <p className="text-white/40 text-base sm:text-lg font-light leading-relaxed mb-10 sm:mb-12 max-w-md" dangerouslySetInnerHTML={{ __html: contact.descriptionHtml }} />
 
             <div className="space-y-4 sm:space-y-6">
               <a href={`mailto:${contact.email}`} className="flex items-center gap-4 sm:gap-6 group">

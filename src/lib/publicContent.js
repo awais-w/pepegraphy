@@ -1,5 +1,6 @@
 import { defaultContent, mergeContent } from './contentModel';
 import { getDefaultLanguage, localizeContentTree, pickLocalized } from '../i18n/translations';
+import { renderMarkdown } from './markdown';
 
 const mergeSection = (fallback, section) => ({
   ...fallback,
@@ -59,15 +60,22 @@ export function buildPublicContent(content = defaultContent, language = getDefau
         category: slide.caption || photoById.get(String(slide.id))?.category || '',
       })),
     },
-    about: withTitleLines(localize(mergeSection(defaultContent.siteContent.about, siteContent.about))),
+    about: withTitleLines({
+      ...localize(mergeSection(defaultContent.siteContent.about, siteContent.about)),
+      bodyHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.about, siteContent.about).body)),
+    }),
     portfolio: {
       ...localize(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio)),
+      descriptionHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.portfolio, siteContent.portfolio).description)),
       categories: [{ slug: 'all', name: pickLocalized({ en: 'All', hu: 'Összes' }, language) }, ...publicCategories],
       images: photos,
     },
     specialities: localize(mergeSection(defaultContent.siteContent.specialities, siteContent.specialities)),
     booking: localize(mergeSection(defaultContent.siteContent.booking, siteContent.booking)),
-    contact: withTitleLines(localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact))),
+    contact: withTitleLines({
+      ...localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact)),
+      descriptionHtml: renderMarkdown(localize(mergeSection(defaultContent.siteContent.contact, siteContent.contact).description)),
+    }),
     footer: localize(mergeSection(defaultContent.siteContent.footer, siteContent.footer)),
   };
 }

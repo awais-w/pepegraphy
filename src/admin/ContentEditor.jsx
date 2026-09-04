@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { useContent } from '../context/ContentContext';
 import { validateStructuredField } from '../lib/contentModel';
 import { useToast } from './Toast';
+import { MarkdownEditor } from './MarkdownEditor';
 
 const LANGUAGE_LABELS = { en: 'EN', hu: 'HU' };
 
@@ -46,7 +47,7 @@ const SECTION_SCHEMA = [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
       { key: 'titleLineBreakAfterWords', label: 'Title line break after words', type: 'number' },
-      { key: 'body', label: 'Body', type: 'body-paragraphs', description: 'One paragraph per line. Empty lines are ignored.' },
+      { key: 'body', label: 'Body', type: 'markdown', description: 'Supports Markdown formatting.' },
       { key: 'imageUrl', label: 'Image URL' },
       { key: 'imageAlt', label: 'Image alternative text' },
       { key: 'stats', label: 'Stats', type: 'stats', description: 'One stat per line. Format: value=..., label=...' },
@@ -58,7 +59,7 @@ const SECTION_SCHEMA = [
     fields: [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
-      { key: 'description', label: 'Description', type: 'textarea' },
+      { key: 'description', label: 'Description', type: 'markdown' },
     ],
   },
   {
@@ -89,7 +90,7 @@ const SECTION_SCHEMA = [
       { key: 'eyebrow', label: 'Eyebrow' },
       { key: 'title', label: 'Title' },
       { key: 'titleLineBreakAfterWords', label: 'Title line break after words', type: 'number' },
-      { key: 'description', label: 'Description', type: 'textarea' },
+      { key: 'description', label: 'Description', type: 'markdown' },
       { key: 'email', label: 'Email', type: 'email' },
       { key: 'phone', label: 'Phone', type: 'tel' },
     ],
@@ -391,28 +392,15 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       );
     }
 
-    if (field.type === 'body-paragraphs') {
-      const currentValue = readBodyText(editedValue ?? storedValue, editingLanguage);
-      const otherValue = readBodyText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
-      const updateCurrent = (text) => {
-        const nextOther = readBodyText(editedValue ?? storedValue, editingLanguage === 'en' ? 'hu' : 'en');
-        if (editingLanguage === 'en') {
-          updateField(section.key, field, serializeBodyBilingual(text, nextOther));
-        } else {
-          updateField(section.key, field, serializeBodyBilingual(nextOther, text));
-        }
-      };
+    if (field.type === 'markdown') {
+      const currentValue = typeof (editedValue ?? storedValue) === 'string' ? editedValue ?? storedValue : readLocalized(editedValue ?? storedValue, editingLanguage);
+      const updateCurrent = (text) => updateField(section.key, field, ensureLocalized(editedValue ?? storedValue, editingLanguage, text));
       return (
-        <div className="admin-bilingual-field">
-          <div>
-            <textarea
-              id={fieldId(section.key, field.key, editingLanguage)}
-              value={currentValue}
-              onChange={(event) => updateCurrent(event.target.value)}
-              rows="8"
-            />
-          </div>
-        </div>
+        <MarkdownEditor
+          id={fieldId(section.key, field.key, editingLanguage)}
+          value={currentValue}
+          onChange={updateCurrent}
+        />
       );
     }
 

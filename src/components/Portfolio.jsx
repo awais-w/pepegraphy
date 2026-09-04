@@ -123,9 +123,7 @@ const Portfolio = ({ portfolio }) => {
         <div className="mb-12 md:mb-24">
           <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{portfolio.eyebrow}</span>
           <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">{portfolio.title}</h2>
-          <p className="text-white/40 max-w-2xl text-base sm:text-lg leading-relaxed font-light">
-            {portfolio.description}
-          </p>
+          <p className="text-white/40 max-w-2xl text-base sm:text-lg leading-relaxed font-light" dangerouslySetInnerHTML={{ __html: portfolio.descriptionHtml }} />
         </div>
 
         {/* Filter Bar */}
