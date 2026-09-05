@@ -11,7 +11,6 @@ import 'lightgallery/css/lg-thumbnail.css';
 import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-autoplay.css';
 import 'lightgallery/css/lg-fullscreen.css';
-import 'lightgallery/css/lg-hash.css';
 
 const Portfolio = ({ portfolio }) => {
   const { images, categories } = portfolio;
@@ -19,11 +18,16 @@ const Portfolio = ({ portfolio }) => {
   const [filter, setFilter] = useState('all');
   const lgContainerRef = useRef(null);
   const lgInstance = useRef(null);
+  const filteredImagesRef = useRef([]);
 
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
 
   const displayImages = useMemo(() => {
     return [...filteredImages].sort((a, b) => a.id - b.id).slice(0, 8);
+  }, [filteredImages]);
+
+  useEffect(() => {
+    filteredImagesRef.current = filteredImages;
   }, [filteredImages]);
 
   const openLightGallery = useCallback((img) => {
@@ -39,8 +43,9 @@ const Portfolio = ({ portfolio }) => {
       document.querySelectorAll('.lg-container').forEach((el) => el.remove());
     }
 
-    const index = filteredImages.findIndex((item) => item.id === img.id);
-    const slides = filteredImages.map((image) => ({
+    const currentFiltered = filteredImagesRef.current;
+    const index = currentFiltered.findIndex((item) => item.id === img.id);
+    const slides = currentFiltered.map((image) => ({
       src: image.src,
       thumb: image.src,
       subHtml: `<h4>${image.alt}</h4>`,
@@ -49,7 +54,7 @@ const Portfolio = ({ portfolio }) => {
     try {
       lgInstance.current = lightGallery(lgContainerRef.current, {
         licenseKey: '0000-0000-000-0000',
-        plugins: [lgThumbnail, lgZoom, lgAutoplay, lgFullscreen],
+        plugins: [lgThumbnail, lgZoom, lgAutoplay, lgFullscreen, lgHash],
         dynamic: true,
         dynamicEl: slides,
         speed: 500,
@@ -59,6 +64,8 @@ const Portfolio = ({ portfolio }) => {
         controls: true,
         counter: true,
         fullScreen: true,
+        hash: true,
+        galleryId: 'portfolio-gallery',
         autoplay: true,
         slideShowAutoplay: false,
         slideShowInterval: 3000,
@@ -70,7 +77,7 @@ const Portfolio = ({ portfolio }) => {
     } catch (error) {
       console.error('Failed to open lightGallery:', error);
     }
-  }, [filteredImages]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -85,6 +92,24 @@ const Portfolio = ({ portfolio }) => {
       document.querySelectorAll('.lg-container').forEach((el) => el.remove());
     };
   }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const hash = window.location.hash;
+    const match = hash.match(/lg=portfolio-gallery&slide=(\d+)/);
+    if (!match) return;
+
+    const slideIndex = Math.max(0, parseInt(match[1], 10) || 0);
+    const targetImage = filteredImagesRef.current[slideIndex];
+    if (!targetImage) return;
+
+    const timer = window.setTimeout(() => {
+      openLightGallery(targetImage);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [openLightGallery]);
 
   return (
     <section id="portfolio" className="py-20 md:py-40 bg-brand-black">
