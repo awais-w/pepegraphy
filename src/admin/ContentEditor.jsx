@@ -529,21 +529,7 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
   };
 
   const [activeSectionKey, setActiveSectionKey] = useState(SECTION_SCHEMA[0]?.key);
-  const [subnavTop, setSubnavTop] = useState(0);
   const sectionRefs = useRef(new Map(SECTION_SCHEMA.map((section) => [section.key, null])));
-
-  useEffect(() => {
-    const updateSubnavOffset = () => {
-      const header = document.querySelector('.admin-header');
-      if (header) {
-        setSubnavTop(header.offsetHeight);
-      }
-    };
-
-    updateSubnavOffset();
-    window.addEventListener('resize', updateSubnavOffset);
-    return () => window.removeEventListener('resize', updateSubnavOffset);
-  }, []);
 
   useEffect(() => {
     const handleHash = () => {
@@ -572,7 +558,7 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
 
   return (
     <div className="admin-content-editor">
-      <nav className="admin-content-subnav" style={{ top: subnavTop }} aria-label="Content sections">
+      <nav className="admin-content-subnav" aria-label="Content sections">
         {SECTION_SCHEMA.map((section) => (
           <a
             key={section.key}
