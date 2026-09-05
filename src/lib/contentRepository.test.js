@@ -71,7 +71,7 @@ describe('content repository', () => {
     await repository.createCategory('Events', 2);
     await repository.loadContent();
 
-    expect(insert).toHaveBeenCalledWith({ name: 'Events', slug: 'events', sort_order: 2, is_visible: true });
+    expect(insert).toHaveBeenCalledWith({ name: 'Events', name_en: 'Events', name_hu: 'Events', slug: 'events', sort_order: 2, is_visible: true });
     expect(order).toHaveBeenCalledTimes(3);
     expect(order).toHaveBeenCalledWith('sort_order', { ascending: true });
   });
@@ -127,12 +127,16 @@ describe('content repository', () => {
       imageUrl: 'https://cdn.example/hero.jpg',
       storagePath: 'hero/new-hero.jpg',
       altText: 'New hero',
+      photoId: 'photo-1',
     });
 
     expect(insert).toHaveBeenCalledWith({
+      photo_id: 'photo-1',
       image_url: 'https://cdn.example/hero.jpg',
       storage_path: 'hero/new-hero.jpg',
       alt_text: 'New hero',
+      alt_text_en: '',
+      alt_text_hu: '',
       caption: '',
       sort_order: 0,
       is_visible: true,

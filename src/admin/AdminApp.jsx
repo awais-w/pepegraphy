@@ -16,7 +16,7 @@ const SECTIONS = [
   { id: 'gallery', label: 'Gallery', title: 'Gallery', description: 'Organise portfolio categories and their photographs.', icon: Images, component: GalleryManager },
 ];
 
-const LANGUAGE_LABELS = { en: '🇬🇧 EN', hu: '🇭🇺 HU' };
+const LANGUAGE_LABELS = { en: '🇬🇧 For EN', hu: '🇭🇺 For HU' };
 
 const getInitialSection = () => {
   const hash = window.location.hash.replace('#', '');

@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useContent } from '../context/ContentContext';
 import { validateStructuredField } from '../lib/contentModel';
 import { useToast } from './Toast';
@@ -528,8 +528,62 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
   );
   };
 
+  const [activeSectionKey, setActiveSectionKey] = useState(SECTION_SCHEMA[0]?.key);
+  const [subnavTop, setSubnavTop] = useState(0);
+  const sectionRefs = useRef(new Map(SECTION_SCHEMA.map((section) => [section.key, null])));
+
+  useEffect(() => {
+    const updateSubnavOffset = () => {
+      const header = document.querySelector('.admin-header');
+      if (header) {
+        setSubnavTop(header.offsetHeight);
+      }
+    };
+
+    updateSubnavOffset();
+    window.addEventListener('resize', updateSubnavOffset);
+    return () => window.removeEventListener('resize', updateSubnavOffset);
+  }, []);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '');
+      const match = SECTION_SCHEMA.find((section) => `section-${section.key}` === hash);
+      if (match) {
+        setActiveSectionKey(match.key);
+        sectionRefs.current.get(match.key)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  const selectSection = (sectionKey) => (event) => {
+    event.preventDefault();
+    setActiveSectionKey(sectionKey);
+    const node = sectionRefs.current.get(sectionKey);
+    if (node) {
+      node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    window.location.hash = `section-${sectionKey}`;
+  };
+
   return (
     <div className="admin-content-editor">
+      <nav className="admin-content-subnav" style={{ top: subnavTop }} aria-label="Content sections">
+        {SECTION_SCHEMA.map((section) => (
+          <a
+            key={section.key}
+            href={`#section-${section.key}`}
+            onClick={selectSection(section.key)}
+            className={activeSectionKey === section.key ? 'admin-content-subnav-active' : undefined}
+          >
+            {section.title}
+          </a>
+        ))}
+      </nav>
       {error && (
         <p className="admin-message" role="alert">
           The CMS is unavailable, so you are editing fallback content. Changes will save when the CMS is available.
@@ -543,7 +597,13 @@ export function ContentEditor({ editingLanguage = 'en', onLanguageChange }) {
       {SECTION_SCHEMA.map((section) => {
         const isSaving = Boolean(savingKeys[section.key]);
         return (
-          <section className="admin-panel" key={section.key} aria-labelledby={`${section.key}-editor-title`}>
+          <section
+            ref={(node) => { sectionRefs.current.set(section.key, node); }}
+            id={`section-${section.key}`}
+            className="admin-panel"
+            key={section.key}
+            aria-labelledby={`${section.key}-editor-title`}
+          >
             <h3 id={`${section.key}-editor-title`}>{section.title}</h3>
             <fieldset disabled={isSaving}>
               {section.fields.map((field) => {

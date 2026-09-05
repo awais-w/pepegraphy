@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import lightGallery from 'lightgallery';
 import lgThumbnail from 'lightgallery/plugins/thumbnail/lg-thumbnail.es5.js';
 import lgZoom from 'lightgallery/plugins/zoom/lg-zoom.es5.js';
@@ -140,18 +140,16 @@ const Portfolio = ({ portfolio }) => {
 
         {/* Gallery Grid */}
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
-          <AnimatePresence mode="popLayout">
-            {displayImages.map((img) => (
-              <motion.div
-                key={img.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4 }}
-                className="relative group cursor-pointer overflow-hidden bg-brand-surface break-inside-avoid"
-                onClick={() => openLightGallery(img)}
-              >
+          {displayImages.map((img) => (
+            <motion.div
+              key={img.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="relative group cursor-pointer overflow-hidden bg-brand-surface break-inside-avoid"
+              onClick={() => openLightGallery(img)}
+            >
                 <img
                   src={img.src}
                   alt={img.alt}
@@ -164,7 +162,6 @@ const Portfolio = ({ portfolio }) => {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
         </div>
       </div>
 

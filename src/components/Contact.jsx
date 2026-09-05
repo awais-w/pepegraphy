@@ -17,6 +17,7 @@ const Contact = ({ contact, categories }) => {
     { value: 'nature', label: t.contactFormTypes.find((opt) => opt.value === 'nature')?.label ?? 'Nature' },
     { value: 'pet', label: t.contactFormTypes.find((opt) => opt.value === 'pet')?.label ?? 'Pets' },
     { value: 'boudoir', label: t.contactFormTypes.find((opt) => opt.value === 'boudoir')?.label ?? 'Boudoir' },
+    { value: 'other', label: t.contactFormTypes.find((opt) => opt.value === 'other')?.label ?? 'Other' },
   ];
 
   const handleSubmit = (e) => {
@@ -112,6 +113,7 @@ const Contact = ({ contact, categories }) => {
                       <option key={category.slug} value={category.slug}>{localized?.label ?? category.name}</option>
                     );
                   })}
+                  <option value="other">{t.contactFormTypes.find((opt) => opt.value === 'other')?.label ?? 'Other'}</option>
                 </select>
               </div>
               <div className="space-y-2">

@@ -97,7 +97,7 @@ describe('CMS RLS migration', () => {
     expect(normalizeSql(migration)).toContain('create table public.gallery_photos ( id uuid primary key default gen_random_uuid(), category_id uuid not null references public.gallery_categories(id) on delete cascade, image_url text not null, storage_path text');
     expect(normalizeSql(storagePathMigration)).toContain('alter table public.hero_slides add column if not exists storage_path text');
     expect(normalizeSql(storagePathMigration)).toContain('alter table public.gallery_photos add column if not exists storage_path text');
-    expect(seed).toContain('insert into public.hero_slides (image_url, storage_path, alt_text, sort_order)');
-    expect(seed).toContain('insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, sort_order)');
+    expect(seed).toContain('insert into public.hero_slides (image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)');
+    expect(seed).toContain('insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)');
   });
 });

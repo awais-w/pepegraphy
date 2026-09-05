@@ -50,6 +50,7 @@ const translations = {
       { value: 'nature', label: 'Nature' },
       { value: 'pet', label: 'Pets' },
       { value: 'boudoir', label: 'Boudoir' },
+      { value: 'other', label: 'Other' },
     ],
   },
   hu: {
@@ -103,6 +104,7 @@ const translations = {
       { value: 'nature', label: 'Természet' },
       { value: 'pet', label: 'Háziállat' },
       { value: 'boudoir', label: 'Boudoir' },
+      { value: 'other', label: 'Egyéb' },
     ],
   },
 };

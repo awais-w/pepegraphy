@@ -15,6 +15,11 @@ vi.mock('./Toast', () => ({
   useToast: () => vi.fn(),
 }));
 
+vi.mock('../i18n/LanguageContext', () => ({
+  LanguageProvider: ({ children }) => children,
+  useLanguage: () => ({ language: 'en' }),
+}));
+
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 import { GalleryManager } from './GalleryManager';
@@ -77,31 +82,27 @@ describe('media managers', () => {
 
   const buttonByText = (text) => [...container.querySelectorAll('button')].find((button) => button.textContent === text);
 
-  it('uploads a hero slide using its uploaded URL, alternative text, and the next highest sort order', async () => {
-    currentContext.value.content.heroSlides = [
-      { id: 'hero-1', src: '/hero-1.jpg', alt: '', caption: '', sortOrder: 3, isVisible: true },
-      { id: 'hero-2', src: '/hero-2.jpg', alt: '', caption: '', sortOrder: 8, isVisible: true },
+  it('adds a hero slide from a gallery image', async () => {
+    currentContext.value.content.heroSlides = [];
+    currentContext.value.content.photos = [
+      { id: 'photo-1', src: '/gallery/img_1.jpg', alt: 'Stage performance event', altEn: 'Stage performance event', altHu: 'Színpad előadás', storagePath: null, sortOrder: 0, isVisible: true },
     ];
     await render(HeroManager);
-    const file = imageFile();
 
     await act(async () => {
-      setInputValue(container.querySelector('#new-hero-alt-text'), 'A parent holding a child');
-      selectFile(container.querySelector('#new-hero-image'), file);
-    });
-
-    await act(async () => {
-      buttonByText('Upload hero slide').click();
+      buttonByText('Add to hero').click();
       await Promise.resolve();
     });
 
-    expect(mutations.uploadImage).toHaveBeenCalledWith(file, 'hero');
     expect(mutations.createHeroSlide).toHaveBeenCalledWith({
-      imageUrl: 'https://cdn.example/portrait.jpg',
-      storagePath: 'hero/portrait.jpg',
-      altText: 'A parent holding a child',
+      photoId: 'photo-1',
+      imageUrl: '/gallery/img_1.jpg',
+      storagePath: null,
+      altText: 'Stage performance event',
+      altTextEn: 'Stage performance event',
+      altTextHu: 'Színpad előadás',
       caption: '',
-      sortOrder: 9,
+      sortOrder: 0,
       isVisible: true,
     });
   });
@@ -114,7 +115,7 @@ describe('media managers', () => {
     await render(GalleryManager);
 
     await act(async () => {
-      setInputValue(container.querySelector('#new-category-name'), 'Family Portraits');
+      setInputValue(container.querySelector('#new-category-name-en'), 'Family Portraits');
     });
 
     expect(container.textContent).toContain('family-portraits');
@@ -145,7 +146,7 @@ describe('media managers', () => {
     await act(async () => {
       container.querySelector('#photo-category').value = 'portraits';
       container.querySelector('#photo-category').dispatchEvent(new Event('change', { bubbles: true }));
-      setInputValue(container.querySelector('#new-photo-alt-text'), 'Studio portrait');
+      setInputValue(container.querySelector('#new-photo-alt-text-en'), 'Studio portrait');
       selectFile(container.querySelector('#new-photo-image'), file);
     });
 
@@ -160,6 +161,8 @@ describe('media managers', () => {
       imageUrl: 'https://cdn.example/portrait.jpg',
       storagePath: 'hero/portrait.jpg',
       altText: 'Studio portrait',
+      altTextEn: 'Studio portrait',
+      altTextHu: '',
       sortOrder: 9,
       isVisible: true,
     });
@@ -167,16 +170,19 @@ describe('media managers', () => {
 
   it('requires confirmation before deleting a hero slide', async () => {
     currentContext.value.content.heroSlides = [
-      { id: 'hero-1', src: '/hero.jpg', alt: 'Hero', caption: '', sortOrder: 0, isVisible: true },
+      { id: 'hero-1', photoId: 'photo-1', src: '/hero.jpg', alt: 'Hero', caption: '', sortOrder: 0, isVisible: true },
+    ];
+    currentContext.value.content.photos = [
+      { id: 'photo-1', src: '/gallery/img_1.jpg', alt: 'Hero', altEn: 'Hero', altHu: 'Hős', storagePath: null, sortOrder: 0, isVisible: true },
     ];
     await render(HeroManager);
 
     await act(async () => {
-      buttonByText('Delete hero slide').click();
+      buttonByText('Remove from hero').click();
     });
 
     expect(mutations.deleteHeroSlide).not.toHaveBeenCalled();
-    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('Delete hero slide?');
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain('Remove hero slide?');
 
     await act(async () => {
       buttonByText('Delete').click();
@@ -184,6 +190,30 @@ describe('media managers', () => {
     });
 
     expect(mutations.deleteHeroSlide).toHaveBeenCalledWith('hero-1');
+  });
+
+  it('reorders hero slides with the up and down buttons', async () => {
+    currentContext.value.content.heroSlides = [
+      { id: 'hero-1', photoId: 'photo-1', src: '/a.jpg', alt: 'A', caption: '', sortOrder: 0, isVisible: true },
+      { id: 'hero-2', photoId: 'photo-2', src: '/b.jpg', alt: 'B', caption: '', sortOrder: 1, isVisible: true },
+    ];
+    currentContext.value.content.photos = [
+      { id: 'photo-1', src: '/a.jpg', alt: 'A', altEn: 'A', altHu: 'A', storagePath: null, sortOrder: 0, isVisible: true },
+      { id: 'photo-2', src: '/b.jpg', alt: 'B', altEn: 'B', altHu: 'B', storagePath: null, sortOrder: 1, isVisible: true },
+    ];
+    await render(HeroManager);
+
+    const moveDownButtons = [...container.querySelectorAll('button')].filter((button) => button.textContent === '↓');
+    expect(moveDownButtons.length).toBeGreaterThan(0);
+
+    await act(async () => {
+      moveDownButtons[0].click();
+      await Promise.resolve();
+    });
+
+    expect(mutations.updateHeroSlide).toHaveBeenCalledTimes(2);
+    expect(mutations.updateHeroSlide).toHaveBeenNthCalledWith(1, 'hero-1', { sortOrder: 1 });
+    expect(mutations.updateHeroSlide).toHaveBeenNthCalledWith(2, 'hero-2', { sortOrder: 0 });
   });
 
   it('warns that deleting a category permanently deletes child photos and uploaded files', async () => {
@@ -201,12 +231,12 @@ describe('media managers', () => {
 
   it('rejects a whitespace-only category name when renaming a category', async () => {
     currentContext.value.content.categories = [
-      { id: 'family', name: 'Family', slug: 'family', sortOrder: 0, isVisible: true },
+      { id: 'family', name: '', nameEn: '', nameHu: '', slug: 'family', sortOrder: 0, isVisible: true },
     ];
     await render(GalleryManager);
 
     await act(async () => {
-      setInputValue(container.querySelector('#category-family-name'), '   ');
+      setInputValue(container.querySelector('#category-family-name-en'), '   ');
       buttonByText('Save category').click();
       await Promise.resolve();
     });
@@ -217,10 +247,13 @@ describe('media managers', () => {
 
   it('keeps delete confirmation keyboard-modal and restores focus after Escape cancels', async () => {
     currentContext.value.content.heroSlides = [
-      { id: 'hero-1', src: '/hero.jpg', alt: 'Hero', caption: '', sortOrder: 0, isVisible: true },
+      { id: 'hero-1', photoId: 'photo-1', src: '/hero.jpg', alt: 'Hero', caption: '', sortOrder: 0, isVisible: true },
+    ];
+    currentContext.value.content.photos = [
+      { id: 'photo-1', src: '/gallery/img_1.jpg', alt: 'Hero', altEn: 'Hero', altHu: 'Hős', storagePath: null, sortOrder: 0, isVisible: true },
     ];
     await render(HeroManager);
-    const trigger = buttonByText('Delete hero slide');
+    const trigger = buttonByText('Remove from hero');
 
     await act(async () => {
       trigger.click();

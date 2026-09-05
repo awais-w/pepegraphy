@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContent } from '../context/ContentContext';
 import { moveItem } from '../lib/contentRepository';
 import { slugify } from '../lib/contentModel';
@@ -13,23 +13,43 @@ const nextSortOrder = (items) => items.reduce((highest, item) => {
   return Number.isFinite(sortOrder) ? Math.max(highest, sortOrder) : highest;
 }, -1) + 1;
 
-function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
-  const [name, setName] = useState(category.name);
+function CategoryEditor({ category, index, total, editingLanguage, toast, onSave, onMove, onDelete }) {
+  const [name, setName] = useState(editingLanguage === 'en' ? category.nameEn || '' : category.nameHu || '');
   const [isVisible, setIsVisible] = useState(category.isVisible !== false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
+  const isEnglish = editingLanguage === 'en';
+  const isHungarian = editingLanguage === 'hu';
+
   const save = async () => {
     setIsSaving(true);
     setError(null);
-    const categoryName = name.trim();
-    if (!categoryName) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       setError('Enter a category name.');
       setIsSaving(false);
       return;
     }
     try {
-      await onSave(category.id, { name: categoryName, slug: slugify(categoryName) });
+      const patch = {
+        name: trimmedName,
+        slug: slugify(trimmedName),
+      };
+      if (isEnglish) {
+        patch.name_en = trimmedName;
+        if (!category.nameHu) {
+          patch.name_hu = category.name;
+        }
+      }
+      if (isHungarian) {
+        patch.name_hu = trimmedName;
+        if (!category.nameEn) {
+          patch.name_en = category.name;
+        }
+      }
+      await onSave(category.id, patch);
+      toast('Changes published');
     } catch (saveError) {
       setError(messageFor(saveError, 'Unable to save the category.'));
     } finally {
@@ -44,6 +64,7 @@ function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
     setError(null);
     try {
       await onSave(category.id, { isVisible: nextVisibility });
+      toast('Changes published');
     } catch (saveError) {
       setIsVisible(!nextVisibility);
       setError(messageFor(saveError, 'Unable to update category visibility.'));
@@ -54,8 +75,18 @@ function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
 
   return (
     <li className="admin-category-item">
-      <label htmlFor={`category-${category.id}-name`}>Category name</label>
-      <input id={`category-${category.id}-name`} value={name} onChange={(event) => setName(event.target.value)} disabled={isSaving} />
+      {isEnglish && (
+        <>
+          <label htmlFor={`category-${category.id}-name-en`}>Category name</label>
+          <input id={`category-${category.id}-name-en`} value={name} onChange={(event) => setName(event.target.value)} disabled={isSaving} />
+        </>
+      )}
+      {isHungarian && (
+        <>
+          <label htmlFor={`category-${category.id}-name-hu`}>Category name</label>
+          <input id={`category-${category.id}-name-hu`} value={name} onChange={(event) => setName(event.target.value)} disabled={isSaving} />
+        </>
+      )}
       <label htmlFor={`category-${category.id}-visible`}>
         <input id={`category-${category.id}-visible`} type="checkbox" checked={isVisible} onChange={updateVisibility} disabled={isSaving} />
         Show on site
@@ -71,17 +102,35 @@ function CategoryEditor({ category, index, total, onSave, onMove, onDelete }) {
   );
 }
 
-function PhotoEditor({ photo, index, total, onSave, onMove, onDelete, onReplace }) {
-  const [altText, setAltText] = useState(photo.alt ?? '');
+function PhotoEditor({ photo, index, total, editingLanguage, toast, onSave, onMove, onDelete, onReplace }) {
+  const [altText, setAltText] = useState(editingLanguage === 'en' ? photo.altEn || '' : photo.altHu || '');
   const [isVisible, setIsVisible] = useState(photo.isVisible !== false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const isEnglish = editingLanguage === 'en';
+  const isHungarian = editingLanguage === 'hu';
 
   const save = async () => {
     setIsSaving(true);
     setError(null);
     try {
-      await onSave(photo.id, { altText, isVisible });
+      const patch = { isVisible };
+      if (isEnglish) {
+        patch.altText = altText;
+        patch.altTextEn = altText;
+        if (!photo.altHu) {
+          patch.altTextHu = photo.alt;
+        }
+      }
+      if (isHungarian) {
+        patch.altTextHu = altText;
+        if (!photo.altEn) {
+          patch.altTextEn = photo.alt;
+        }
+      }
+      await onSave(photo.id, patch);
+      toast('Changes published');
     } catch (saveError) {
       setError(messageFor(saveError, 'Unable to save the photo.'));
     } finally {
@@ -96,6 +145,7 @@ function PhotoEditor({ photo, index, total, onSave, onMove, onDelete, onReplace 
     setError(null);
     try {
       await onSave(photo.id, { isVisible: nextVisibility });
+      toast('Changes published');
     } catch (saveError) {
       setIsVisible(!nextVisibility);
       setError(messageFor(saveError, 'Unable to update photo visibility.'));
@@ -109,10 +159,18 @@ function PhotoEditor({ photo, index, total, onSave, onMove, onDelete, onReplace 
       <img className="admin-media-card-image" src={photo.src} alt={photo.alt || ''} />
       <div className="admin-media-card-body">
         <p className="admin-media-position">Photo {index + 1} of {total}</p>
-        <p>
-          <label htmlFor={`photo-${photo.id}-alt`}>Alternative text</label>
-          <input id={`photo-${photo.id}-alt`} value={altText} onChange={(event) => setAltText(event.target.value)} disabled={isSaving} />
-        </p>
+        {isEnglish && (
+          <p>
+            <label htmlFor={`photo-${photo.id}-alt`}>Alternative text</label>
+            <input id={`photo-${photo.id}-alt`} value={altText} onChange={(event) => setAltText(event.target.value)} disabled={isSaving} />
+          </p>
+        )}
+        {isHungarian && (
+          <p>
+            <label htmlFor={`photo-${photo.id}-alt`}>Alternative text</label>
+            <input id={`photo-${photo.id}-alt`} value={altText} onChange={(event) => setAltText(event.target.value)} disabled={isSaving} />
+          </p>
+        )}
         <p>
           <label htmlFor={`photo-${photo.id}-visible`}>
             <input id={`photo-${photo.id}-visible`} type="checkbox" checked={isVisible} onChange={updateVisibility} disabled={isSaving} />
@@ -139,7 +197,7 @@ function PhotoEditor({ photo, index, total, onSave, onMove, onDelete, onReplace 
   );
 }
 
-export function GalleryManager() {
+export function GalleryManager({ editingLanguage = 'en' }) {
   const {
     content,
     error: contentError,
@@ -154,26 +212,34 @@ export function GalleryManager() {
   const categories = ordered(content?.categories);
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryNameEn, setNewCategoryNameEn] = useState('');
+  const [newCategoryNameHu, setNewCategoryNameHu] = useState('');
   const [newPhotoAltText, setNewPhotoAltText] = useState('');
+  const [newPhotoAltTextEn, setNewPhotoAltTextEn] = useState('');
+  const [newPhotoAltTextHu, setNewPhotoAltTextHu] = useState('');
   const [newPhotoIsVisible, setNewPhotoIsVisible] = useState(true);
   const [feedback, setFeedback] = useState(null);
   const [pendingDelete, setPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const newCategorySlug = slugify(newCategoryName);
+  const newCategorySlug = slugify(newCategoryNameHu || newCategoryNameEn || newCategoryName);
   const nextCategorySortOrder = nextSortOrder(categories);
   const activeCategoryId = categories.some((category) => category.id === selectedCategoryId)
     ? selectedCategoryId
     : categories[0]?.id ?? '';
   const selectedPhotos = ordered((content?.photos ?? []).filter((photo) => photo.categoryId === activeCategoryId));
 
+  const isEnglish = editingLanguage === 'en';
+  const isHungarian = editingLanguage === 'hu';
+
   const createNewCategory = async () => {
-    const name = newCategoryName.trim();
+    const name = isEnglish ? newCategoryNameEn.trim() : newCategoryNameHu.trim();
     if (!name) {
       setFeedback({ type: 'error', message: 'Enter a category name.' });
       toast('Enter a category name.', 'error');
       return;
     }
-    if (categories.some((category) => slugify(category.name) === newCategorySlug || category.slug === newCategorySlug)) {
+    const slug = slugify(name);
+    if (categories.some((category) => slugify(category.name) === slug || category.slug === slug)) {
       setFeedback({ type: 'error', message: 'A category with this name already exists.' });
       toast('A category with this name already exists.', 'error');
       return;
@@ -183,6 +249,8 @@ export function GalleryManager() {
     try {
       const category = await createCategory(name, nextCategorySortOrder);
       setNewCategoryName('');
+      setNewCategoryNameEn('');
+      setNewCategoryNameHu('');
       if (category?.id) setSelectedCategoryId(category.id);
       setFeedback({ type: 'success', message: 'Category created.' });
       toast('Changes published');
@@ -211,11 +279,15 @@ export function GalleryManager() {
       categoryId: activeCategoryId,
       imageUrl: image.url,
       storagePath: image.path,
-      altText: newPhotoAltText,
+      altText: isHungarian ? newPhotoAltTextHu : newPhotoAltTextEn || newPhotoAltText,
+      altTextEn: isEnglish ? newPhotoAltTextEn : '',
+      altTextHu: isHungarian ? newPhotoAltTextHu : '',
       sortOrder: nextSortOrder(selectedPhotos),
       isVisible: newPhotoIsVisible,
     });
     setNewPhotoAltText('');
+    setNewPhotoAltTextEn('');
+    setNewPhotoAltTextHu('');
     setNewPhotoIsVisible(true);
     setFeedback({ type: 'success', message: 'Photo added.' });
     toast('Changes published');
@@ -258,9 +330,19 @@ export function GalleryManager() {
       <section className="admin-gallery-section" aria-labelledby="gallery-categories-title">
         <h3 id="gallery-categories-title">Categories</h3>
         <div className="admin-inline-form">
-          <label htmlFor="new-category-name">New category name</label>
-          <input id="new-category-name" value={newCategoryName} onChange={(event) => setNewCategoryName(event.target.value)} />
-          {newCategoryName.trim() && <p className="admin-slug-preview">Slug: {newCategorySlug}</p>}
+          {isEnglish && (
+            <>
+               <label htmlFor="new-category-name-en">New category name</label>
+              <input id="new-category-name-en" value={newCategoryNameEn} onChange={(event) => setNewCategoryNameEn(event.target.value)} />
+            </>
+          )}
+          {isHungarian && (
+            <>
+               <label htmlFor="new-category-name-hu">New category name</label>
+              <input id="new-category-name-hu" value={newCategoryNameHu} onChange={(event) => setNewCategoryNameHu(event.target.value)} />
+            </>
+          )}
+          {(newCategoryNameEn.trim() || newCategoryNameHu.trim()) && <p className="admin-slug-preview">Slug: {newCategorySlug}</p>}
           <button type="button" className="admin-button-secondary" onClick={createNewCategory}>Create category</button>
         </div>
         {categories.length === 0 ? (
@@ -269,10 +351,12 @@ export function GalleryManager() {
           <ol className="admin-category-list">
             {categories.map((category, index) => (
               <CategoryEditor
-                key={category.id}
+                key={`${category.id}-${editingLanguage}`}
                 category={category}
                 index={index}
                 total={categories.length}
+                editingLanguage={editingLanguage}
+                toast={toast}
                 onSave={updateCategory}
                 onMove={moveCategory}
                 onDelete={(item, trigger) => setPendingDelete({ kind: 'category', item, trigger })}
@@ -286,15 +370,26 @@ export function GalleryManager() {
         <p>
           <label htmlFor="photo-category">Category</label>
           <select id="photo-category" value={activeCategoryId} onChange={(event) => setSelectedCategoryId(event.target.value)} disabled={categories.length === 0}>
-            {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            {categories.map((category) => {
+              const localizedName = editingLanguage === 'hu' ? category.nameHu : category.nameEn;
+              return <option key={category.id} value={category.id}>{localizedName || category.name}</option>;
+            })}
           </select>
         </p>
         <fieldset className="admin-media-form" disabled={categories.length === 0}>
           <legend>Add a photo</legend>
-          <p>
-            <label htmlFor="new-photo-alt-text">Alternative text</label>
-            <input id="new-photo-alt-text" value={newPhotoAltText} onChange={(event) => setNewPhotoAltText(event.target.value)} />
-          </p>
+          {isEnglish && (
+            <p>
+               <label htmlFor="new-photo-alt-text-en">Alternative text</label>
+              <input id="new-photo-alt-text-en" value={newPhotoAltTextEn} onChange={(event) => setNewPhotoAltTextEn(event.target.value)} />
+            </p>
+          )}
+          {isHungarian && (
+            <p>
+               <label htmlFor="new-photo-alt-text-hu">Alternative text</label>
+              <input id="new-photo-alt-text-hu" value={newPhotoAltTextHu} onChange={(event) => setNewPhotoAltTextHu(event.target.value)} />
+            </p>
+          )}
           <p>
             <label htmlFor="new-photo-visible">
               <input id="new-photo-visible" type="checkbox" checked={newPhotoIsVisible} onChange={(event) => setNewPhotoIsVisible(event.target.checked)} />
@@ -308,10 +403,12 @@ export function GalleryManager() {
           <div className="admin-media-grid">
             {selectedPhotos.map((photo, index) => (
               <PhotoEditor
-                key={photo.id}
+                key={`${photo.id}-${editingLanguage}`}
                 photo={photo}
                 index={index}
                 total={selectedPhotos.length}
+                editingLanguage={editingLanguage}
+                toast={toast}
                 onSave={updatePhoto}
                 onMove={movePhoto}
                 onDelete={(item, trigger) => setPendingDelete({ kind: 'photo', item, trigger })}

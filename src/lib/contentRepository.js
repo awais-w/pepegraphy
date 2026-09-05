@@ -145,6 +145,17 @@ export function createContentRepository({ client = supabaseClient, configured = 
           assertNoError(result, 'Unable to load CMS content.');
         });
 
+        const photosByUrl = new Map((photos.data ?? []).map((photo) => [photo.image_url, photo.id]));
+        const backfillUpdates = (heroSlides.data ?? [])
+          .filter((slide) => !slide.photo_id && photosByUrl.has(slide.image_url))
+          .map((slide) => ({ id: slide.id, photoId: photosByUrl.get(slide.image_url) }));
+
+        if (backfillUpdates.length > 0) {
+          await Promise.all(backfillUpdates.map(({ id, photoId }) =>
+            client.from('hero_slides').update({ photo_id: photoId }).eq('id', id)
+          ));
+        }
+
         lastLoadError = null;
         return mergeContent(defaultContent, {
           siteContent: siteContent.data,
@@ -188,9 +199,12 @@ export function createContentRepository({ client = supabaseClient, configured = 
 
     async createHeroSlide(input) {
       return insertWithCleanup('hero_slides', {
-        image_url: input.imageUrl,
+        photo_id: input.photoId ?? null,
+        image_url: input.imageUrl || '',
         storage_path: input.storagePath ?? null,
         alt_text: input.altText || '',
+        alt_text_en: input.altTextEn || '',
+        alt_text_hu: input.altTextHu || '',
         caption: input.caption || '',
         sort_order: input.sortOrder ?? 0,
         is_visible: input.isVisible ?? true,
@@ -199,7 +213,7 @@ export function createContentRepository({ client = supabaseClient, configured = 
 
     async updateHeroSlide(id, patch) {
       return updateMediaRecord('hero_slides', id, patch, [
-          ['image_url', 'imageUrl'], ['alt_text', 'altText'], ['caption', 'caption'],
+          ['photo_id', 'photoId'], ['image_url', 'imageUrl'], ['alt_text', 'altText'], ['alt_text_en', 'altTextEn'], ['alt_text_hu', 'altTextHu'], ['caption', 'caption'],
           ['storage_path', 'storagePath'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
         ], 'hero slide');
     },
@@ -211,14 +225,14 @@ export function createContentRepository({ client = supabaseClient, configured = 
     async createCategory(name, sortOrder = 0) {
       const categoryName = requiredCategoryName(name);
       const result = await requireClient().from('gallery_categories')
-        .insert({ name: categoryName, slug: slugify(categoryName), sort_order: sortOrder, is_visible: true }).select().single();
+        .insert({ name: categoryName, name_en: categoryName, name_hu: categoryName, slug: slugify(categoryName), sort_order: sortOrder, is_visible: true }).select().single();
       return assertNoError(result, 'Unable to create category.');
     },
 
     async updateCategory(id, patch) {
       const result = await requireClient().from('gallery_categories')
         .update(metadataPayload(patch, [
-          ['name', 'name'], ['slug', 'slug'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
+          ['name', 'name'], ['name_en', 'name_en'], ['name_hu', 'name_hu'], ['slug', 'slug'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
         ]))
         .eq('id', id).select().single();
       return assertNoError(result, 'Unable to update category.');
@@ -239,6 +253,8 @@ export function createContentRepository({ client = supabaseClient, configured = 
         image_url: input.imageUrl,
         storage_path: input.storagePath ?? null,
         alt_text: input.altText || '',
+        alt_text_en: input.altTextEn || '',
+        alt_text_hu: input.altTextHu || '',
         sort_order: input.sortOrder ?? 0,
         is_visible: input.isVisible ?? true,
       }, input.storagePath);
@@ -246,7 +262,7 @@ export function createContentRepository({ client = supabaseClient, configured = 
 
     async updatePhoto(id, patch) {
       return updateMediaRecord('gallery_photos', id, patch, [
-          ['category_id', 'categoryId'], ['image_url', 'imageUrl'], ['alt_text', 'altText'],
+          ['category_id', 'categoryId'], ['image_url', 'imageUrl'], ['alt_text', 'altText'], ['alt_text_en', 'altTextEn'], ['alt_text_hu', 'altTextHu'],
           ['storage_path', 'storagePath'], ['sort_order', 'sortOrder'], ['is_visible', 'isVisible'],
         ], 'photo');
     },

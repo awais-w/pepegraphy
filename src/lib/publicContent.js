@@ -44,7 +44,7 @@ export function buildPublicContent(content = defaultContent, language = getDefau
   const siteContent = source.siteContent;
   const categories = source.categories.filter(isVisible).map((category) => ({
     slug: category.slug,
-    name: category.name,
+    name: pickLocalized({ en: category.nameEn, hu: category.nameHu }, language) || category.name,
     id: category.id,
   }));
   const publicCategories = categories.map(({ slug, name }) => ({ slug, name }));
@@ -53,10 +53,10 @@ export function buildPublicContent(content = defaultContent, language = getDefau
     .filter(isVisible)
     .filter((photo) => categoryById.has(photo.categoryId))
     .map((photo) => ({
-    id: photo.id,
-    src: photo.src,
-    alt: photo.alt,
-    category: categoryById.get(photo.categoryId)?.slug || photo.categoryId,
+      id: photo.id,
+      src: photo.src,
+      alt: pickLocalized({ en: photo.altEn, hu: photo.altHu }, language) || photo.alt,
+      category: categoryById.get(photo.categoryId)?.slug || photo.categoryId,
     }));
   const photoById = new Map(photos.map((photo) => [String(photo.id), photo]));
 
@@ -66,12 +66,16 @@ export function buildPublicContent(content = defaultContent, language = getDefau
     navigation: localize(mergeSection(defaultContent.siteContent.navigation, siteContent.navigation)),
     hero: {
       ...localize(mergeSection(defaultContent.siteContent.hero, siteContent.hero)),
-      slides: source.heroSlides.filter(isVisible).map((slide) => ({
-        id: slide.id,
-        src: slide.src,
-        alt: slide.alt,
-        category: slide.caption || photoById.get(String(slide.id))?.category || '',
-      })),
+      slides: source.heroSlides.filter(isVisible).map((slide) => {
+        const photo = slide.photoId ? photoById.get(String(slide.photoId)) : null;
+        return {
+          id: slide.id,
+          src: photo?.src || slide.src,
+          alt: pickLocalized({ en: slide.altEn, hu: slide.altHu }, language) || photo?.alt || slide.alt,
+          category: slide.caption || photo?.category || '',
+          photoId: slide.photoId || null,
+        };
+      }),
     },
     about: withTitleLines({
       ...localize(mergeSection(defaultContent.siteContent.about, siteContent.about)),

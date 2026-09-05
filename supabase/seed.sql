@@ -15,58 +15,58 @@ insert into public.site_content (key, content) values
   ('footer', $json${"brand":"PEPEGRAPHY","tagline":{"en":"Natural · Authentic · Timeless photography by Petra Styasztny","hu":"Természetes · Hiteles · Időtlen fotográfia Petra Styasztny részéről"},"links":[{"label":{"en":"About","hu":"Rólam"},"href":"#about"},{"label":{"en":"Portfolio","hu":"Portfólió"},"href":"#portfolio"},{"label":{"en":"Booking","hu":"Foglalás"},"href":"#booking"},{"label":{"en":"Contact","hu":"Kapcsolat"},"href":"#contact"}],"copyright":{"en":"© 2026 Pepegraphy. All rights reserved.","hu":"© 2026 Pepegraphy. Minden jog fenntartva."}}$json$::jsonb)
 on conflict (key) do update set content = excluded.content, is_visible = true;
 
-insert into public.gallery_categories (id, slug, name, sort_order) values
-  ('10000000-0000-4000-8000-000000000001', 'female', 'Női', 0),
-  ('10000000-0000-4000-8000-000000000002', 'male', 'Férfi', 1),
-  ('10000000-0000-4000-8000-000000000003', 'children', 'Gyermekek', 2),
-  ('10000000-0000-4000-8000-000000000004', 'pet', 'Háziállat', 3),
-  ('10000000-0000-4000-8000-000000000005', 'events', 'Bulik', 4),
-  ('10000000-0000-4000-8000-000000000006', 'reportage', 'Riport', 5),
-  ('10000000-0000-4000-8000-000000000007', 'nature', 'Természet', 6),
-  ('10000000-0000-4000-8000-000000000008', 'boudoir', 'Boudoir', 7)
-on conflict (slug) do update set name = excluded.name, sort_order = excluded.sort_order, is_visible = true;
+insert into public.gallery_categories (id, slug, name, name_en, name_hu, sort_order) values
+  ('10000000-0000-4000-8000-000000000001', 'female', 'Női', 'Female', 'Női', 0),
+  ('10000000-0000-4000-8000-000000000002', 'male', 'Férfi', 'Male', 'Férfi', 1),
+  ('10000000-0000-4000-8000-000000000003', 'children', 'Gyermekek', 'Children', 'Gyermekek', 2),
+  ('10000000-0000-4000-8000-000000000004', 'pet', 'Háziállat', 'Pets', 'Háziállat', 3),
+  ('10000000-0000-4000-8000-000000000005', 'events', 'Bulik', 'Events', 'Bulik', 4),
+  ('10000000-0000-4000-8000-000000000006', 'reportage', 'Riport', 'Reportage', 'Riport', 5),
+  ('10000000-0000-4000-8000-000000000007', 'nature', 'Természet', 'Nature', 'Természet', 6),
+  ('10000000-0000-4000-8000-000000000008', 'boudoir', 'Boudoir', 'Boudoir', 'Boudoir', 7)
+on conflict (id) do update set name = excluded.name, name_en = excluded.name_en, name_hu = excluded.name_hu, sort_order = excluded.sort_order, is_visible = true;
 
-insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, sort_order)
-select category.id, photo.image_url, photo.storage_path, photo.alt_text, photo.sort_order
+insert into public.gallery_photos (category_id, image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)
+select category.id, photo.image_url, photo.storage_path, photo.alt_text, photo.alt_text_en, photo.alt_text_hu, photo.sort_order
 from (values
-  ('events', '/gallery/img_1.jpg', null::text, 'Stage performance event', 0),
-  ('nature', '/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 1),
-  ('events', '/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 2),
-  ('pet', '/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 3),
-  ('reportage', '/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 4),
-  ('female', '/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 5),
-  ('boudoir', '/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 6),
-  ('children', '/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 7),
-  ('male', '/gallery/img_9.jpg', null::text, 'Male portrait', 8),
-  ('female', '/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 9),
-  ('female', '/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 10),
-  ('female', '/gallery/img_13.jpg', null::text, 'Female artistic portrait', 11),
-  ('female', '/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 12),
-  ('female', '/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 13),
-  ('female', '/gallery/img_16.jpg', null::text, 'Female full-length portrait', 14),
-  ('female', '/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 15)
-) as photo(category_slug, image_url, storage_path, alt_text, sort_order)
+  ('events', '/gallery/img_1.jpg', null::text, 'Stage performance event', 'Stage performance event', 'Színpad előadás', 0),
+  ('nature', '/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 'Fire salamander in nature', 'Tűzvarjú a természetben', 1),
+  ('events', '/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 'Aerial acrobat performance', 'Légi akrobata előadás', 2),
+  ('pet', '/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 'Pug dog with birthday hat', 'Mopsz kutya szülinapi kalappal', 3),
+  ('reportage', '/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 'DJ event reportage photography', 'DJ esemény riport fotózás', 4),
+  ('female', '/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 'Female portrait in sequin dress', 'Női portré flitteres ruha', 5),
+  ('boudoir', '/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 'Boudoir portrait at vanity table', 'Boudoir portré sminkasztalnál', 6),
+  ('children', '/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 'Child portrait in winter hood', 'Gyermek portré téli kapucnis', 7),
+  ('male', '/gallery/img_9.jpg', null::text, 'Male portrait', 'Male portrait', 'Férfi portré', 8),
+  ('female', '/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 'Female portrait with hat and gloves', 'Női portré kalappal és kesztyűvel', 9),
+  ('female', '/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 'Female outdoor portrait', 'Női portré szabadban', 10),
+  ('female', '/gallery/img_13.jpg', null::text, 'Female artistic portrait', 'Female artistic portrait', 'Női művészi portré', 11),
+  ('female', '/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 'Redhead female portrait close-up', 'Vöröshajú női portré close-up', 12),
+  ('female', '/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 'Female portrait with spring blossoms', 'Női portré tavaszi virágokkal', 13),
+  ('female', '/gallery/img_16.jpg', null::text, 'Female full-length portrait', 'Female full-length portrait', 'Női teljes hosszú portré', 14),
+  ('female', '/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 'Female outdoor portrait (medium close-up)', 'Női portré szabadban (közepes close-up)', 15)
+) as photo(category_slug, image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)
 join public.gallery_categories as category on category.slug = photo.category_slug
 where not exists (select 1 from public.gallery_photos existing where existing.image_url = photo.image_url);
 
-insert into public.hero_slides (image_url, storage_path, alt_text, sort_order)
-select photo.image_url, photo.storage_path, photo.alt_text, photo.sort_order
+insert into public.hero_slides (image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)
+select photo.image_url, photo.storage_path, photo.alt_text, photo.alt_text_en, photo.alt_text_hu, photo.sort_order
 from (values
-  ('/gallery/img_1.jpg', null::text, 'Stage performance event', 0),
-  ('/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 1),
-  ('/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 2),
-  ('/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 3),
-  ('/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 4),
-  ('/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 5),
-  ('/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 6),
-  ('/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 7),
-  ('/gallery/img_9.jpg', null::text, 'Male portrait', 8),
-  ('/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 9),
-  ('/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 10),
-  ('/gallery/img_13.jpg', null::text, 'Female artistic portrait', 11),
-  ('/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 12),
-  ('/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 13),
-  ('/gallery/img_16.jpg', null::text, 'Female full-length portrait', 14),
-  ('/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 15)
-) as photo(image_url, storage_path, alt_text, sort_order)
+  ('/gallery/img_1.jpg', null::text, 'Stage performance event', 'Stage performance event', 'Színpad előadás', 0),
+  ('/gallery/img_2.jpg', null::text, 'Fire salamander in nature', 'Fire salamander in nature', 'Tűzvarjú a természetben', 1),
+  ('/gallery/img_3.jpg', null::text, 'Aerial acrobat performance', 'Aerial acrobat performance', 'Légi akrobata előadás', 2),
+  ('/gallery/img_4.jpg', null::text, 'Pug dog with birthday hat', 'Pug dog with birthday hat', 'Mopsz kutya szülinapi kalappal', 3),
+  ('/gallery/img_5.jpg', null::text, 'DJ event reportage photography', 'DJ event reportage photography', 'DJ esemény riport fotózás', 4),
+  ('/gallery/img_6.jpg', null::text, 'Female portrait in sequin dress', 'Female portrait in sequin dress', 'Női portré flitteres ruha', 5),
+  ('/gallery/img_7.jpg', null::text, 'Boudoir portrait at vanity table', 'Boudoir portrait at vanity table', 'Boudoir portré sminkasztalnál', 6),
+  ('/gallery/img_8.jpg', null::text, 'Child portrait in winter hood', 'Child portrait in winter hood', 'Gyermek portré téli kapucnis', 7),
+  ('/gallery/img_9.jpg', null::text, 'Male portrait', 'Male portrait', 'Férfi portré', 8),
+  ('/gallery/img_10.jpg', null::text, 'Female portrait with hat and gloves', 'Female portrait with hat and gloves', 'Női portré kalappal és kesztyűvel', 9),
+  ('/gallery/img_12.jpg', null::text, 'Female outdoor portrait', 'Female outdoor portrait', 'Női portré szabadban', 10),
+  ('/gallery/img_13.jpg', null::text, 'Female artistic portrait', 'Female artistic portrait', 'Női művészi portré', 11),
+  ('/gallery/img_14.jpg', null::text, 'Redhead female portrait close-up', 'Redhead female portrait close-up', 'Vöröshajú női portré close-up', 12),
+  ('/gallery/img_15.jpg', null::text, 'Female portrait with spring blossoms', 'Female portrait with spring blossoms', 'Női portré tavaszi virágokkal', 13),
+  ('/gallery/img_16.jpg', null::text, 'Female full-length portrait', 'Female full-length portrait', 'Női teljes hosszú portré', 14),
+  ('/gallery/img_18.jpg', null::text, 'Female outdoor portrait (medium close-up)', 'Female outdoor portrait (medium close-up)', 'Női portré szabadban (közepes close-up)', 15)
+) as photo(image_url, storage_path, alt_text, alt_text_en, alt_text_hu, sort_order)
 where not exists (select 1 from public.hero_slides existing where existing.image_url = photo.image_url);

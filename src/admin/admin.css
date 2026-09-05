@@ -18,6 +18,7 @@
   --admin-radius-md: 0.5rem;
   --admin-shadow: 0 1.5rem 4rem rgb(0 0 0 / 22%);
   --admin-sidebar-width: 17rem;
+  --color-brand-black: #0e0d0c;
 }
 
 .admin-auth-page,
@@ -369,6 +370,40 @@
 .admin-language-switcher button:hover { color: var(--admin-text); }
 .admin-language-switcher-active { background: var(--admin-accent) !important; color: var(--admin-accent-ink) !important; }
 
+.admin-content-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-bottom: 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 25;
+  background: var(--color-brand-black);
+  border-block-end: 1px solid var(--admin-border);
+  padding: 0.6rem 0;
+}
+
+.admin-content-subnav a {
+  color: var(--admin-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 140ms ease;
+  padding: 0.15rem 0;
+}
+
+.admin-content-subnav a:hover { color: var(--admin-accent-strong); }
+.admin-content-subnav a.admin-content-subnav-active {
+  background: var(--admin-accent);
+  color: var(--color-brand-black);
+  border-radius: var(--admin-radius-sm);
+  padding: 0.25rem 4px;
+}
+
 .admin-bilingual-field {
   display: grid;
   gap: 0.85rem;
@@ -661,6 +696,11 @@
   .admin-navigation a { min-height: 2.5rem; }
   .admin-sidebar-spacer { display: none; }
   .admin-sidebar-separator { display: none; }
+
+  .admin-content-subnav {
+    position: sticky;
+    z-index: 25;
+  }
 }
 
 @media (max-width: 56rem) {
@@ -740,3 +780,55 @@
   resize: vertical;
   width: 100%;
 }
+
+.admin-hero-table {
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-md);
+  background: var(--admin-surface);
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.admin-hero-table th,
+.admin-hero-table td {
+  padding: 0.75rem 1rem;
+  text-align: inline-start;
+  vertical-align: middle;
+}
+
+.admin-hero-table tbody tr.admin-hero-instructions td {
+  background: var(--admin-input);
+  border-block-end: 1px solid var(--admin-border);
+  color: var(--admin-muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  padding-block: 0.9rem;
+}
+
+.admin-hero-table tbody tr {
+  border-block-end: 1px solid var(--admin-border);
+  cursor: default;
+}
+
+.admin-hero-table tbody tr:last-child {
+  border-block-end: 0;
+}
+
+.admin-hero-table .admin-hero-thumb {
+  aspect-ratio: 4 / 3;
+  background: var(--admin-input);
+  border-radius: var(--admin-radius-sm);
+  display: block;
+  object-fit: cover;
+  width: 200px;
+  height: auto;
+}
+
+.admin-hero-reorder {
+  display: inline-flex;
+  gap: 0.35rem;
+  margin-inline-end: 0.5rem;
+  vertical-align: middle;
+}
+
