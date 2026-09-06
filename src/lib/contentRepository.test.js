@@ -269,4 +269,46 @@ describe('content repository', () => {
       storagePath: 'hero/new.jpg',
     })).rejects.toThrow('Unable to remove previous hero slide image from storage.');
   });
+
+  it('submits contact messages with valid input', async () => {
+    const insert = vi.fn(() => ({ select: () => ({ single: async () => ({ data: { id: 'msg-1', name: 'Jane' } }) }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: { from: vi.fn(() => ({ insert })) },
+    });
+
+    const result = await repository.submitContactMessage({ name: 'Jane', email: 'jane@example.com', category: 'portrait', message: 'Hello!' });
+
+    expect(insert).toHaveBeenCalledWith({ name: 'Jane', email: 'jane@example.com', category: 'portrait', message: 'Hello!', status: 'unread' });
+    expect(result).toEqual({ id: 'msg-1', name: 'Jane' });
+  });
+
+  it('validates contact message input before submission', async () => {
+    const repository = createContentRepository({ configured: true, client: {} });
+
+    await expect(repository.submitContactMessage({ name: 'Jane', email: '', message: 'Hi' })).rejects.toThrow('Name, email, and message are required.');
+  });
+
+  it('loads, updates status, and deletes contact messages', async () => {
+    const order = vi.fn(async () => ({ data: [{ id: 'msg-1', status: 'unread' }] }));
+    const select = vi.fn(() => ({ order }));
+    const update = vi.fn(() => ({ eq: () => ({ select: () => ({ single: async () => ({ data: { id: 'msg-1', status: 'read' } }) }) }) }));
+    const deleteRecord = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
+
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn((table) => table === 'contact_messages' ? { select, update, delete: deleteRecord } : {}),
+      },
+    });
+
+    const messages = await repository.loadContactMessages();
+    expect(messages).toEqual([{ id: 'msg-1', status: 'unread' }]);
+
+    const updated = await repository.updateContactMessageStatus('msg-1', 'read');
+    expect(updated).toEqual({ id: 'msg-1', status: 'read' });
+
+    await repository.deleteContactMessage('msg-1');
+    expect(deleteRecord).toHaveBeenCalled();
+  });
 });

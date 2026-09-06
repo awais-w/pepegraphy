@@ -270,6 +270,64 @@ export function createContentRepository({ client = supabaseClient, configured = 
     async deletePhoto(id) {
       return deleteMediaRecord('gallery_photos', id, 'photo');
     },
+
+    async submitContactMessage(input) {
+      const name = String(input?.name || '').trim();
+      const email = String(input?.email || '').trim();
+      const message = String(input?.message || '').trim();
+      const category = String(input?.category || '').trim();
+
+      if (!name || !email || !message) {
+        throw new Error('Name, email, and message are required.');
+      }
+
+      const client = requireClient();
+      const result = await client
+        .from('contact_messages')
+        .insert({ name, email, category, message, status: 'unread' })
+        .select()
+        .single();
+      const savedRecord = assertNoError(result, 'Unable to submit contact message.');
+
+      // Dispatch confirmation email via Edge Function (non-blocking)
+      try {
+        if (typeof client.functions?.invoke === 'function') {
+          await client.functions.invoke('send-contact-confirmation', {
+            body: { record: { name, email, category, message } },
+          });
+        }
+      } catch (emailErr) {
+        console.warn('Confirmation email dispatch notice:', emailErr);
+      }
+
+      return savedRecord;
+    },
+
+    async loadContactMessages() {
+      const result = await requireClient()
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+      return assertNoError(result, 'Unable to load contact messages.');
+    },
+
+    async updateContactMessageStatus(id, status) {
+      const result = await requireClient()
+        .from('contact_messages')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+      return assertNoError(result, 'Unable to update contact message status.');
+    },
+
+    async deleteContactMessage(id) {
+      const result = await requireClient()
+        .from('contact_messages')
+        .delete()
+        .eq('id', id);
+      return assertNoError(result, 'Unable to delete contact message.');
+    },
   };
 }
 

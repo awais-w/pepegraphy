@@ -88,6 +88,7 @@ describe('Admin authentication gate', () => {
 
     expect([...container.querySelectorAll('a')].map((link) => link.textContent)).toEqual(expect.arrayContaining([
       'Content',
+      'Messages',
       'Hero carousel',
       'Gallery',
     ]));

@@ -42,6 +42,10 @@ const translations = {
     contactFormTypePlaceholder: 'Select a category...',
     contactFormMessage: 'Message',
     contactFormSubmit: 'Send Message',
+    contactFormSubmitting: 'Sending message...',
+    contactFormSuccess: 'Thank you! Your message has been sent successfully.',
+    contactFormFailed: 'Unable to send message directly. Opening email client...',
+    contactFormError: 'Please fill in your name, email, and message.',
     contactFormTypes: [
       { value: 'male', label: 'Male Portraiture' },
       { value: 'female', label: 'Female Portraiture' },
@@ -97,6 +101,10 @@ const translations = {
     contactFormTypePlaceholder: 'Válassz kategóriát...',
     contactFormMessage: 'Üzenet',
     contactFormSubmit: 'Üzenet küldése',
+    contactFormSubmitting: 'Üzenet küldése...',
+    contactFormSuccess: 'Köszönjük! Az üzeneted sikeresen elküldve.',
+    contactFormFailed: 'Nem sikerült az üzenetet közvetlenül elküldeni. E-mail kliens megnyitása...',
+    contactFormError: 'Kérjük, töltsd ki a neved, e-mail címed és az üzenetet.',
     contactFormTypes: [
       { value: 'male', label: 'Férfi portré' },
       { value: 'female', label: 'Női portré' },

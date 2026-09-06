@@ -57,3 +57,36 @@ git diff --check
 ```
 
 With a non-production test project and a seeded admin account, manually verify `/admin`: edit each content section; upload, reorder, and delete hero slides; create, rename, and delete a category; upload, edit, and delete a photo; refresh; and confirm the public route shows the saved changes. Also test keyboard-only controls and focus styles, a narrow viewport, empty hero/gallery states, and invalid or over-10-MB image uploads.
+
+## Automated Confirmation Emails (Resend + Supabase Edge Function)
+
+Automated confirmation emails are dispatched via a Supabase Edge Function using [Resend](https://resend.com).
+
+### 1. Create a Resend Account & API Key
+1. Sign up for a free account at [Resend.com](https://resend.com).
+2. Generate an API Key in **API Keys**.
+3. (Optional for production) Add and verify your domain in **Domains** so emails are sent from `info@yourdomain.com` instead of the onboarding domain.
+
+### 2. Deploy the Edge Function
+Run the following from your terminal using the Supabase CLI:
+
+```bash
+# Set your Resend API Key in Supabase secrets
+supabase secrets set RESEND_API_KEY=re_your_api_key_here
+supabase secrets set ADMIN_EMAIL=petra@example.com  # Optional: receive notification copy
+
+# Deploy the edge function
+supabase functions deploy send-contact-confirmation --no-verify-jwt
+```
+
+### 3. Create Database Webhook in Supabase Dashboard
+1. Go to your Supabase Dashboard → **Integrations** → **Webhooks** (or **Database** → **Webhooks**).
+2. Click **Create Webhook**.
+3. Name: `send-contact-confirmation`.
+4. Table: `public.contact_messages`.
+5. Events: Select `INSERT`.
+6. Type: **Supabase Edge Function**.
+7. Function: Select `send-contact-confirmation`.
+8. Save the webhook.
+
+Now, whenever a visitor submits a inquiry on the contact form, Supabase will trigger the edge function and send an automated confirmation email to their inbox.

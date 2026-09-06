@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone } from 'lucide-react';
 import { useTranslations } from '../i18n/useTranslations';
+import { contentRepository } from '../lib/contentRepository';
+import { isSupabaseConfigured } from '../lib/supabaseClient';
 
 const Contact = ({ contact, categories }) => {
   const t = useTranslations();
   const [formState, setFormState] = useState({ name: '', email: '', type: '', message: '' });
   const [status, setStatus] = useState('');
+  const [statusType, setStatusType] = useState(''); // 'success' | 'error' | 'submitting'
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const typeOptions = [
     { value: 'male', label: t.contactFormTypes.find((opt) => opt.value === 'male')?.label ?? 'Male Portraiture' },
@@ -20,19 +24,45 @@ const Contact = ({ contact, categories }) => {
     { value: 'other', label: t.contactFormTypes.find((opt) => opt.value === 'other')?.label ?? 'Other' },
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formState.name || !formState.email) {
-      setStatus(t.contactFormError ?? 'Please fill in your name and email.');
+    if (!formState.name || !formState.email || !formState.message) {
+      setStatus(t.contactFormError ?? 'Please fill in your name, email, and message.');
+      setStatusType('error');
       return;
     }
 
+    setIsSubmitting(true);
+    setStatus(t.contactFormSubmitting ?? 'Sending message...');
+    setStatusType('submitting');
+
+    if (isSupabaseConfigured) {
+      try {
+        await contentRepository.submitContactMessage({
+          name: formState.name,
+          email: formState.email,
+          category: formState.type,
+          message: formState.message,
+        });
+        setStatus(t.contactFormSuccess ?? 'Thank you! Your message has been sent successfully.');
+        setStatusType('success');
+        setFormState({ name: '', email: '', type: '', message: '' });
+        setIsSubmitting(false);
+        return;
+      } catch (err) {
+        console.error('Contact form submission error:', err);
+      }
+    }
+
+    setIsSubmitting(false);
+    // Fallback to mailto if Supabase is unconfigured or submission fails
     const subject = encodeURIComponent(`${t.contactFormSubjectPrefix ?? 'Pepegraphy enquiry'} — ${formState.type || (t.contactFormGeneral ?? 'General')}`);
     const body = encodeURIComponent(
       `${t.contactFormGreeting ?? 'Hi Petra'},\n\n${t.contactFormNameIntro ?? 'My name is'} ${formState.name}.\n\n${formState.message}\n\n${t.contactFormSignOff ?? 'Best'},\n${formState.name}\n${formState.email}`
     );
     window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
-    setStatus(t.contactFormOpening ?? 'Opening your email client…');
+    setStatus(t.contactFormFailed ?? 'Unable to send message directly. Opening email client...');
+    setStatusType('error');
   };
 
   return (
@@ -87,7 +117,9 @@ const Contact = ({ contact, categories }) => {
                 <input
                   type="text"
                   placeholder="Jane Smith"
-                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 text-sm sm:text-base"
+                  value={formState.name}
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 text-sm sm:text-base disabled:opacity-50"
                   onChange={(e) => setFormState({...formState, name: e.target.value})}
                 />
               </div>
@@ -96,14 +128,18 @@ const Contact = ({ contact, categories }) => {
                 <input
                   type="email"
                   placeholder="jane@example.com"
-                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 text-sm sm:text-base"
+                  value={formState.email}
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 text-sm sm:text-base disabled:opacity-50"
                   onChange={(e) => setFormState({...formState, email: e.target.value})}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-white/30 block">{t.contactFormType}</label>
                 <select
-                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white/50 focus:text-white appearance-none text-sm sm:text-base"
+                  value={formState.type}
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white/50 focus:text-white appearance-none text-sm sm:text-base disabled:opacity-50"
                   onChange={(e) => setFormState({...formState, type: e.target.value})}
                 >
                   <option value="">{t.contactFormTypePlaceholder ?? 'Select a category...'}</option>
@@ -121,7 +157,9 @@ const Contact = ({ contact, categories }) => {
                 <textarea
                   rows="4"
                   placeholder={t.contactFormMessagePlaceholder ?? 'Tell me about your vision...'}
-                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 resize-none text-sm sm:text-base"
+                  value={formState.message}
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent border-b border-white/10 py-3 sm:py-4 focus:border-brand-gold outline-none transition-colors text-white placeholder:text-white/10 resize-none text-sm sm:text-base disabled:opacity-50"
                   onChange={(e) => setFormState({...formState, message: e.target.value})}
                 />
               </div>
@@ -129,11 +167,16 @@ const Contact = ({ contact, categories }) => {
 
             <button
               type="submit"
-              className="w-full bg-brand-gold text-black py-4 sm:py-5 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-brand-gold-light transition-all duration-500"
+              disabled={isSubmitting}
+              className="w-full bg-brand-gold text-black py-4 sm:py-5 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase font-bold hover:bg-brand-gold-light transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t.contactFormSubmit}
+              {isSubmitting ? (t.contactFormSubmitting ?? 'Sending message...') : t.contactFormSubmit}
             </button>
-            {status && <p className="text-[9px] text-brand-gold text-center tracking-wider">{status}</p>}
+            {status && (
+              <p className={`text-[11px] text-center tracking-wider font-light ${statusType === 'success' ? 'text-emerald-400' : statusType === 'error' ? 'text-amber-400' : 'text-brand-gold'}`}>
+                {status}
+              </p>
+            )}
           </motion.form>
 
         </div>
