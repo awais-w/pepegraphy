@@ -101,7 +101,7 @@ export function HeroManager() {
         <table className="admin-hero-table">
           <tbody>
             <tr className="admin-hero-instructions">
-              <td colSpan={3}>
+              <td colSpan={2}>
                 Select the images you want to add to the hero carousel. Use the up and down arrows to reorder them.
               </td>
             </tr>
@@ -117,50 +117,53 @@ export function HeroManager() {
                   className={`${isHeroRow ? 'admin-hero-row' : ''} ${isInHero ? 'admin-in-hero' : ''}`}
                 >
                   <td>
-                    <img src={photo.src} alt="" className="admin-hero-thumb" />
+                    <div className="admin-hero-primary">
+                      <img src={photo.src} alt="" className="admin-hero-thumb" />
+                      <span className="admin-hero-name">{displayName}</span>
+                    </div>
                   </td>
-                  <td>{displayName}</td>
-                  <td>
-                    {isHeroRow && (
-                      <div className="admin-hero-reorder">
-                        <button
-                          type="button"
-                          onClick={() => moveHeroSlide(photo, -1)}
-                          disabled={isSaving || heroIndex === 0}
-                          className="admin-icon-button"
-                          aria-label="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moveHeroSlide(photo, 1)}
-                          disabled={isSaving || heroIndex === heroPhotos.length - 1}
-                          className="admin-icon-button"
-                          aria-label="Move down"
-                        >
-                          ↓
-                        </button>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        if (isInHero) {
-                          const slide = slideByPhotoId.get(photo.id);
-                          if (slide) {
-                            setPendingDelete({ item: slide, trigger: event.currentTarget });
+                  <td className="admin-hero-actions-cell">
+                    <div className="admin-hero-actions">
+                      {isHeroRow && (
+                        <div className="admin-hero-reorder">
+                          <button
+                            type="button"
+                            onClick={() => moveHeroSlide(photo, -1)}
+                            disabled={isSaving || heroIndex === 0}
+                            className="admin-icon-button"
+                            aria-label="Move up"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveHeroSlide(photo, 1)}
+                            disabled={isSaving || heroIndex === heroPhotos.length - 1}
+                            className="admin-icon-button"
+                            aria-label="Move down"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          if (isInHero) {
+                            const slide = slideByPhotoId.get(photo.id);
+                            if (slide) {
+                              setPendingDelete({ item: slide, trigger: event.currentTarget });
+                            }
+                          } else {
+                            addSlide(photo);
                           }
-                        } else {
-                          addSlide(photo);
-                        }
-                      }}
-                      disabled={isSaving}
-                      className={isInHero ? 'admin-button-danger' : 'admin-button-secondary'}
-                      style={{ marginTop: isHeroRow ? '0.5rem' : undefined }}
-                    >
-                      {isInHero ? 'Remove from hero' : 'Add to hero'}
-                    </button>
+                        }}
+                        disabled={isSaving}
+                        className={isInHero ? 'admin-button-danger' : 'admin-button-secondary'}
+                      >
+                        {isInHero ? 'Remove from hero' : 'Add to hero'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
