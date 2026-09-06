@@ -699,7 +699,6 @@
 
   .admin-content-subnav {
     position: sticky;
-    z-index: 25;
   }
 }
 

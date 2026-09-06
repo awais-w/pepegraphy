@@ -60,7 +60,7 @@ const Portfolio = ({ portfolio }) => {
         speed: 500,
         closable: true,
         download: false,
-        hideBarsDelay: 3000,
+        hideBarsDelay: 999999999,
         controls: true,
         counter: true,
         fullScreen: true,
@@ -72,6 +72,8 @@ const Portfolio = ({ portfolio }) => {
         progressBar: true,
         forceSlideShowAutoplay: false,
         autoplayControls: true,
+        showCloseButton: true,
+        mobileSettings: { controls: true, showCloseIcon: true, download: false },
       });
       lgInstance.current.openGallery(index >= 0 ? index : 0);
     } catch (error) {
