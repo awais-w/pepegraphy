@@ -45,3 +45,24 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #3a3a3a;
 }
+
+/* LightGallery mobile close button */
+@media (max-width: 768px) {
+  .lg-container .lg-close {
+    top: 8px !important;
+    right: 8px !important;
+    width: 40px !important;
+    height: 40px !important;
+    background: rgb(0 0 0 / 60%) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 9999 !important;
+  }
+}
+
+/* LightGallery thumbnail toggle button positioning */
+.lg-toolbar .lg-toggle-thumb {
+  float: left !important;
+}
