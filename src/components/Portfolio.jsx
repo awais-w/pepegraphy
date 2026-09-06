@@ -74,6 +74,9 @@ const Portfolio = ({ portfolio }) => {
         autoplayControls: true,
         showCloseButton: true,
         mobileSettings: { controls: true, showCloseIcon: true, download: false },
+        thumbnail: true,
+        toggleThumb: true,
+        allowMediaOverlap: true,
       });
       lgInstance.current.openGallery(index >= 0 ? index : 0);
     } catch (error) {
