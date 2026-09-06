@@ -12,35 +12,22 @@ function mediaBlock(query) {
 }
 
 describe('responsive admin sidebar layout', () => {
-  it('keeps the top-positioned sidebar header controls together and lets navigation wrap below', () => {
+  it('aligns logo, language controls, sign out, and hamburger menu in the first row for tablet and mobile viewports', () => {
     const topSidebar = mediaBlock('62rem');
 
     expect(topSidebar).toContain('flex-direction: row;');
     expect(topSidebar).toContain('.admin-brand {\n    order: 1;');
-    expect(topSidebar).toContain('.admin-sidebar-footer {\n    order: 3;');
-    expect(topSidebar).toContain('margin-inline-start: auto;');
-    expect(topSidebar).toContain('.admin-account-avatar { display: none; }');
-    expect(topSidebar).toContain('.admin-account { border: 0; display: flex; gap: 0; padding: 0; }');
-    expect(topSidebar).toContain('.admin-navigation {\n    order: 2;');
-    expect(topSidebar).toContain('flex: 1 1 max-content;');
-    expect(topSidebar).toContain('max-width: 100%;');
-    expect(topSidebar).not.toContain('flex: 0 0 100%;');
+    expect(topSidebar).toContain('.admin-sidebar-controls {\n    order: 2;');
+    expect(topSidebar).toContain('.admin-hamburger-button {');
+    expect(topSidebar).toContain('.admin-navigation {\n    order: 3;');
+    expect(topSidebar).toContain('.admin-navigation-closed {');
+    expect(topSidebar).toContain('.admin-navigation-open {');
   });
 
-  it('keeps overflow handling scoped to the narrower top-sidebar breakpoint', () => {
+  it('adjusts branding font size and workspace padding on narrow viewports', () => {
     const narrowSidebar = mediaBlock('44rem');
 
-    expect(narrowSidebar).toContain('.admin-navigation {');
-    expect(narrowSidebar).toContain('flex: 0 0 100%;');
-    expect(narrowSidebar).toContain('overflow-x: auto;');
-    expect(narrowSidebar).toContain('min-width: 0;');
-  });
-
-  it('prioritises navigation wrapping below the header controls when the top row gets tighter', () => {
-    const wrappedSidebar = mediaBlock('56rem');
-
-    expect(wrappedSidebar).toContain('.admin-sidebar-footer { order: 2;');
-    expect(wrappedSidebar).toContain('.admin-navigation {\n    order: 3;');
-    expect(wrappedSidebar).toContain('flex: 0 0 100%;');
+    expect(narrowSidebar).toContain('.admin-brand strong { font-size: 1.1rem; }');
+    expect(narrowSidebar).toContain('.admin-workspace { padding: 1.25rem 1rem 2rem; }');
   });
 });

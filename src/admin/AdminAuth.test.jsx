@@ -94,7 +94,7 @@ describe('Admin authentication gate', () => {
     ]));
   });
 
-  it('gives signed-in administrators a studio navigation rail and a public-site escape link', async () => {
+  it('gives signed-in administrators a studio navigation rail and language controls', async () => {
     auth.getSession.mockResolvedValue({
       data: { session: { access_token: 'test-token', user: { id: 'admin-user', email: 'editor@example.com' } } },
       error: null,
@@ -103,7 +103,6 @@ describe('Admin authentication gate', () => {
     await renderAdmin();
 
     expect(container.querySelector('aside[aria-label="Studio administration"]')).not.toBeNull();
-    expect(container.querySelector('.admin-public-link[href="/"]')?.textContent).toContain('View public site');
     expect(container.querySelector('.admin-language-switcher')?.textContent).toContain('For EN');
     expect(container.querySelector('[aria-current="page"]')?.textContent).toBe('Content');
   });

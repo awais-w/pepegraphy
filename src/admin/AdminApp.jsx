@@ -1,6 +1,6 @@
 // eslint-disable-next-line no-unused-vars -- required by Vitest's classic JSX transform.
 import React, { useEffect, useMemo, useState } from 'react';
-import { ExternalLink, FileText, Images, Inbox, Layers3, LogOut } from 'lucide-react';
+import { FileText, Images, Inbox, Layers3, LogOut, Menu, X } from 'lucide-react';
 import { AdminAuth } from './AdminAuth';
 import { ContentEditor } from './ContentEditor';
 import { GalleryManager } from './GalleryManager';
@@ -15,9 +15,9 @@ import './admin.css';
 
 const SECTIONS = [
   { id: 'content', label: 'Content', title: 'Site content', description: 'Edit the words, links and calls to action across the public site.', icon: FileText, component: ContentEditor },
-  { id: 'messages', label: 'Messages', title: 'Inbox', description: 'Review and manage inquiries sent through the public contact form.', icon: Inbox, component: MessagesManager },
   { id: 'hero-carousel', label: 'Hero carousel', title: 'Hero slides', description: 'Curate the photographs and captions visitors see first.', icon: Layers3, component: HeroManager },
   { id: 'gallery', label: 'Gallery', title: 'Gallery', description: 'Organise portfolio categories and their photographs.', icon: Images, component: GalleryManager },
+  { id: 'messages', label: 'Messages', title: 'Inbox', description: 'Review and manage inquiries sent through the public contact form.', icon: Inbox, component: MessagesManager },
 ];
 
 const LANGUAGE_LABELS = { en: '🇬🇧 For EN', hu: '🇭🇺 For HU' };
@@ -51,6 +51,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
   const [activeSection, setActiveSection] = useState(getInitialSection);
   const [editingLanguage, setEditingLanguage] = useState('en');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => setActiveSection(getInitialSection());
@@ -81,6 +82,7 @@ function AdminShell({ session, signOut, signingOut, error }) {
     event.preventDefault();
     setActiveSection(sectionId);
     window.location.hash = sectionId;
+    setIsMenuOpen(false);
   };
 
   return (
@@ -94,7 +96,38 @@ function AdminShell({ session, signOut, signingOut, error }) {
           </span>
         </a>
 
-        <nav className="admin-navigation" aria-label="Admin sections">
+        <div className="admin-sidebar-controls">
+          <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
+
+          <div className="admin-account">
+            <span className="admin-account-avatar" aria-hidden="true">
+              {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
+            </span>
+            <span className="admin-account-copy">
+              <strong>Administrator</strong>
+              <small>{session.user?.email ?? 'Signed in'}</small>
+            </span>
+            <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
+              <LogOut aria-hidden="true" size={18} />
+              <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            className="admin-hamburger-button"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-expanded={isMenuOpen}
+            aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          >
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        <nav
+          className={`admin-navigation ${isMenuOpen ? 'admin-navigation-open' : 'admin-navigation-closed'}`}
+          aria-label="Admin sections"
+        >
           {SECTIONS.map((section) => {
             const Icon = section.icon;
             return (
@@ -118,25 +151,6 @@ function AdminShell({ session, signOut, signingOut, error }) {
         </nav>
 
         <div className="admin-sidebar-spacer" />
-
-        <div className="admin-sidebar-footer">
-          <div className="admin-sidebar-separator" />
-          <LanguageSwitcher value={editingLanguage} onChange={setEditingLanguage} />
-
-          <div className="admin-account">
-            <span className="admin-account-avatar" aria-hidden="true">
-              {(session.user?.email ?? 'A').charAt(0).toUpperCase()}
-            </span>
-            <span className="admin-account-copy">
-              <strong>Administrator</strong>
-              <small>{session.user?.email ?? 'Signed in'}</small>
-            </span>
-            <button type="button" className="admin-icon-button" onClick={signOut} disabled={signingOut} title="Sign out" aria-label={signingOut ? 'Signing out' : 'Sign out'}>
-              <LogOut aria-hidden="true" size={18} />
-              <span className="admin-visually-hidden">{signingOut ? 'Signing out…' : 'Sign out'}</span>
-            </button>
-          </div>
-        </div>
       </aside>
 
       <div className="admin-workspace">
@@ -145,12 +159,6 @@ function AdminShell({ session, signOut, signingOut, error }) {
             <p className="admin-context">Pepegraphy studio</p>
             <h1>{activeSectionData.title}</h1>
             <p>{activeSectionData.description}</p>
-          </div>
-          <div className="admin-header-actions">
-            <a className="admin-public-link" href="/" target="_blank" rel="noreferrer">
-              View public site
-              <ExternalLink aria-hidden="true" size={16} />
-            </a>
           </div>
         </header>
 
