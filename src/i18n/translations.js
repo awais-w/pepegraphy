@@ -39,6 +39,7 @@ const translations = {
     contactFormName: 'Your name',
     contactFormEmail: 'Email address',
     contactFormType: 'Type of shoot',
+    contactFormTypePlaceholder: 'Select a category...',
     contactFormMessage: 'Message',
     contactFormSubmit: 'Send Message',
     contactFormTypes: [
@@ -93,6 +94,7 @@ const translations = {
     contactFormName: 'A neved',
     contactFormEmail: 'E-mail cím',
     contactFormType: 'Fotózás típusa',
+    contactFormTypePlaceholder: 'Válassz kategóriát...',
     contactFormMessage: 'Üzenet',
     contactFormSubmit: 'Üzenet küldése',
     contactFormTypes: [
