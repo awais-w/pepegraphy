@@ -42,6 +42,7 @@ const LanguageSwitcher = ({ direction = 'row' }) => {
 const Navbar = ({ navigation }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { language } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -49,7 +50,14 @@ const Navbar = ({ navigation }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = navigation.links.map(({ label, href }) => ({ name: label, href }));
+  const navLinks = navigation.links.map(({ label, href }) => {
+    // Don't prefix external links or admin links
+    const shouldPrefix = !href.startsWith('http') && !href.startsWith('/admin');
+    const prefixedHref =
+      shouldPrefix && language !== getDefaultLanguage() ? `/${language}${href}` : href;
+
+    return { name: label, href: prefixedHref };
+  });
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${

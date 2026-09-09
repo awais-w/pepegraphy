@@ -33,7 +33,18 @@ function PublicApp() {
 }
 
 function App() {
-  if (window.location.pathname === '/admin') return <AdminApp />;
+  // Handle admin route with language prefix
+  if (
+    window.location.pathname.startsWith('/en/admin') ||
+    window.location.pathname.startsWith('/hu/admin')
+  ) {
+    return <AdminApp />;
+  }
+
+  // Remove language prefix for routing purposes
+  const cleanPath = window.location.pathname.replace(/^\/(en|hu)/, '') || '/';
+
+  if (cleanPath === '/admin') return <AdminApp />;
 
   return <PublicApp />;
 }
