@@ -28,15 +28,17 @@ const Hero = ({ hero }) => {
   const currentImage = slides[activeIndex];
 
   return (
-    <section id="hero" className="relative h-screen min-h-[650px] flex items-center justify-center overflow-hidden">
+    <section id="hero" aria-labelledby="hero-heading" className="relative h-screen min-h-[700px] flex items-center justify-center">
       {/* Background Carousel */}
-      <div className="absolute inset-0 z-0 overflow-hidden bg-brand-black">
+      <div className="absolute inset-0 z-0 overflow-hidden bg-brand-black" aria-hidden="true">
         <AnimatePresence mode="popLayout">
           {currentImage && (
             <motion.img
               key={currentImage.id}
               src={currentImage.src}
               alt={currentImage.alt || 'Gallery photo'}
+              loading="eager"
+              decoding="async"
               initial={{ opacity: 0, scale: 1.08 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.02 }}
@@ -57,7 +59,7 @@ const Hero = ({ hero }) => {
       </div>
 
       {/* Hero Content */}
-      <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl">
+      <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl overflow-visible">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,10 +70,11 @@ const Hero = ({ hero }) => {
         </motion.p>
 
         <motion.h1
+          id="hero-heading"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
-          className="text-white text-[24px] sm:text-7xl md:text-9xl font-serif tracking-[0.05em] sm:tracking-[0.1em] font-light mb-8"
+          className="text-white text-[24px] sm:text-5xl md:text-6xl lg:text-8xl font-serif tracking-[0.05em] sm:tracking-[0.1em] font-light mb-8 whitespace-nowrap break-words"
         >
           {heroContent.title}
         </motion.h1>
@@ -137,6 +140,7 @@ const Hero = ({ hero }) => {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 1 }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-20"
+        aria-hidden="true"
       >
         <span className="text-white/30 text-[8px] tracking-[0.2em] uppercase">Scroll</span>
         <div className="w-[1px] h-12 bg-gradient-to-b from-white/30 to-transparent relative overflow-hidden">

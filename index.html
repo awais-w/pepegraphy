@@ -7,15 +7,26 @@
     <!-- Primary Meta Tags -->
     <title>Pepegraphy | Professional Photography by Petra Styasztny</title>
     <meta name="title" content="Pepegraphy | Professional Photography by Petra Styasztny" />
-    <meta name="description" content="Pepegraphy by Petra Styasztny — Authentic, natural, and timeless professional photography specializing in female portraits, male portraits, events, reportage, boudoir, and pet photography." />
-    <meta name="keywords" content="Pepegraphy, Petra Styasztny, professional photographer, portrait photography, event photographer, reportage photography, pet photography, boudoir photography" />
+    <meta name="description" content="Pepegraphy by Petra Styasztny — Authentic, natural, and timeless professional photography specializing in female portraits, male portraits, events, reportage, boudoir, and pet photography. Based in London, serving UK and international clients." />
+    <meta name="keywords" content="Pepegraphy, Petra Styasztny, professional photographer London, portrait photography, event photographer, reportage photography, pet photography, boudoir photography" />
     <meta name="author" content="Petra Styasztny" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#0a0a0a" />
+    <meta name="geo.region" content="GB" />
+    <meta name="geo.placename" content="London" />
+    <meta name="geo.position" content="51.5074;-0.1278" />
+    <meta name="ICBM" content="51.5074, -0.1278" />
     <link rel="canonical" href="https://pepegraphy.com/" />
 
-    <!-- Favicon -->
+    <!-- Favicon & Manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/petra-portrait.png" />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://pepegraphy.com" />
 
     <!-- Open Graph / Facebook / LinkedIn -->
     <meta property="og:type" content="website" />
@@ -23,16 +34,21 @@
     <meta property="og:title" content="Pepegraphy | Professional Photography by Petra Styasztny" />
     <meta property="og:description" content="Authentic, natural, and timeless photography by Petra Styasztny. Capturing real moments and honest stories." />
     <meta property="og:image" content="https://pepegraphy.com/petra-portrait.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="Pepegraphy" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:locale:alternate" content="hu_HU" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://pepegraphy.com/" />
-    <meta property="twitter:title" content="Pepegraphy | Professional Photography by Petra Styasztny" />
-    <meta property="twitter:description" content="Authentic, natural, and timeless photography by Petra Styasztny." />
-    <meta property="twitter:image" content="https://pepegraphy.com/petra-portrait.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://pepegraphy.com/" />
+    <meta name="twitter:title" content="Pepegraphy | Professional Photography by Petra Styasztny" />
+    <meta name="twitter:description" content="Authentic, natural, and timeless photography by Petra Styasztny." />
+    <meta name="twitter:image" content="https://pepegraphy.com/petra-portrait.png" />
+    <meta name="twitter:creator" content="@pepegraphy" />
 
-    <!-- JSON-LD Structured Data (Schema.org) -->
+    <!-- JSON-LD Structured Data (Schema.org) - Organization/Photographer -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -43,10 +59,13 @@
         "logo": "https://pepegraphy.com/petra-portrait.png",
         "image": "https://pepegraphy.com/petra-portrait.png",
         "description": "Professional photography service specializing in natural, authentic portraiture, events, reportage, boudoir, and pet photography by Petra Styasztny.",
+        "foundingDate": "2018",
         "founder": {
           "@type": "Person",
           "name": "Petra Styasztny",
-          "jobTitle": "Lead Photographer"
+          "jobTitle": "Lead Photographer",
+          "image": "https://pepegraphy.com/petra-portrait.png",
+          "url": "https://pepegraphy.com/#about"
         },
         "knowsAbout": [
           "Portrait Photography",
@@ -55,10 +74,42 @@
           "Pet Photography",
           "Boudoir Photography"
         ],
+        "areaServed": {
+          "@type": "Country",
+          "name": "United Kingdom"
+        },
+        "priceRange": "££",
+        "currenciesAccepted": "GBP",
+        "paymentAccepted": "Cash, Credit Card, Bank Transfer",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "London",
+          "addressCountry": "GB"
+        },
+        "telephone": "+44-7975-605-120",
+        "email": "petrastyasztny@gmail.com",
         "sameAs": [
           "https://instagram.com/pepegraphy",
           "https://facebook.com/pepegraphy"
         ]
+      }
+    </script>
+
+    <!-- JSON-LD Structured Data - WebSite for sitelinks searchbox -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "url": "https://pepegraphy.com",
+        "name": "Pepegraphy",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://pepegraphy.com/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
       }
     </script>
   </head>

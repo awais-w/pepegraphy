@@ -117,12 +117,12 @@ const Portfolio = ({ portfolio }) => {
   }, [openLightGallery]);
 
   return (
-    <section id="portfolio" className="py-20 md:py-40 bg-brand-black">
+    <section id="portfolio" aria-labelledby="portfolio-heading" className="py-20 md:py-40 bg-brand-black">
       <div className="container mx-auto px-4 sm:px-6">
 
         <div className="mb-12 md:mb-24">
           <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{portfolio.eyebrow}</span>
-          <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">{portfolio.title}</h2>
+          <h2 id="portfolio-heading" className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8">{portfolio.title}</h2>
           <p className="text-white/40 max-w-2xl text-base sm:text-lg leading-relaxed font-light" dangerouslySetInnerHTML={{ __html: portfolio.descriptionHtml }} />
         </div>
 
@@ -158,6 +158,8 @@ const Portfolio = ({ portfolio }) => {
                 <img
                   src={img.src}
                   alt={img.alt}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-100"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 sm:p-6 pointer-events-none">

@@ -1,4 +1,16 @@
 User-agent: *
 Allow: /
+Host: https://pepegraphy.com
 
+# Sitemap
 Sitemap: https://pepegraphy.com/sitemap.xml
+
+# Allow image crawling for portfolio images
+Allow: /gallery/
+
+# Disallow admin panel
+Disallow: /admin
+Disallow: /admin/
+
+# Crawl delay for polite crawling
+Crawl-delay: 10

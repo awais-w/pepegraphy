@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 
 const Specialities = ({ specialities }) => {
   return (
-    <section id="specialities" className="py-20 md:py-40 bg-brand-surface">
+    <section id="specialities" aria-labelledby="specialities-heading" className="py-20 md:py-40 bg-brand-surface">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="mb-12 sm:mb-16">
           <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{specialities.eyebrow}</span>
-          <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif">{specialities.title}</h2>
+          <h2 id="specialities-heading" className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif">{specialities.title}</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 border border-white/5 overflow-hidden">

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 const About = ({ about }) => {
   return (
-    <section id="about" className="py-20 md:py-40 bg-brand-surface overflow-hidden">
+    <section id="about" aria-labelledby="about-heading" className="py-20 md:py-40 bg-brand-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
@@ -32,7 +32,7 @@ const About = ({ about }) => {
           >
             <div>
               <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{about.eyebrow}</span>
-              <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif leading-tight">
+              <h2 id="about-heading" className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif leading-tight">
                 {about.titleLines.map((line, index) => (
                   <span key={`${line}-${index}`}>
                     {line}

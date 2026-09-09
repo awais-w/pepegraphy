@@ -5,13 +5,13 @@ const Footer = ({ footer }) => {
         <h2 className="text-xl font-serif tracking-[0.3em] text-white mb-6">{footer.brand}</h2>
         <p className="text-white/20 text-[10px] tracking-[0.1em] uppercase mb-8">{footer.tagline}</p>
 
-        <div className="flex justify-center gap-8 mb-12">
+        <nav aria-label="Footer navigation" className="flex justify-center gap-8 mb-12 flex-wrap">
           {footer.links.map((link) => (
             <a key={link.href} href={link.href} className="text-[9px] tracking-[0.2em] uppercase text-white/40 hover:text-white transition-colors">
               {link.label}
             </a>
           ))}
-        </div>
+        </nav>
 
         <p className="text-white/10 text-[9px] tracking-wider">{footer.copyright}</p>
       </div>

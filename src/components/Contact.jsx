@@ -66,7 +66,7 @@ const Contact = ({ contact, categories }) => {
   };
 
   return (
-    <section id="contact" className="py-20 md:py-40 bg-brand-black">
+    <section id="contact" aria-labelledby="contact-heading" className="py-20 md:py-40 bg-brand-black">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 sm:gap-20 lg:gap-32">
 
@@ -75,9 +75,12 @@ const Contact = ({ contact, categories }) => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
+            itemScope
+            itemType="https://schema.org/Photographer"
+            itemRef="contact-heading contact-email contact-phone"
           >
             <span className="text-brand-gold text-[9px] sm:text-[10px] tracking-[0.3em] uppercase block mb-4">{contact.eyebrow}</span>
-            <h2 className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8 leading-tight">
+            <h2 id="contact-heading" itemProp="name" className="text-white text-[20px] sm:text-5xl md:text-6xl font-serif mb-6 sm:mb-8 leading-tight">
               {contact.titleLines.map((line, index) => (
                 <span key={`${line}-${index}`}>
                   {line}
@@ -88,13 +91,13 @@ const Contact = ({ contact, categories }) => {
             <p className="text-white/40 text-base sm:text-lg font-light leading-relaxed mb-10 sm:mb-12 max-w-md" dangerouslySetInnerHTML={{ __html: contact.descriptionHtml }} />
 
             <div className="space-y-4 sm:space-y-6">
-              <a href={`mailto:${contact.email}`} className="flex items-center gap-4 sm:gap-6 group">
+              <a href={`mailto:${contact.email}`} id="contact-email" itemProp="email" className="flex items-center gap-4 sm:gap-6 group">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-all">
                   <Mail size={16} className="text-brand-gold" />
                 </div>
                 <span className="text-white/60 group-hover:text-white transition-colors font-light text-sm sm:text-base">{contact.email}</span>
               </a>
-              <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`} className="flex items-center gap-4 sm:gap-6 group">
+              <a href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`} id="contact-phone" itemProp="telephone" className="flex items-center gap-4 sm:gap-6 group">
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-all">
                   <Phone size={16} className="text-brand-gold" />
                 </div>

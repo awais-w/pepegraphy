@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 const Booking = ({ booking }) => {
   return (
-    <section id="booking" className="relative py-24 md:py-40 overflow-hidden">
+    <section id="booking" aria-labelledby="booking-heading" className="relative py-24 md:py-40 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src={booking.backgroundImageUrl}
@@ -15,7 +15,7 @@ const Booking = ({ booking }) => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
           <span className="text-brand-gold text-[10px] tracking-[0.3em] uppercase block mb-4">{booking.eyebrow}</span>
-          <h2 className="text-white text-4xl sm:text-5xl md:text-6xl font-serif mb-16">{booking.title}</h2>
+          <h2 id="booking-heading" className="text-white text-4xl sm:text-5xl md:text-6xl font-serif mb-16">{booking.title}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
             {booking.features.map((f, i) => (

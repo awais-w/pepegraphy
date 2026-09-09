@@ -1,0 +1,28 @@
+{
+  "name": "Pepegraphy",
+  "short_name": "Pepegraphy",
+  "description": "Professional photography by Petra Styasztny — authentic, natural, timeless portraits, events, reportage, boudoir, and pet photography.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0d0c",
+  "theme_color": "#0a0a0a",
+  "categories": ["photography", "lifestyle"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/petra-portrait.png",
+      "sizes": "768x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
