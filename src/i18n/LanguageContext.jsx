@@ -68,7 +68,6 @@ export function LanguageProvider({ children }) {
   useEffect(() => {
     // Sync language when URL changes via browser back/forward
     const handlePopState = () => {
-      // Always recompute from current URL to avoid closure staleness
       const pathLanguage = getLanguageFromPath();
       if (pathLanguage && isSupportedLanguage(pathLanguage) && pathLanguage !== language) {
         setLanguage(pathLanguage);
@@ -77,7 +76,7 @@ export function LanguageProvider({ children }) {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []); // Empty deps: handler always reads from DOM, not closure
+  }, [language]);
 
   const supportedLanguages = useMemo(() => getSupportedLanguages(), []);
   const isDefaultLanguage = language === getDefaultLanguage();

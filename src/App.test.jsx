@@ -1,11 +1,5 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getLanguageFromPath } from './i18n/languagePath';
-
-// Helpers to simulate URL state in jsdom
-function setPathname(pathname) {
-  delete window.location;
-  window.location = { pathname, hash: '' };
-}
 
 describe('getLanguageFromPath', () => {
   it('returns en for /en', () => {
