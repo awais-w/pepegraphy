@@ -145,7 +145,10 @@ describe('content repository', () => {
 
   it('deletes photo metadata and its associated storage object', async () => {
     const remove = vi.fn(async () => ({ data: [] }));
-    const select = vi.fn(() => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }) }));
+    const select = vi.fn(() => ({
+      eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }),
+      in: async () => ({ data: [] }),
+    }));
     const deleteRecord = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
     const repository = createContentRepository({
       configured: true,
@@ -162,13 +165,38 @@ describe('content repository', () => {
     expect(remove).toHaveBeenCalledWith(['gallery/photo.jpg']);
   });
 
+  it('keeps a storage object that another record still references', async () => {
+    const remove = vi.fn(async () => ({ data: [] }));
+    const deleteRecord = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
+    const repository = createContentRepository({
+      configured: true,
+      client: {
+        from: vi.fn((table) => ({
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/shared.jpg' } }) }),
+            in: async () => (table === 'hero_slides' ? { data: [{ storage_path: 'gallery/shared.jpg' }] } : { data: [] }),
+          }),
+          delete: deleteRecord,
+        })),
+        storage: { from: () => ({ remove }) },
+      },
+    });
+
+    await repository.deletePhoto('photo-1');
+
+    expect(remove).not.toHaveBeenCalled();
+  });
+
   it('surfaces a photo storage cleanup failure after metadata deletion', async () => {
     const remove = vi.fn(async () => ({ error: new Error('Storage unavailable') }));
     const repository = createContentRepository({
       configured: true,
       client: {
         from: vi.fn(() => ({
-          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }) }),
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { storage_path: 'gallery/photo.jpg' } }) }),
+            in: async () => ({ data: [] }),
+          }),
           delete: () => ({ eq: async () => ({ data: [] }) }),
         })),
         storage: { from: () => ({ remove }) },
@@ -180,18 +208,21 @@ describe('content repository', () => {
 
   it('collects category photo paths before cascading metadata deletion and removes them', async () => {
     const remove = vi.fn(async () => ({ data: [] }));
-    const photoSelect = vi.fn(() => ({ eq: async () => ({ data: [
-      { storage_path: 'gallery/first.jpg' },
-      { storage_path: null },
-      { storage_path: 'gallery/second.jpg' },
-    ] }) }));
+    const photoSelect = vi.fn(() => ({
+      eq: async () => ({ data: [
+        { storage_path: 'gallery/first.jpg' },
+        { storage_path: null },
+        { storage_path: 'gallery/second.jpg' },
+      ] }),
+      in: async () => ({ data: [] }),
+    }));
     const deleteCategory = vi.fn(() => ({ eq: async () => ({ data: [] }) }));
     const repository = createContentRepository({
       configured: true,
       client: {
         from: vi.fn((table) => table === 'gallery_photos'
           ? { select: photoSelect }
-          : { delete: deleteCategory }),
+          : { select: () => ({ in: async () => ({ data: [] }) }), delete: deleteCategory }),
         storage: { from: () => ({ remove }) },
       },
     });
@@ -210,7 +241,10 @@ describe('content repository', () => {
       configured: true,
       client: {
         from: vi.fn(() => ({
-          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }),
+            in: async () => ({ data: [] }),
+          }),
           update,
         })),
         storage: { from: () => ({ remove }) },
@@ -232,7 +266,10 @@ describe('content repository', () => {
       configured: true,
       client: {
         from: vi.fn(() => ({
-          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }),
+            in: async () => ({ data: [] }),
+          }),
           update,
         })),
         storage: { from: () => ({ remove }) },
@@ -257,7 +294,10 @@ describe('content repository', () => {
       configured: true,
       client: {
         from: vi.fn(() => ({
-          select: () => ({ eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }) }),
+          select: () => ({
+            eq: () => ({ single: async () => ({ data: { storage_path: 'hero/old.jpg' } }) }),
+            in: async () => ({ data: [] }),
+          }),
           update: () => ({ eq: () => ({ select: () => ({ single: async () => ({ data: { id: 'hero-1' } }) }) }) }),
         })),
         storage: { from: () => ({ remove }) },

@@ -12,6 +12,37 @@ import 'lightgallery/css/lg-zoom.css';
 import 'lightgallery/css/lg-autoplay.css';
 import 'lightgallery/css/lg-fullscreen.css';
 
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const GalleryImage = ({ image, className }) => {
+  const [failedSrc, setFailedSrc] = useState(null);
+  const hasFailed = failedSrc === image.src;
+
+  if (hasFailed || !image.src) {
+    return (
+      <div className="w-full aspect-[4/3] bg-brand-surface flex items-center justify-center px-4 text-center" role="img" aria-label={image.alt || 'Image unavailable'}>
+        <span className="text-white/40 text-[9px] sm:text-[10px] tracking-[0.2em] uppercase">Image unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={image.src}
+      alt={image.alt}
+      loading="lazy"
+      decoding="async"
+      onError={() => setFailedSrc(image.src)}
+      className={className}
+    />
+  );
+};
+
 const Portfolio = ({ portfolio }) => {
   const { images, categories } = portfolio;
   const categoryNames = new Map(categories.map((category) => [category.slug, category.name]));
@@ -23,7 +54,10 @@ const Portfolio = ({ portfolio }) => {
   const filteredImages = images.filter(img => filter === 'all' || img.category === filter);
 
   const displayImages = useMemo(() => {
-    return [...filteredImages].sort((a, b) => a.id - b.id).slice(0, 8);
+    return filteredImages
+      .map((image, index) => ({ image, index }))
+      .sort((a, b) => (a.image.sortOrder ?? a.index) - (b.image.sortOrder ?? b.index) || a.index - b.index)
+      .map(({ image }) => image);
   }, [filteredImages]);
 
   useEffect(() => {
@@ -48,7 +82,7 @@ const Portfolio = ({ portfolio }) => {
     const slides = currentFiltered.map((image) => ({
       src: image.src,
       thumb: image.src,
-      subHtml: `<h4>${image.alt}</h4>`,
+      subHtml: `<h4>${escapeHtml(image.alt)}</h4>`,
     }));
 
     try {
@@ -155,11 +189,8 @@ const Portfolio = ({ portfolio }) => {
               className="relative group cursor-pointer overflow-hidden bg-brand-surface break-inside-avoid"
               onClick={() => openLightGallery(img)}
             >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  loading="lazy"
-                  decoding="async"
+                <GalleryImage
+                  image={img}
                   className="w-full h-auto transition-transform duration-700 group-hover:scale-110 brightness-90 group-hover:brightness-100"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-4 sm:p-6 pointer-events-none">

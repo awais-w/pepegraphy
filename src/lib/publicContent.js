@@ -57,6 +57,7 @@ export function buildPublicContent(content = defaultContent, language = getDefau
       src: photo.src,
       alt: pickLocalized({ en: photo.altEn, hu: photo.altHu }, language) || photo.alt,
       category: categoryById.get(photo.categoryId)?.slug || photo.categoryId,
+      sortOrder: photo.sortOrder ?? 0,
     }));
   const photoById = new Map(photos.map((photo) => [String(photo.id), photo]));
 
@@ -74,6 +75,7 @@ export function buildPublicContent(content = defaultContent, language = getDefau
           alt: pickLocalized({ en: slide.altEn, hu: slide.altHu }, language) || photo?.alt || slide.alt,
           category: slide.caption || photo?.category || '',
           photoId: slide.photoId || null,
+          sortOrder: slide.sortOrder ?? 0,
         };
       }),
     },

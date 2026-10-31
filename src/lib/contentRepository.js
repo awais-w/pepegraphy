@@ -43,12 +43,37 @@ export function createContentRepository({ client = supabaseClient, configured = 
     }
   };
 
+  const findReferencedStoragePaths = async (paths) => {
+    const referenced = new Set();
+
+    for (const table of ['hero_slides', 'gallery_photos']) {
+      try {
+        const result = await requireClient()
+          .from(table)
+          .select('storage_path')
+          .in('storage_path', paths);
+        const rows = result?.error ? [] : result?.data ?? [];
+        rows.forEach((row) => {
+          if (row?.storage_path) referenced.add(row.storage_path);
+        });
+      } catch {
+        paths.forEach((path) => referenced.add(path));
+      }
+    }
+
+    return referenced;
+  };
+
   const deleteStorageObjects = async (paths, fallback) => {
     const uniquePaths = [...new Set(paths.filter((path) => typeof path === 'string' && path.trim()))];
     if (uniquePaths.length === 0) return;
 
+    const referenced = await findReferencedStoragePaths(uniquePaths);
+    const removablePaths = uniquePaths.filter((path) => !referenced.has(path));
+    if (removablePaths.length === 0) return;
+
     try {
-      const result = await requireClient().storage.from(STORAGE_BUCKET).remove(uniquePaths);
+      const result = await requireClient().storage.from(STORAGE_BUCKET).remove(removablePaths);
       if (result?.error) throw toError(result.error, fallback);
     } catch (error) {
       const cleanupError = toError(error, fallback);

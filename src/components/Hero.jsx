@@ -6,6 +6,7 @@ const Hero = ({ hero }) => {
   const slides = Array.isArray(heroSlides) ? heroSlides : [];
   const hasSlides = slides.length > 0;
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [failedSources, setFailedSources] = useState(() => new Set());
 
   useEffect(() => {
     if (!hasSlides) return undefined;
@@ -15,6 +16,15 @@ const Hero = ({ hero }) => {
 
     return () => clearInterval(timer);
   }, [hasSlides, slides.length]);
+
+  const markSlideFailed = (source) => {
+    setFailedSources((current) => {
+      if (current.has(source)) return current;
+      const next = new Set(current);
+      next.add(source);
+      return next;
+    });
+  };
 
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
@@ -26,19 +36,21 @@ const Hero = ({ hero }) => {
 
   const activeIndex = hasSlides ? currentIndex % slides.length : 0;
   const currentImage = slides[activeIndex];
+  const currentImageFailed = !currentImage || !currentImage.src || failedSources.has(currentImage.src);
 
   return (
     <section id="hero" aria-labelledby="hero-heading" className="relative h-screen min-h-[700px] flex items-center justify-center">
       {/* Background Carousel */}
       <div className="absolute inset-0 z-0 overflow-hidden bg-brand-black" aria-hidden="true">
         <AnimatePresence mode="popLayout">
-          {currentImage && (
+          {currentImage && !currentImageFailed && (
             <motion.img
               key={currentImage.id}
               src={currentImage.src}
               alt={currentImage.alt || 'Gallery photo'}
               loading="eager"
               decoding="async"
+              onError={() => markSlideFailed(currentImage.src)}
               initial={{ opacity: 0, scale: 1.08 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.02 }}

@@ -3,9 +3,25 @@ import React, { useState, useMemo } from 'react';
 import { useContent } from '../context/ContentContext';
 import { ConfirmDialog } from './MediaUploader';
 import { useToast } from './Toast';
+import { moveItem } from '../lib/contentRepository';
 
 const messageFor = (error, fallback) => error instanceof Error ? error.message : fallback;
 const ordered = (items) => [...(items ?? [])].sort((first, second) => first.sortOrder - second.sortOrder);
+
+function HeroThumb({ photo }) {
+  const [failedSrc, setFailedSrc] = useState(null);
+  const imageFailed = failedSrc === photo.src;
+
+  if (imageFailed) {
+    return (
+      <span className="admin-media-broken admin-hero-thumb" role="img" aria-label="Image unavailable">
+        <strong>Broken</strong>
+      </span>
+    );
+  }
+
+  return <img src={photo.src} alt="" className="admin-hero-thumb" onError={() => setFailedSrc(photo.src)} />;
+}
 
 export function HeroManager() {
   const { content, error: contentError, createHeroSlide, updateHeroSlide, deleteHeroSlide } = useContent();
@@ -23,6 +39,7 @@ export function HeroManager() {
   const heroPhotos = useMemo(() => heroPhotoIds.map((id) => photoById.get(id)).filter(Boolean), [heroPhotoIds, photoById]);
   const otherPhotos = useMemo(() => photos.filter((photo) => !heroPhotoIds.includes(photo.id)), [photos, heroPhotoIds]);
   const allPhotos = useMemo(() => [...heroPhotos, ...otherPhotos], [heroPhotos, otherPhotos]);
+  const standaloneSlides = useMemo(() => slides.filter((slide) => !slide.photoId), [slides]);
 
   const addSlide = async (photo) => {
     setIsSaving(true);
@@ -72,14 +89,28 @@ export function HeroManager() {
 
     setIsSaving(true);
     try {
-      const currentSlide = slideByPhotoId.get(photo.id);
-      const targetPhoto = heroPhotos[targetIndex];
-      const targetSlide = slideByPhotoId.get(targetPhoto.id);
+      const reorderedHeroPhotos = moveItem(heroPhotos, currentIndex, direction);
+      const reorderedSlideIds = reorderedHeroPhotos
+        .map((item) => slideByPhotoId.get(item.id)?.id)
+        .filter(Boolean);
 
-      await Promise.all([
-        updateHeroSlide(currentSlide.id, { sortOrder: targetIndex }),
-        updateHeroSlide(targetSlide.id, { sortOrder: currentIndex }),
-      ]);
+      // Photo-linked slides take the new hero order while slides without a
+      // linked photo keep their relative position, then the whole list is
+      // renumbered so sort_order stays gapless and unambiguous.
+      let heroCursor = 0;
+      const reorderedSlides = slides.map((slide) => {
+        if (!slide.photoId || !slideByPhotoId.has(slide.photoId)) return slide;
+        const nextSlideId = reorderedSlideIds[heroCursor];
+        heroCursor += 1;
+        return slides.find((candidate) => candidate.id === nextSlideId) ?? slide;
+      });
+
+      await Promise.all(
+        reorderedSlides
+          .map((slide, sortOrder) => ({ slide, sortOrder }))
+          .filter(({ slide, sortOrder }) => slide.sortOrder !== sortOrder)
+          .map(({ slide, sortOrder }) => updateHeroSlide(slide.id, { sortOrder })),
+      );
       toast('Hero order saved');
       setFeedback({ type: 'success', message: 'Hero order saved.' });
     } catch (error) {
@@ -118,7 +149,7 @@ export function HeroManager() {
                 >
                   <td>
                     <div className="admin-hero-primary">
-                      <img src={photo.src} alt="" className="admin-hero-thumb" />
+                      <HeroThumb photo={photo} />
                       <span className="admin-hero-name">{displayName}</span>
                     </div>
                   </td>
@@ -170,6 +201,35 @@ export function HeroManager() {
             })}
           </tbody>
         </table>
+      )}
+
+      {standaloneSlides.length > 0 && (
+        <section className="admin-gallery-section" aria-labelledby="hero-standalone-title">
+          <h3 id="hero-standalone-title">Slides without a gallery photo</h3>
+          <p className="admin-empty-state" role="status">
+            These slides are not linked to a gallery photo, so they cannot be reordered or re-selected here. Remove them if their image is no longer available.
+          </p>
+          <ul className="admin-media-list">
+            {standaloneSlides.map((slide) => (
+              <li key={slide.id} className="admin-media-card">
+                <div className="admin-media-card-body">
+                  <p className="admin-media-name">{slide.alt || slide.altEn || 'Untitled slide'}</p>
+                  <p className="admin-media-position">{slide.src}</p>
+                  <div className="admin-action-row">
+                    <button
+                      type="button"
+                      className="admin-button-danger"
+                      onClick={(event) => setPendingDelete({ item: slide, trigger: event.currentTarget })}
+                      disabled={isSaving}
+                    >
+                      Remove from hero
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {pendingDelete && (

@@ -107,6 +107,7 @@ function PhotoEditor({ photo, index, total, editingLanguage, toast, onSave, onMo
   const [isVisible, setIsVisible] = useState(photo.isVisible !== false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [imageFailed, setImageFailed] = useState(false);
 
   const isEnglish = editingLanguage === 'en';
   const isHungarian = editingLanguage === 'hu';
@@ -156,9 +157,21 @@ function PhotoEditor({ photo, index, total, editingLanguage, toast, onSave, onMo
 
   return (
     <article className="admin-media-card" aria-label={`Gallery photo ${index + 1}`}>
-      <img className="admin-media-card-image" src={photo.src} alt={photo.alt || ''} />
+      {imageFailed ? (
+        <div className="admin-media-card-image admin-media-broken" role="img" aria-label={photo.alt || 'Image unavailable'}>
+          <strong>Image could not be loaded</strong>
+          <code>{photo.src}</code>
+        </div>
+      ) : (
+        <img className="admin-media-card-image" src={photo.src} alt={photo.alt || ''} onError={() => setImageFailed(true)} />
+      )}
       <div className="admin-media-card-body">
         <p className="admin-media-position">Photo {index + 1} of {total}</p>
+        {imageFailed && (
+          <p className="admin-message" role="alert">
+            This image is no longer available at its stored address. Replace the image below or delete the photo.
+          </p>
+        )}
         {isEnglish && (
           <p>
             <label htmlFor={`photo-${photo.id}-alt`}>Alternative text</label>
@@ -264,7 +277,12 @@ export function GalleryManager({ editingLanguage = 'en' }) {
     setFeedback(null);
     try {
       const reorderedCategories = moveItem(categories, index, direction);
-      await Promise.all(reorderedCategories.map((category, sortOrder) => updateCategory(category.id, { sortOrder })));
+      await Promise.all(
+        reorderedCategories
+          .map((category, sortOrder) => ({ category, sortOrder }))
+          .filter(({ category, sortOrder }) => category.sortOrder !== sortOrder)
+          .map(({ category, sortOrder }) => updateCategory(category.id, { sortOrder })),
+      );
       setFeedback({ type: 'success', message: 'Category order saved.' });
       toast('Changes published');
     } catch (moveError) {
@@ -294,10 +312,28 @@ export function GalleryManager({ editingLanguage = 'en' }) {
   };
 
   const movePhoto = async (index, direction) => {
+    const targetIndex = index + (direction === 'up' ? -1 : 1);
+    if (targetIndex < 0 || targetIndex >= selectedPhotos.length) return;
+
     setFeedback(null);
     try {
-      const reorderedPhotos = moveItem(selectedPhotos, index, direction);
-      await Promise.all(reorderedPhotos.map((photo, sortOrder) => updatePhoto(photo.id, { sortOrder })));
+      // sort_order is a single global column, so the swap happens on the full
+      // photo ordering. Renumbering keeps the sequence gapless and prevents the
+      // duplicate positions that per-category numbering produced.
+      const globalPhotos = ordered(content?.photos);
+      const currentGlobalIndex = globalPhotos.findIndex((photo) => photo.id === selectedPhotos[index].id);
+      const targetGlobalIndex = globalPhotos.findIndex((photo) => photo.id === selectedPhotos[targetIndex].id);
+      if (currentGlobalIndex < 0 || targetGlobalIndex < 0) return;
+
+      const reorderedPhotos = [...globalPhotos];
+      [reorderedPhotos[currentGlobalIndex], reorderedPhotos[targetGlobalIndex]] = [reorderedPhotos[targetGlobalIndex], reorderedPhotos[currentGlobalIndex]];
+
+      await Promise.all(
+        reorderedPhotos
+          .map((photo, sortOrder) => ({ photo, sortOrder }))
+          .filter(({ photo, sortOrder }) => photo.sortOrder !== sortOrder)
+          .map(({ photo, sortOrder }) => updatePhoto(photo.id, { sortOrder })),
+      );
       setFeedback({ type: 'success', message: 'Photo order saved.' });
       toast('Changes published');
     } catch (moveError) {

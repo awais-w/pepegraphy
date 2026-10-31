@@ -5,8 +5,9 @@
 1. Create a Supabase project for the environment.
 2. In **Authentication → Configuration → General**, turn off **Allow new users to sign up** and **Allow anonymous sign-ins**. This CMS has no public account-registration flow; create administrators only from the Supabase dashboard or trusted server-side tooling.
 3. For a new project, run `supabase/migrations/001_cms.sql`; it already includes the hardened policies and media Storage paths. For a project created with an earlier version of `001_cms.sql`, run `supabase/migrations/002_cms_admin_allowlist.sql`, then `supabase/migrations/003_cms_media_storage_paths.sql` before continuing. Migration 002 replaces the earlier broad authenticated policies, and migration 003 adds the Storage object paths needed to clean up uploaded media.
-4. After the applicable migrations have completed, run `supabase/seed.sql`. It adds the baseline site content, categories, gallery metadata, and hero metadata. It does not create an Auth user or upload the bundled local images to Storage.
-5. In **Authentication → Users**, create an email/password account for the single CMS administrator. Then allowlist that account in the SQL Editor, replacing the example address:
+4. Run the remaining migrations in order: `004_cms_bilingual_categories.sql`, `005_cms_bilingual_alt_text.sql`, `006_cms_hero_from_gallery.sql`, `007_cms_contact_messages.sql`, and `008_cms_repair_broken_media.sql`.
+5. After the applicable migrations have completed, run `supabase/seed.sql`. It adds the baseline site content, categories, gallery metadata, and hero metadata. It does not create an Auth user or upload the bundled local images to Storage.
+6. In **Authentication → Users**, create an email/password account for the single CMS administrator. Then allowlist that account in the SQL Editor, replacing the example address:
 
    ```sql
    insert into public.admin_users (user_id)
@@ -16,7 +17,7 @@
    ```
 
    `admin_users` is intentionally RLS-protected with no browser policies. Only project owners or trusted server-side maintenance tooling may change the allowlist.
-6. Verify while signed out that visitors can read only visible content and public media. Verify that the allowlisted administrator can read hidden rows and change `is_visible`, while a non-allowlisted authenticated account cannot read or write CMS rows or `site-media` objects.
+7. Verify while signed out that visitors can read only visible content and public media. Verify that the allowlisted administrator can read hidden rows and change `is_visible`, while a non-allowlisted authenticated account cannot read or write CMS rows or `site-media` objects.
 
 The seed is safe to re-run for its intended baseline data: section and category rows are updated, and missing photo/hero rows are inserted. It intentionally does not overwrite existing media metadata or delete content and Storage objects created by editors.
 
@@ -42,6 +43,21 @@ Before release, confirm the production project has the applicable migrations app
 ## Media and storage rules
 
 The admin accepts browser-recognised image files only, with a maximum file size of 10 MB per file. Images are stored in the public `site-media` bucket under `hero/` or `gallery/`; the CMS stores their public URL, Storage path, alt text, visibility, and order. A replacement uploads the new object before metadata changes, rolls it back if metadata cannot be saved, and then removes the old object. Deleting a hero slide, photo, or category removes the associated uploaded Storage objects; any post-metadata cleanup failure is shown to the administrator for follow-up. Bundled seed images have no Storage path and are never removed from Storage.
+
+A Storage object is only deleted when no other record still points at it. A gallery photo and a hero slide can share the same uploaded object, so removing or replacing one of them no longer breaks the other.
+
+`sort_order` is a single global column for each collection, and the admin writes it as a gapless sequence. Migration `008_cms_repair_broken_media.sql` renumbers existing rows and removes media that points at a Storage object which no longer exists.
+
+## Broken images
+
+A missing image usually means the row points at a Storage object that was deleted outside the CMS, or at a file that was never uploaded. The public site renders an "Image unavailable" placeholder instead of a broken-image icon, the admin gallery marks the affected photo as broken, and the admin hero panel lists slides that are not linked to a gallery photo so they can be removed.
+
+The browser console may also show warnings that are not caused by the site:
+
+- `Error with Permissions-Policy header: Unrecognized feature: ...` comes from the Supabase CDN response headers and is harmless.
+- `[Intervention] Images loaded lazily and replaced with placeholders` is Chrome reporting that `loading="lazy"` deferred an image load.
+
+Neither indicates a broken image on the page. To check the real state, look for a failed request in the Network tab: `ERR_BLOCKED_BY_ORB` on a `storage/v1/object/public/site-media/...` URL means the bucket returned an error response (the object is missing) instead of an image.
 
 Public reads are intentional for this portfolio. Only an authenticated user whose `auth.uid()` is listed in `public.admin_users` can read through the authenticated Storage API or upload, update, and delete objects in `site-media`. Removing an allowlist row immediately prevents future client-side CMS reads and writes; removing the Auth account also removes its allowlist row through the foreign key.
 

@@ -212,8 +212,8 @@ describe('media managers', () => {
     });
 
     expect(mutations.updateHeroSlide).toHaveBeenCalledTimes(2);
-    expect(mutations.updateHeroSlide).toHaveBeenNthCalledWith(1, 'hero-1', { sortOrder: 1 });
-    expect(mutations.updateHeroSlide).toHaveBeenNthCalledWith(2, 'hero-2', { sortOrder: 0 });
+    expect(mutations.updateHeroSlide).toHaveBeenCalledWith('hero-1', { sortOrder: 1 });
+    expect(mutations.updateHeroSlide).toHaveBeenCalledWith('hero-2', { sortOrder: 0 });
   });
 
   it('warns that deleting a category permanently deletes child photos and uploaded files', async () => {
